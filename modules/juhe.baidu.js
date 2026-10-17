@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "rex.juhe.baidu",
   title: "聚合百度版",
-  version: "1.0.6",
+  version: "1.0.7",
   requiredVersion: "0.0.1",
   description: "纯百度聚合：并发搜索3个源（花卷/木偶/虎斑），只返回百度网盘播放源。",
   author: "夏恩",
@@ -56,7 +56,7 @@ WidgetMetadata = {
     { name: "host", title: "站点地址", type: "input", value: "https://www.hjzhencai.top" },
     { name: "pan_hosts", title: "备用站点（逗号分隔）", type: "input", value: "" },
     { name: "baidu_cookie", title: "百度 Cookie", type: "input", value: "" },
-    { name: "baidu_max_files", title: "百度最多解析", type: "input", value: "2" },
+    { name: "baidu_max_files", title: "百度最多解析", type: "input", value: "5" },
     { name: "search_extra_after_hit", title: "命中后继续扫描", type: "input", value: "3" },
     {
       name: "quality_tag",
@@ -2727,7 +2727,7 @@ async function baiduSourceFromVideo(video, line, params, uidPromise) {
 async function baiduSourcesFromVideos(videos, line, params, uidPromise, maxFiles) {
   videos = Array.isArray(videos) ? videos : [];
   maxFiles = Math.max(1, Number(maxFiles || 1));
-  var concurrency = fastLoadEnabled(params) ? 1 : BAIDU_DIRECT_CONCURRENCY_FULL;
+  var concurrency = BAIDU_DIRECT_CONCURRENCY_FULL;
   var out = [];
   console.log("[huajuan] baidu direct concurrency", {
     mode: loadSpeedMode(params),
@@ -3572,7 +3572,7 @@ WidgetMetadata = {
     { name: "host", title: "站点地址", type: "input", value: "http://43.248.128.118:16969" },
     { name: "pan_hosts", title: "备用网盘站", type: "input", value: "" },
     { name: "baidu_cookie", title: "百度 Cookie", type: "input", value: "" },
-    { name: "baidu_max_files", title: "百度最多解析", type: "input", value: "2" },
+    { name: "baidu_max_files", title: "百度最多解析", type: "input", value: "5" },
     { name: "search_extra_after_hit", title: "命中后继续扫描", type: "input", value: "3" },
     {
       name: "quality_tag",
@@ -6243,7 +6243,7 @@ async function baiduSourceFromVideo(video, line, params, uidPromise) {
 async function baiduSourcesFromVideos(videos, line, params, uidPromise, maxFiles) {
   videos = Array.isArray(videos) ? videos : [];
   maxFiles = Math.max(1, Number(maxFiles || 1));
-  var concurrency = fastLoadEnabled(params) ? 1 : BAIDU_DIRECT_CONCURRENCY_FULL;
+  var concurrency = BAIDU_DIRECT_CONCURRENCY_FULL;
   var out = [];
   console.log("[huban] baidu direct concurrency", {
     mode: loadSpeedMode(params),
@@ -8650,6 +8650,9 @@ function juheParamsFor(key, params, origLink) {
     }
   }
   if (origLink) p.link = origLink;
+  if (p.baidu_max_files === undefined || p.baidu_max_files === null || p.baidu_max_files === "") {
+    p.baidu_max_files = 5;
+  }
   var host = (params && params["host_" + key]) || (src && src.defaultHost) || "";
   var kind = src && src.kind;
   if (kind === "wogg") {

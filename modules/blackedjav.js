@@ -10,6 +10,7 @@ WidgetMetadata = {
     version: "3.2.1",
     requiredVersion: "0.0.1",
     site: "https://blackedjav.com",
+    iconurl: "https://blackedjav.com/favicon.ico",
     detailCacheDuration: 300,
     globalParams: [],
     modules: [

@@ -26,6 +26,7 @@ WidgetMetadata = {
     description: "Rule34Video视频",
     author: "Coko",
     site: "https://rule34video.com",
+    iconurl: "https://rule34video.com/favicon.ico",
     version: "2.3.3",
     requiredVersion: "0.0.2",
     detailCacheDuration: 300,

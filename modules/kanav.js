@@ -9,6 +9,7 @@ WidgetMetadata = {
     version: "1.0.1",
     requiredVersion: "0.0.1",
     site: "https://kanav.ad",
+    iconurl: "https://kanav.ad/favicon.ico",
     detailCacheDuration: 300,
     globalParams: [],
     modules: [

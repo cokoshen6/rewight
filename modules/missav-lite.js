@@ -11,7 +11,7 @@ var WidgetMetadata = {
   requiredVersion: "0.0.1",
   detailCacheDuration: 300,
   site: "https://missav.live",
-  icon: "https://missav.live/favicon.ico",
+  iconurl: "https://missav.live/favicon.ico",
   modules: [
     {
       title: "搜索影片",

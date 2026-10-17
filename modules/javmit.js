@@ -10,6 +10,7 @@ WidgetMetadata = {
     version: "1.6.2",
     requiredVersion: "0.0.1",
     site: "https://javmit.com",
+    iconurl: "https://javmit.com/wp-content/uploads/2026/04/cropped-red-play-icon-circle-with-white-triangle-middle_609989-1987-192x192.jpg",
     detailCacheDuration: 300,
     globalParams: [],
     modules: [

@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "rex.juhe.baidu",
   title: "聚合百度版",
-  version: "1.0.5",
+  version: "1.0.6",
   requiredVersion: "0.0.1",
   description: "纯百度聚合：并发搜索3个源（花卷/木偶/虎斑），只返回百度网盘播放源。",
   author: "夏恩",
@@ -3402,13 +3402,29 @@ async function loadResourceUncached(params, targetPanType) {
   var panCounts = {};
   var lastNewCandidateIndex = -1;
   var scannedCandidates = 0;
-  for (var ci = 0; ci < candidates.length; ci++) {
-    var best = candidates[ci];
-    if (!best || !best.link) continue;
+  var HUAJUAN_DETAIL_BATCH = 4;
+  huajuanScan:
+  for (var bi = 0; bi < candidates.length; bi += HUAJUAN_DETAIL_BATCH) {
+    var huajuanBatch = [];
+    for (var bj = bi; bj < Math.min(bi + HUAJUAN_DETAIL_BATCH, candidates.length); bj++) {
+      if (candidates[bj] && candidates[bj].link) huajuanBatch.push({ idx: bj, cand: candidates[bj] });
+    }
+    var huajuanBatchDetails = await Promise.all(huajuanBatch.map(function (it) {
+      var t0 = Date.now();
+      return huajuanLoadDetailObject(it.cand.link, params).then(function (d) {
+        return { idx: it.idx, cand: it.cand, detail: d, ms: Date.now() - t0 };
+      }).catch(function (e) {
+        console.warn("[huajuan] detail batch failed", { ms: Date.now() - t0, message: e && e.message || String(e) });
+        return { idx: it.idx, cand: it.cand, detail: null, ms: Date.now() - t0 };
+      });
+    }));
+    for (var bk = 0; bk < huajuanBatchDetails.length; bk++) {
+    var ci = huajuanBatchDetails[bk].idx;
+    var best = huajuanBatchDetails[bk].cand;
+    var detail = huajuanBatchDetails[bk].detail;
+    var detailMs = huajuanBatchDetails[bk].ms;
+    if (!detail) { scannedCandidates++; continue; }
     var beforeCandidateCount = out.length;
-    var detailStartedAt = Date.now();
-    var detail = await huajuanLoadDetailObject(best.link, params);
-    var detailMs = Date.now() - detailStartedAt;
     var sourceKeyword = best._huajuanKeyword || usedKeyword;
     var rawLines = filterLinesForEpisode(detail.lines || [], params);
     
@@ -3509,7 +3525,7 @@ async function loadResourceUncached(params, targetPanType) {
     if (out.length > beforeCandidateCount) lastNewCandidateIndex = ci;
     if (panLimitsReached(panCounts, params, targetPanType)) {
       console.log("[huajuan] stop pan limits reached", { scanned: scannedCandidates, panCounts: panCounts });
-      break;
+      break huajuanScan;
     }
     if (lastNewCandidateIndex >= 0 && (extraAfterHit === 0 || ci > lastNewCandidateIndex) && ci - lastNewCandidateIndex >= extraAfterHit) {
       console.log("[huajuan] stop after hit window", {
@@ -3518,7 +3534,8 @@ async function loadResourceUncached(params, targetPanType) {
         lastNewCandidateIndex: lastNewCandidateIndex,
         panCounts: panCounts
       });
-      break;
+      break huajuanScan;
+    }
     }
   }
   out = sortSourcesByPan(out, params);
@@ -6901,13 +6918,29 @@ async function loadResourceUncached(params, targetPanType) {
   var panCounts = {};
   var lastNewCandidateIndex = -1;
   var scannedCandidates = 0;
-  for (var ci = 0; ci < candidates.length; ci++) {
-    var best = candidates[ci];
-    if (!best || !best.link) continue;
+  var HUBAN_DETAIL_BATCH = 4;
+  hubanScan:
+  for (var bi = 0; bi < candidates.length; bi += HUBAN_DETAIL_BATCH) {
+    var hubanBatch = [];
+    for (var bj = bi; bj < Math.min(bi + HUBAN_DETAIL_BATCH, candidates.length); bj++) {
+      if (candidates[bj] && candidates[bj].link) hubanBatch.push({ idx: bj, cand: candidates[bj] });
+    }
+    var hubanBatchDetails = await Promise.all(hubanBatch.map(function (it) {
+      var t0 = Date.now();
+      return hubanLoadDetailObject(it.cand.link, params).then(function (d) {
+        return { idx: it.idx, cand: it.cand, detail: d, ms: Date.now() - t0 };
+      }).catch(function (e) {
+        console.warn("[huban] detail batch failed", { ms: Date.now() - t0, message: e && e.message || String(e) });
+        return { idx: it.idx, cand: it.cand, detail: null, ms: Date.now() - t0 };
+      });
+    }));
+    for (var bk = 0; bk < hubanBatchDetails.length; bk++) {
+    var ci = hubanBatchDetails[bk].idx;
+    var best = hubanBatchDetails[bk].cand;
+    var detail = hubanBatchDetails[bk].detail;
+    var detailMs = hubanBatchDetails[bk].ms;
+    if (!detail) { scannedCandidates++; continue; }
     var beforeCandidateCount = out.length;
-    var detailStartedAt = Date.now();
-    var detail = await hubanLoadDetailObject(best.link, params);
-    var detailMs = Date.now() - detailStartedAt;
     var sourceKeyword = best._hubanKeyword || usedKeyword;
     var rawLines = filterLinesForEpisode(detail.lines || [], params);
     
@@ -7008,7 +7041,7 @@ async function loadResourceUncached(params, targetPanType) {
     if (out.length > beforeCandidateCount) lastNewCandidateIndex = ci;
     if (panLimitsReached(panCounts, params, targetPanType)) {
       console.log("[huban] stop pan limits reached", { scanned: scannedCandidates, panCounts: panCounts });
-      break;
+      break hubanScan;
     }
     if (lastNewCandidateIndex >= 0 && (extraAfterHit === 0 || ci > lastNewCandidateIndex) && ci - lastNewCandidateIndex >= extraAfterHit) {
       console.log("[huban] stop after hit window", {
@@ -7017,7 +7050,8 @@ async function loadResourceUncached(params, targetPanType) {
         lastNewCandidateIndex: lastNewCandidateIndex,
         panCounts: panCounts
       });
-      break;
+      break hubanScan;
+    }
     }
   }
   out = sortSourcesByPan(out, params);

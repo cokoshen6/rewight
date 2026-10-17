@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "rex.juhe.baidu",
   title: "聚合百度版",
-  version: "1.0.2",
+  version: "1.0.3",
   requiredVersion: "0.0.1",
   description: "纯百度聚合：并发搜索3个源（花卷/木偶/虎斑），只返回百度网盘播放源。",
   author: "夏恩",
@@ -10,26 +10,11 @@ WidgetMetadata = {
   globalParams: [
     { name: "baidu_cookie", title: "百度 Cookie", type: "input", value: "" },
     {
-      name: "load_speed_mode",
-      title: "加载速度",
-      type: "enumeration",
-      value: "fast",
-      enumOptions: [
-        { title: "极速（找到一个就返回）", value: "fast" },
-        { title: "普通（返回多个大小）", value: "full" }
-      ]
-    },
-    {
       name: "quality_tag",
       title: "清晰度标签",
-      type: "enumeration",
-      value: "8k",
-      enumOptions: [
-        { title: "8K", value: "8k" },
-        { title: "4K", value: "4k" },
-        { title: "1080P", value: "1080p" },
-        { title: "其他", value: "other" }
-      ]
+      type: "input",
+      value: "4K",
+      placeholder: "如 8K / 4K / 1080P，留空不过滤"
     },
     { name: "host_huajuan", title: "花卷站点地址", type: "input", value: "https://www.hjzhencai.top" },
     { name: "host_huban", title: "虎斑站点地址", type: "input", value: "http://43.248.128.118:16969" },
@@ -77,26 +62,11 @@ WidgetMetadata = {
     { name: "baidu_max_files", title: "百度最多解析", type: "input", value: "2" },
     { name: "search_extra_after_hit", title: "命中后继续扫描", type: "input", value: "3" },
     {
-      name: "load_speed_mode",
-      title: "加载速度",
-      type: "enumeration",
-      value: "fast",
-      enumOptions: [
-        { title: "极速（找到一个就返回）", value: "fast" },
-        { title: "普通（返回多个大小）", value: "full" }
-      ]
-    },
-    {
       name: "quality_tag",
       title: "清晰度标签",
-      type: "enumeration",
-      value: "8k",
-      enumOptions: [
-        { title: "8K", value: "8k" },
-        { title: "4K", value: "4k" },
-        { title: "1080P", value: "1080p" },
-        { title: "其他", value: "other" }
-      ]
+      type: "input",
+      value: "4K",
+      placeholder: "如 8K / 4K / 1080P，留空不过滤"
     }
   ],
   modules: [
@@ -3588,26 +3558,11 @@ WidgetMetadata = {
     { name: "baidu_max_files", title: "百度最多解析", type: "input", value: "2" },
     { name: "search_extra_after_hit", title: "命中后继续扫描", type: "input", value: "3" },
     {
-      name: "load_speed_mode",
-      title: "加载速度",
-      type: "enumeration",
-      value: "fast",
-      enumOptions: [
-        { title: "极速（找到一个就返回）", value: "fast" },
-        { title: "普通（返回多个大小）", value: "full" }
-      ]
-    },
-    {
       name: "quality_tag",
       title: "清晰度标签",
-      type: "enumeration",
-      value: "8k",
-      enumOptions: [
-        { title: "8K", value: "8k" },
-        { title: "4K", value: "4k" },
-        { title: "1080P", value: "1080p" },
-        { title: "其他", value: "other" }
-      ]
+      type: "input",
+      value: "4K",
+      placeholder: "如 8K / 4K / 1080P，留空不过滤"
     }
   ],
   modules: [
@@ -8766,8 +8721,7 @@ async function loadResource(params) {
     raw = [{ src: route.src, items: raw || [] }];
   } else {
     var enabled = juheEnabledSources(params);
-    var speedMode = String(params.load_speed_mode || "fast").toLowerCase();
-    if (speedMode === "fast" && enabled.length > 1) {
+    if (enabled.length > 1) {
       return juheRaceFirstBaidu(params, enabled);
     }
     var tasks = enabled.map(function (src) {

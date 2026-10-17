@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "rex.juhe.baidu",
   title: "聚合百度版",
-  version: "1.0.3",
+  version: "1.0.4",
   requiredVersion: "0.0.1",
   description: "纯百度聚合：并发搜索3个源（花卷/木偶/虎斑），只返回百度网盘播放源。",
   author: "夏恩",
@@ -19,9 +19,6 @@ WidgetMetadata = {
     { name: "host_huajuan", title: "花卷站点地址", type: "input", value: "https://www.hjzhencai.top" },
     { name: "host_huban", title: "虎斑站点地址", type: "input", value: "http://43.248.128.118:16969" },
     { name: "host_muou", title: "木偶站点地址", type: "input", value: "https://333.333291.xyz" },
-    { name: "enable_huajuan", title: "花卷搜索", type: "enumeration", value: "on", enumOptions: [{ title: "启用", value: "on" }, { title: "停用", value: "off" }] },
-    { name: "enable_huban", title: "虎斑搜索", type: "enumeration", value: "on", enumOptions: [{ title: "启用", value: "on" }, { title: "停用", value: "off" }] },
-    { name: "enable_muou", title: "木偶搜索", type: "enumeration", value: "on", enumOptions: [{ title: "启用", value: "on" }, { title: "停用", value: "off" }] },
   ],
   modules: [
     {

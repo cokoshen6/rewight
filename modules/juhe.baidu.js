@@ -8766,6 +8766,10 @@ async function loadResource(params) {
     raw = [{ src: route.src, items: raw || [] }];
   } else {
     var enabled = juheEnabledSources(params);
+    var speedMode = String(params.load_speed_mode || "fast").toLowerCase();
+    if (speedMode === "fast" && enabled.length > 1) {
+      return juheRaceFirstBaidu(params, enabled);
+    }
     var tasks = enabled.map(function (src) {
       return Promise.resolve()
         .then(function () {
@@ -8783,6 +8787,10 @@ async function loadResource(params) {
       raw.push({ src: enabled[gi], items: groups[gi] || [] });
     }
   }
+  return juheMergeBaidu(raw);
+}
+
+function juheMergeBaidu(raw) {
   var out = [];
   var seen = {};
   var dropped = 0;
@@ -8816,4 +8824,26 @@ async function loadResource(params) {
   }
   if (dropped > 0) console.log("[juhe] 纯百度过滤丢弃非百度结果: " + dropped + " 条");
   return out;
+}
+
+function juheRaceFirstBaidu(params, enabled) {
+  return new Promise(function (resolve) {
+    var pending = enabled.length;
+    var done = false;
+    if (!pending) { resolve([]); return; }
+    enabled.forEach(function (src) {
+      Promise.resolve().then(function () {
+        if (!src.api || typeof src.api.loadResource !== "function") return [];
+        return src.api.loadResource(juheParamsFor(src.key, params));
+      }).then(function (items) {
+        if (done) return;
+        var merged = juheMergeBaidu([{ src: src, items: items || [] }]);
+        if (merged.length) { done = true; resolve(merged); }
+        else if (--pending <= 0) resolve([]);
+      }).catch(function (e) {
+        console.warn("[juhe] " + src.key + " 解析失败:", (e && e.message) || e);
+        if (!done && --pending <= 0) resolve([]);
+      });
+    });
+  });
 }

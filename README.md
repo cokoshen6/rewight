@@ -23,7 +23,3 @@ rex 模块纯净版仓库。所有在用模块的去注释重制版，以后维�
 - 模块图标统一用 `iconurl` 字段（`icon` 字段 App 不认）
 - 纯元数据模块：manifest 列表模块省略 `type`，条目保留 `type: "video"` / `"url"`
 - stream 模块：列表模块显式 `type: "video"` + `loadResource`（`type: "stream"`）
-
-## 已丢弃（不在此仓库）
-
-WOW、bilibili、51短剧、红果短剧、xeden、影探4K、4KPorn、色花堂、Pornhub 合集排查 —— 除非用户主动重开，不再提起。

@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "rex.juhe.baidu",
   title: "聚合百度版",
-  version: "1.0.4",
+  version: "1.0.5",
   requiredVersion: "0.0.1",
   description: "纯百度聚合：并发搜索3个源（花卷/木偶/虎斑），只返回百度网盘播放源。",
   author: "夏恩",
@@ -1078,7 +1078,10 @@ function sourceQualityConfig(params) {
   if (value === "other" || value === "others" || value === "其他" || value === "其它") {
     return { value: "other", label: "其他", tag: "", resolutionId: "other", resolution: "", width: 0, height: 0 };
   }
-  return { value: "8k", label: "8K", tag: "8k", resolutionId: "8k", resolution: "7680x4320", width: 7680, height: 4320 };
+  if (!value || value === "8k") {
+    return { value: "8k", label: "8K", tag: "8k", resolutionId: "8k", resolution: "7680x4320", width: 7680, height: 4320 };
+  }
+  return { value: value, label: value.toUpperCase(), tag: value, resolutionId: value, resolution: "", width: 0, height: 0 };
 }
 
 function sourceActualQualityConfig(name, description, meta) {
@@ -4574,7 +4577,10 @@ function sourceQualityConfig(params) {
   if (value === "other" || value === "others" || value === "其他" || value === "其它") {
     return { value: "other", label: "其他", tag: "", resolutionId: "other", resolution: "", width: 0, height: 0 };
   }
-  return { value: "8k", label: "8K", tag: "8k", resolutionId: "8k", resolution: "7680x4320", width: 7680, height: 4320 };
+  if (!value || value === "8k") {
+    return { value: "8k", label: "8K", tag: "8k", resolutionId: "8k", resolution: "7680x4320", width: 7680, height: 4320 };
+  }
+  return { value: value, label: value.toUpperCase(), tag: value, resolutionId: value, resolution: "", width: 0, height: 0 };
 }
 
 function sourceActualQualityConfig(name, description, meta) {

@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "rex.juhe.baidu",
   title: "聚合百度版",
-  version: "1.0.7",
+  version: "1.0.8",
   requiredVersion: "0.0.1",
   description: "纯百度聚合：并发搜索3个源（花卷/木偶/虎斑），只返回百度网盘播放源。",
   author: "夏恩",
@@ -8762,7 +8762,7 @@ async function loadResource(params) {
   } else {
     var enabled = juheEnabledSources(params);
     if (enabled.length > 1) {
-      return juheRaceFirstBaidu(params, enabled);
+      return juheRaceWithGrace(params, enabled);
     }
     var tasks = enabled.map(function (src) {
       return Promise.resolve()
@@ -8820,23 +8820,48 @@ function juheMergeBaidu(raw) {
   return out;
 }
 
-function juheRaceFirstBaidu(params, enabled) {
+function juheRaceWithGrace(params, enabled) {
+  var GRACE_MS = 3000;
   return new Promise(function (resolve) {
-    var pending = enabled.length;
-    var done = false;
-    if (!pending) { resolve([]); return; }
+    if (!enabled.length) { resolve([]); return; }
+    var rawByKey = {};
+    var doneCount = 0;
+    var resolved = false;
+    var firstAt = 0;
+    var g = typeof globalThis !== "undefined" ? globalThis : null;
+    var timer = g && g.setTimeout;
+    function mergeAll() {
+      var raw = [];
+      for (var i = 0; i < enabled.length; i++) {
+        var k = enabled[i].key;
+        if (rawByKey[k]) raw.push({ src: enabled[i], items: rawByKey[k] });
+      }
+      return juheMergeBaidu(raw);
+    }
+    function tryResolve() {
+      if (resolved) return;
+      if (doneCount >= enabled.length || (firstAt && Date.now() - firstAt >= GRACE_MS)) {
+        resolved = true;
+        resolve(mergeAll());
+      }
+    }
     enabled.forEach(function (src) {
       Promise.resolve().then(function () {
         if (!src.api || typeof src.api.loadResource !== "function") return [];
         return src.api.loadResource(juheParamsFor(src.key, params));
       }).then(function (items) {
-        if (done) return;
-        var merged = juheMergeBaidu([{ src: src, items: items || [] }]);
-        if (merged.length) { done = true; resolve(merged); }
-        else if (--pending <= 0) resolve([]);
+        rawByKey[src.key] = items || [];
+        doneCount++;
+        if (!firstAt && (items || []).length) {
+          firstAt = Date.now();
+          if (typeof timer === "function") timer.call(g, tryResolve, GRACE_MS);
+        }
+        tryResolve();
       }).catch(function (e) {
         console.warn("[juhe] " + src.key + " 解析失败:", (e && e.message) || e);
-        if (!done && --pending <= 0) resolve([]);
+        rawByKey[src.key] = [];
+        doneCount++;
+        tryResolve();
       });
     });
   });

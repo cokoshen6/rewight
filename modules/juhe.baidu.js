@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "rex.juhe.baidu",
   title: "聚合百度版",
-  version: "1.1.0",
+  version: "1.1.1",
   requiredVersion: "0.0.1",
   description: "纯百度聚合：并发搜索3个源（花卷/木偶/虎斑），只返回百度网盘播放源。",
   author: "夏恩",
@@ -9,6 +9,18 @@ WidgetMetadata = {
   detailCacheDuration: 3600,
   globalParams: [
     { name: "baidu_cookie", title: "百度 Cookie", type: "input", value: "" },
+    {
+      name: "quality_tag",
+      title: "清晰度标签",
+      type: "enumeration",
+      value: "8k",
+      enumOptions: [
+        { title: "8K", value: "8k" },
+        { title: "4K", value: "4k" },
+        { title: "1080P", value: "1080p" },
+        { title: "其他", value: "other" }
+      ]
+    },
     { name: "host_huajuan", title: "花卷站点地址", type: "input", value: "https://www.hjzhencai.top" },
     { name: "host_huban", title: "虎斑站点地址", type: "input", value: "http://43.248.128.118:16969" },
     { name: "host_duoduo", title: "多多站点地址", type: "input", value: "https://tv.214521.xyz" },

@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "rex.juhe.baidu",
   title: "聚合百度版",
-  version: "1.0.8",
+  version: "1.0.9",
   requiredVersion: "0.0.1",
   description: "纯百度聚合：并发搜索3个源（花卷/木偶/虎斑），只返回百度网盘播放源。",
   author: "夏恩",
@@ -9,13 +9,6 @@ WidgetMetadata = {
   detailCacheDuration: 3600,
   globalParams: [
     { name: "baidu_cookie", title: "百度 Cookie", type: "input", value: "" },
-    {
-      name: "quality_tag",
-      title: "清晰度标签",
-      type: "input",
-      value: "4K",
-      placeholder: "如 8K / 4K / 1080P，留空不过滤"
-    },
     { name: "host_huajuan", title: "花卷站点地址", type: "input", value: "https://www.hjzhencai.top" },
     { name: "host_huban", title: "虎斑站点地址", type: "input", value: "http://43.248.128.118:16969" },
     { name: "host_muou", title: "木偶站点地址", type: "input", value: "https://333.333291.xyz" },
@@ -8702,42 +8695,72 @@ async function search(params) {
   params = params || {};
   var keyword = juheKeyword(params);
   if (!keyword) return [];
-  var tasks = juheEnabledSources(params).map(function (src) {
-    return Promise.resolve()
-      .then(function () {
-        if (!src.api || typeof src.api.search !== "function") return [];
-        return src.api.search(juheParamsFor(src.key, params));
-      })
-      .then(function (items) { return { src: src, items: items || [] }; })
-      .catch(function (e) {
-        console.warn("[juhe] " + src.key + " 搜索失败:", (e && e.message) || e);
-        return { src: src, items: [] };
-      });
-  });
-  var groups = await Promise.all(tasks);
-  var out = [];
-  var seen = {};
-  for (var gi = 0; gi < groups.length; gi++) {
-    var src = groups[gi].src;
-    var items = groups[gi].items;
-    for (var ii = 0; ii < items.length; ii++) {
-      var it = items[ii] || {};
-      var origLink = juheText(it.link || it.id || "");
-      if (!origLink) continue;
-      var newLink = "juhe:" + src.key + ":" + origLink;
-      if (seen[newLink]) continue;
-      seen[newLink] = true;
-      var copy = {};
-      for (var k in it) {
-        if (Object.prototype.hasOwnProperty.call(it, k)) copy[k] = it[k];
-      }
-      copy.id = newLink;
-      copy.link = newLink;
-      copy.title = "[" + src.name + "] " + juheText(it.title || "");
-      out.push(copy);
+  var enabled = juheEnabledSources(params);
+  var GRACE_MS = 3000;
+  var groupsByKey = {};
+  var doneCount = 0;
+  var resolved = false;
+  var firstAt = 0;
+  var g = typeof globalThis !== "undefined" ? globalThis : null;
+  var timer = g && g.setTimeout;
+  function tryResolveMerge(resolve) {
+    if (resolved) return;
+    if (doneCount >= enabled.length || (firstAt && Date.now() - firstAt >= GRACE_MS)) {
+      resolved = true;
+      resolve(mergeSearchGroups());
     }
   }
-  return out;
+  function mergeSearchGroups() {
+    var out = [];
+    var seen = {};
+    for (var gi = 0; gi < enabled.length; gi++) {
+      var src = enabled[gi];
+      var items = groupsByKey[src.key] || [];
+      for (var ii = 0; ii < items.length; ii++) {
+        var it = items[ii] || {};
+        var origLink = juheText(it.link || it.id || "");
+        if (!origLink) continue;
+        var newLink = "juhe:" + src.key + ":" + origLink;
+        if (seen[newLink]) continue;
+        seen[newLink] = true;
+        var copy = {};
+        for (var k in it) {
+          if (Object.prototype.hasOwnProperty.call(it, k)) copy[k] = it[k];
+        }
+        copy.id = newLink;
+        copy.link = newLink;
+        copy.title = "[" + src.name + "] " + juheText(it.title || "");
+        out.push(copy);
+      }
+    }
+    return out;
+  }
+  var groups = await new Promise(function (resolve) {
+    if (!enabled.length) { resolve([]); return; }
+    enabled.forEach(function (src) {
+      Promise.resolve()
+        .then(function () {
+          if (!src.api || typeof src.api.search !== "function") return [];
+          return src.api.search(juheParamsFor(src.key, params));
+        })
+        .then(function (items) {
+          groupsByKey[src.key] = items || [];
+          doneCount++;
+          if (!firstAt && (items || []).length) {
+            firstAt = Date.now();
+            if (typeof timer === "function") timer.call(g, function () { tryResolveMerge(resolve); }, GRACE_MS);
+          }
+          tryResolveMerge(resolve);
+        })
+        .catch(function (e) {
+          console.warn("[juhe] " + src.key + " 搜索失败:", (e && e.message) || e);
+          groupsByKey[src.key] = [];
+          doneCount++;
+          tryResolveMerge(resolve);
+        });
+    });
+  });
+  return groups;
 }
 
 async function loadDetail(link) {

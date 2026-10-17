@@ -204,7 +204,7 @@ async function gaFillJavdbPosters(items) {
 WidgetMetadata = {
     id: "rex.getav",
     title: "GetAV",
-    version: "1.1.18",
+    version: "1.1.17",
     requiredVersion: "0.0.1",
     description: "Getav视频",
     author: "Coko",
@@ -781,26 +781,20 @@ async function gaFetchDetail(code) {
 }
 
 function gaDescription(data, code, zhTitle) {
+    
     let body = zhTitle || data.description || data.plot || data.titleEn || "";
     if (!body && data.title) {
         const t = String(data.title).trim();
         if (t && t.toUpperCase() !== String(code || "").toUpperCase()) body = t;
     }
-    body = String(body || "").trim();
-    // 去番号前缀（含 -UNCENSORED/-CENSORED 等后缀变体）
-    var c = String(code || "").trim().toUpperCase();
-    if (c && body.toUpperCase().indexOf(c) === 0) {
-        body = body.slice(c.length).replace(/^[-_\s]*(UNCENSORED|CENSORED)?[-_\s]*/, "").trim();
-    }
-    // 去 [下载和在线观看] 等垃圾后缀
-    body = body.replace(/[\[\[（(]?下载和在线观看[\]】）)]?\s*$/, "").trim();
-    body = body.replace(/^[（(]/, "").replace(/[）)]$/, "").trim();
+    body = gaStripLeadingCode(body, code);
     const lines = [];
-    if (body) lines.push(body);
-    // 女优（App 会从 peoples 取，这里拼进简介保持 DLDSS-556 那种一行式）
-    const stars = (data.stars || []).filter(s => s && s.name).map(s => String(s.name).trim()).filter(Boolean);
-    if (stars.length) lines.push(stars.join("、"));
-    return lines.join("。") || String(code || "").toUpperCase();
+    if (body) lines.push(String(body), "");
+    lines.push("番号: " + String(data.id || code).toUpperCase());
+    const dur = gaDurationText(data);
+    if (dur) lines.push("时长: " + dur);
+    if (data.date) lines.push("发行: " + String(data.date).slice(0, 10));
+    return lines.join("\n");
 }
 
 function gaDetailItem(data, code, zhTitle) {

@@ -7,7 +7,7 @@ WidgetMetadata = {
     title: "JAVMIT",
     description: "JAVMIT - 無修正 JAV (在线播放)",
     author: "rex",
-    version: "1.6.3",
+    version: "1.6.4",
     requiredVersion: "0.0.1",
     site: "https://javmit.com",
     iconurl: "https://javmit.com/wp-content/uploads/2026/04/cropped-red-play-icon-circle-with-white-triangle-middle_609989-1987-192x192.jpg",
@@ -93,7 +93,8 @@ function jm_code(title, html) {
 }
 
 function jm_jpTitle(title) {
-    var m = jm_str(title).match(/\(([^)]+)\)/);
+    var t = jm_str(title);
+    var m = t.match(/\(([^)]+)\)/) || t.match(/（([^）]+)）/);
     return m ? m[1].trim() : "";
 }
 
@@ -264,16 +265,21 @@ async function loadDetail(link) {
         var rawTitle = jm_stripHtml(p.title && p.title.rendered);
         var html = (p.content && p.content.rendered) || "";
         var code = jm_code(rawTitle, html);
-        var lines = [];
-        var jpTitle = jm_jpTitle(rawTitle);
-        if (jpTitle) lines.push(jpTitle);
-        else if (rawTitle && rawTitle !== code) lines.push(rawTitle);
-        var sub = [];
+        // 中文标题：从括号里取，去番号前缀和垃圾后缀（对标 getav 的简洁格式）
+        var cnTitle = jm_jpTitle(rawTitle) || "";
+        if (!cnTitle && rawTitle && rawTitle !== code) cnTitle = rawTitle;
+        cnTitle = String(cnTitle).trim();
+        var cUp = String(code || "").trim().toUpperCase();
+        if (cUp && cnTitle.toUpperCase().indexOf(cUp) === 0) {
+            cnTitle = cnTitle.slice(cUp.length).replace(/^[-_\s]*(UNCENSORED|CENSORED)?[-_\s]*/, "").trim();
+        }
+        cnTitle = cnTitle.replace(/[\[\[（(]?下载和在线观看[\]】）)]?\s*$/, "").trim();
+        cnTitle = cnTitle.replace(/^[（(]/, "").replace(/[）)]$/, "").trim();
         var actress = jm_meta(html, "演员") || jm_meta(html, "Actress");
         var rel = jm_meta(html, "发布日期") || jm_meta(html, "Release date");
-        if (actress) sub.push("女优 " + actress);
-        if (rel) sub.push("发行 " + rel);
-        if (sub.length) lines.push(sub.join(" · "));
+        var descParts = [];
+        if (cnTitle) descParts.push(cnTitle);
+        if (actress) descParts.push(String(actress).trim());
         var dur = jm_meta(html, "视频时长") || jm_meta(html, "Video Duration");
         var img = jm_featured(p);
         var detail = {
@@ -281,7 +287,7 @@ async function loadDetail(link) {
             type: "video",
             mediaType: "movie",
             title: code || rawTitle,
-            description: lines.join("\n") || rawTitle,
+            description: descParts.join("。") || rawTitle,
             posterPath: img,
             backdropPath: img,
             genreItems: jm_terms(p),

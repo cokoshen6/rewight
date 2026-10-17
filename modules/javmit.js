@@ -7,7 +7,7 @@ WidgetMetadata = {
     title: "JAVMIT",
     description: "JAVMIT - 無修正 JAV (在线播放)",
     author: "rex",
-    version: "1.6.2",
+    version: "1.6.3",
     requiredVersion: "0.0.1",
     site: "https://javmit.com",
     iconurl: "https://javmit.com/wp-content/uploads/2026/04/cropped-red-play-icon-circle-with-white-triangle-middle_609989-1987-192x192.jpg",
@@ -265,24 +265,18 @@ async function loadDetail(link) {
         var html = (p.content && p.content.rendered) || "";
         var code = jm_code(rawTitle, html);
         var lines = [];
-        var sub = [];
-        var rel = jm_meta(html, "发布日期") || jm_meta(html, "Release date");
-        var actress = jm_meta(html, "演员") || jm_meta(html, "Actress");
-        if (rel) sub.push("发行 " + rel);
-        if (actress) sub.push("女优 " + actress);
-        if (sub.length) lines.push(sub.join(" · "));
-        var dur = jm_meta(html, "视频时长") || jm_meta(html, "Video Duration");
-        var qual = jm_meta(html, "可选画质") || jm_meta(html, "Available Quality");
-        var size = jm_meta(html, "文件大小") || jm_meta(html, "File Size");
-        var extra = [];
-        if (dur) extra.push(dur);
-        if (qual) extra.push(qual);
-        if (size) extra.push(size);
-        if (extra.length) lines.push(extra.join(" · "));
         var jpTitle = jm_jpTitle(rawTitle);
         if (jpTitle) lines.push(jpTitle);
+        else if (rawTitle && rawTitle !== code) lines.push(rawTitle);
+        var sub = [];
+        var actress = jm_meta(html, "演员") || jm_meta(html, "Actress");
+        var rel = jm_meta(html, "发布日期") || jm_meta(html, "Release date");
+        if (actress) sub.push("女优 " + actress);
+        if (rel) sub.push("发行 " + rel);
+        if (sub.length) lines.push(sub.join(" · "));
+        var dur = jm_meta(html, "视频时长") || jm_meta(html, "Video Duration");
         var img = jm_featured(p);
-        return {
+        var detail = {
             id: "jm:" + p.id,
             type: "video",
             mediaType: "movie",
@@ -293,6 +287,9 @@ async function loadDetail(link) {
             genreItems: jm_terms(p),
             link: link
         };
+        if (dur) detail.durationText = dur;
+        if (rel) detail.releaseDate = rel;
+        return detail;
     } catch (e) {
         console.error("[JAVMIT] loadDetail 失败:", e.message || e);
         return null;

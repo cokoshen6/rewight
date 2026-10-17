@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "rex.juhe.baidu",
   title: "聚合百度版",
-  version: "1.0.1",
+  version: "1.0.2",
   requiredVersion: "0.0.1",
   description: "纯百度聚合：并发搜索3个源（花卷/木偶/虎斑），只返回百度网盘播放源。",
   author: "夏恩",

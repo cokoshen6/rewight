@@ -3,10 +3,10 @@ var BJ_API = BJ_HOST + "/wp-json/wp/v2";
 var BJ_UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
 
 WidgetMetadata = {
-    id: "forward.blackedjav",
+    id: "rex.blackedjav",
     title: "BlackedJAV",
     description: "BlackedJAV - Interracial JAV (元数据)",
-    author: "Forward",
+    author: "rex",
     version: "3.2.1",
     requiredVersion: "0.0.1",
     site: "https://blackedjav.com",

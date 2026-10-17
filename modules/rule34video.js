@@ -21,7 +21,7 @@ function proxiedPic(url) {
 }
 
 WidgetMetadata = {
-    id: "rule34video_rebuilt",
+    id: "rex.rule34video",
     title: "Rule34Video",
     description: "Rule34Video视频",
     author: "Coko",

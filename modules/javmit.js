@@ -3,10 +3,10 @@ var JM_API = JM_HOST + "/zh-CN/wp-json/wp/v2";
 var JM_UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
 
 WidgetMetadata = {
-    id: "forward.javmit",
+    id: "rex.javmit",
     title: "JAVMIT",
     description: "JAVMIT - 無修正 JAV (在线播放)",
-    author: "Forward",
+    author: "rex",
     version: "1.6.2",
     requiredVersion: "0.0.1",
     site: "https://javmit.com",

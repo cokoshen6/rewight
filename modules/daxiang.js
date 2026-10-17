@@ -1,5 +1,5 @@
 WidgetMetadata = {
-    id: "forward.daxiang",
+    id: "rex.daxiang",
     title: "大象视频",
     description: "大象视频 / 分类浏览 / 搜索",
     author: "Coko",

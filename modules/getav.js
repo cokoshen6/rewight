@@ -202,7 +202,7 @@ async function gaFillJavdbPosters(items) {
 }
 
 WidgetMetadata = {
-    id: "forward.getav",
+    id: "rex.getav",
     title: "GetAV",
     version: "1.1.17",
     requiredVersion: "0.0.1",

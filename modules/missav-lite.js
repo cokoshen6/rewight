@@ -3,7 +3,7 @@ const MISSAV_UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_2 like Mac OS X) AppleW
 const MISSAV_BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0";
 
 var WidgetMetadata = {
-  id: "missav",
+  id: "rex.missav",
   title: "MissAV-lite",
   description: "获取 MissAV 推荐",
   author: "Coko",

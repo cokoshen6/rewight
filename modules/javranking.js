@@ -1,5 +1,5 @@
 WidgetMetadata = {
-    id: "forward.javranking",
+    id: "rex.javranking",
     title: "JavRanking 榜单",
     version: "1.3.5",
     requiredVersion: "0.0.1",

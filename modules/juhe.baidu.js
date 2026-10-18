@@ -1,9 +1,9 @@
 WidgetMetadata = {
   id: "rex.juhe.baidu",
   title: "聚合百度版",
-  version: "1.1.1",
+  version: "1.1.2",
   requiredVersion: "0.0.1",
-  description: "纯百度聚合：并发搜索3个源（花卷/木偶/虎斑），只返回百度网盘播放源。",
+  description: "纯百度聚合：并发搜索3个源（花卷/虎斑/多多），只返回百度网盘播放源。",
   author: "夏恩",
   site: "https://github.com/InchStudio/ForwardWidgets",
   detailCacheDuration: 3600,
@@ -3220,7 +3220,12 @@ async function loadResourceAll(params, panType) {
   var cached = huajuanCacheGet(HUAJUAN_RESOURCE_CACHE, key);
   if (cached) return cached;
   var promise = loadResourceUncached(Object.assign({}, params), panType).then(function (list) {
-    
+    var race = params._juheRace;
+    if (race && race.finished) {
+      // 竞速已决出、我是被提前停止的失败者：不缓存部分结果
+      delete HUAJUAN_RESOURCE_CACHE[key];
+      return [];
+    }
     if (!list || !list.length) delete HUAJUAN_RESOURCE_CACHE[key];
     return list;
   }).catch(function (e) {
@@ -3408,13 +3413,16 @@ async function loadResourceUncached(params, targetPanType) {
   var lastNewCandidateIndex = -1;
   var scannedCandidates = 0;
   var HUAJUAN_DETAIL_BATCH = 4;
-  huajuanScan:
-  for (var bi = 0; bi < candidates.length; bi += HUAJUAN_DETAIL_BATCH) {
-    var huajuanBatch = [];
-    for (var bj = bi; bj < Math.min(bi + HUAJUAN_DETAIL_BATCH, candidates.length); bj++) {
-      if (candidates[bj] && candidates[bj].link) huajuanBatch.push({ idx: bj, cand: candidates[bj] });
+  // 目录预读：明细加载抽为函数，下一批预读与本批直链解析重叠，形成流水线
+  function huajuanBuildBatch(sbi) {
+    var arr = [];
+    for (var bj = sbi; bj < Math.min(sbi + HUAJUAN_DETAIL_BATCH, candidates.length); bj++) {
+      if (candidates[bj] && candidates[bj].link) arr.push({ idx: bj, cand: candidates[bj] });
     }
-    var huajuanBatchDetails = await Promise.all(huajuanBatch.map(function (it) {
+    return arr;
+  }
+  function huajuanLoadBatchDetails(batch) {
+    return Promise.all(batch.map(function (it) {
       var t0 = Date.now();
       return huajuanLoadDetailObject(it.cand.link, params).then(function (d) {
         return { idx: it.idx, cand: it.cand, detail: d, ms: Date.now() - t0 };
@@ -3423,7 +3431,24 @@ async function loadResourceUncached(params, targetPanType) {
         return { idx: it.idx, cand: it.cand, detail: null, ms: Date.now() - t0 };
       });
     }));
+  }
+  var huajuanPrefetch = null; // { bi, promise }：下一批目录预读
+  huajuanScan:
+  for (var bi = 0; bi < candidates.length; bi += HUAJUAN_DETAIL_BATCH) {
+    if (juheShouldStop(params)) { console.log("[huajuan] stop: race finished or deadline"); break huajuanScan; }
+    var huajuanBatch = huajuanBuildBatch(bi);
+    // 预读下一批目录：与本批的直链解析重叠
+    var huajuanNextBatch = huajuanBuildBatch(bi + HUAJUAN_DETAIL_BATCH);
+    var huajuanNextPromise = huajuanNextBatch.length ? huajuanLoadBatchDetails(huajuanNextBatch) : null;
+    var huajuanBatchDetails;
+    if (huajuanPrefetch && huajuanPrefetch.bi === bi) {
+      huajuanBatchDetails = await huajuanPrefetch.promise;
+    } else {
+      huajuanBatchDetails = await huajuanLoadBatchDetails(huajuanBatch);
+    }
+    huajuanPrefetch = huajuanNextPromise ? { bi: bi + HUAJUAN_DETAIL_BATCH, promise: huajuanNextPromise } : null;
     for (var bk = 0; bk < huajuanBatchDetails.length; bk++) {
+      if (juheShouldStop(params)) break huajuanScan;
     var ci = huajuanBatchDetails[bk].idx;
     var best = huajuanBatchDetails[bk].cand;
     var detail = huajuanBatchDetails[bk].detail;
@@ -3464,6 +3489,7 @@ async function loadResourceUncached(params, targetPanType) {
       });
     }
     for (var li = 0; li < lines.length;) {
+      if (juheShouldStop(params)) break huajuanScan;
       var jobs = [];
       var reservedPanCounts = {};
       while (li < lines.length && jobs.length < lineConcurrency) {
@@ -6736,7 +6762,12 @@ async function loadResourceAll(params, panType) {
   var cached = hubanCacheGet(HUBAN_RESOURCE_CACHE, key);
   if (cached) return cached;
   var promise = loadResourceUncached(Object.assign({}, params), panType).then(function (list) {
-    
+    var race = params._juheRace;
+    if (race && race.finished) {
+      // 竞速已决出、我是被提前停止的失败者：不缓存部分结果
+      delete HUBAN_RESOURCE_CACHE[key];
+      return [];
+    }
     if (!list || !list.length) delete HUBAN_RESOURCE_CACHE[key];
     return list;
   }).catch(function (e) {
@@ -6924,13 +6955,16 @@ async function loadResourceUncached(params, targetPanType) {
   var lastNewCandidateIndex = -1;
   var scannedCandidates = 0;
   var HUBAN_DETAIL_BATCH = 4;
-  hubanScan:
-  for (var bi = 0; bi < candidates.length; bi += HUBAN_DETAIL_BATCH) {
-    var hubanBatch = [];
-    for (var bj = bi; bj < Math.min(bi + HUBAN_DETAIL_BATCH, candidates.length); bj++) {
-      if (candidates[bj] && candidates[bj].link) hubanBatch.push({ idx: bj, cand: candidates[bj] });
+  // 目录预读：明细加载抽为函数，下一批预读与本批直链解析重叠，形成流水线
+  function hubanBuildBatch(sbi) {
+    var arr = [];
+    for (var bj = sbi; bj < Math.min(sbi + HUBAN_DETAIL_BATCH, candidates.length); bj++) {
+      if (candidates[bj] && candidates[bj].link) arr.push({ idx: bj, cand: candidates[bj] });
     }
-    var hubanBatchDetails = await Promise.all(hubanBatch.map(function (it) {
+    return arr;
+  }
+  function hubanLoadBatchDetails(batch) {
+    return Promise.all(batch.map(function (it) {
       var t0 = Date.now();
       return hubanLoadDetailObject(it.cand.link, params).then(function (d) {
         return { idx: it.idx, cand: it.cand, detail: d, ms: Date.now() - t0 };
@@ -6939,7 +6973,24 @@ async function loadResourceUncached(params, targetPanType) {
         return { idx: it.idx, cand: it.cand, detail: null, ms: Date.now() - t0 };
       });
     }));
+  }
+  var hubanPrefetch = null; // { bi, promise }：下一批目录预读
+  hubanScan:
+  for (var bi = 0; bi < candidates.length; bi += HUBAN_DETAIL_BATCH) {
+    if (juheShouldStop(params)) { console.log("[huban] stop: race finished or deadline"); break hubanScan; }
+    var hubanBatch = hubanBuildBatch(bi);
+    // 预读下一批目录：与本批的直链解析重叠
+    var hubanNextBatch = hubanBuildBatch(bi + HUBAN_DETAIL_BATCH);
+    var hubanNextPromise = hubanNextBatch.length ? hubanLoadBatchDetails(hubanNextBatch) : null;
+    var hubanBatchDetails;
+    if (hubanPrefetch && hubanPrefetch.bi === bi) {
+      hubanBatchDetails = await hubanPrefetch.promise;
+    } else {
+      hubanBatchDetails = await hubanLoadBatchDetails(hubanBatch);
+    }
+    hubanPrefetch = hubanNextPromise ? { bi: bi + HUBAN_DETAIL_BATCH, promise: hubanNextPromise } : null;
     for (var bk = 0; bk < hubanBatchDetails.length; bk++) {
+      if (juheShouldStop(params)) break hubanScan;
     var ci = hubanBatchDetails[bk].idx;
     var best = hubanBatchDetails[bk].cand;
     var detail = hubanBatchDetails[bk].detail;
@@ -6980,6 +7031,7 @@ async function loadResourceUncached(params, targetPanType) {
       });
     }
     for (var li = 0; li < lines.length;) {
+      if (juheShouldStop(params)) break hubanScan;
       var jobs = [];
       var reservedPanCounts = {};
       while (li < lines.length && jobs.length < lineConcurrency) {
@@ -10264,7 +10316,12 @@ async function loadResourceAll(params, panType) {
   var cached = duoduoCacheGet(DUODUO_RESOURCE_CACHE, key);
   if (cached) return cached;
   var promise = loadResourceUncached(Object.assign({}, params), panType).then(function (list) {
-    
+    var race = params._juheRace;
+    if (race && race.finished) {
+      // 竞速已决出、我是被提前停止的失败者：不缓存部分结果
+      delete DUODUO_RESOURCE_CACHE[key];
+      return [];
+    }
     if (!list || !list.length) delete DUODUO_RESOURCE_CACHE[key];
     return list;
   }).catch(function (e) {
@@ -10452,13 +10509,16 @@ async function loadResourceUncached(params, targetPanType) {
   var lastNewCandidateIndex = -1;
   var scannedCandidates = 0;
   var DUODUO_DETAIL_BATCH = 4;
-  duoduoScan:
-  for (var bi = 0; bi < candidates.length; bi += DUODUO_DETAIL_BATCH) {
-    var duoduoBatch = [];
-    for (var bj = bi; bj < Math.min(bi + DUODUO_DETAIL_BATCH, candidates.length); bj++) {
-      if (candidates[bj] && candidates[bj].link) duoduoBatch.push({ idx: bj, cand: candidates[bj] });
+  // 目录预读：明细加载抽为函数，下一批预读与本批直链解析重叠，形成流水线
+  function duoduoBuildBatch(sbi) {
+    var arr = [];
+    for (var bj = sbi; bj < Math.min(sbi + DUODUO_DETAIL_BATCH, candidates.length); bj++) {
+      if (candidates[bj] && candidates[bj].link) arr.push({ idx: bj, cand: candidates[bj] });
     }
-    var duoduoBatchDetails = await Promise.all(duoduoBatch.map(function (it) {
+    return arr;
+  }
+  function duoduoLoadBatchDetails(batch) {
+    return Promise.all(batch.map(function (it) {
       var t0 = Date.now();
       return duoduoLoadDetailObject(it.cand.link, params).then(function (d) {
         return { idx: it.idx, cand: it.cand, detail: d, ms: Date.now() - t0 };
@@ -10467,7 +10527,24 @@ async function loadResourceUncached(params, targetPanType) {
         return { idx: it.idx, cand: it.cand, detail: null, ms: Date.now() - t0 };
       });
     }));
+  }
+  var duoduoPrefetch = null; // { bi, promise }：下一批目录预读
+  duoduoScan:
+  for (var bi = 0; bi < candidates.length; bi += DUODUO_DETAIL_BATCH) {
+    if (juheShouldStop(params)) { console.log("[duoduo] stop: race finished or deadline"); break duoduoScan; }
+    var duoduoBatch = duoduoBuildBatch(bi);
+    // 预读下一批目录：与本批的直链解析重叠
+    var duoduoNextBatch = duoduoBuildBatch(bi + DUODUO_DETAIL_BATCH);
+    var duoduoNextPromise = duoduoNextBatch.length ? duoduoLoadBatchDetails(duoduoNextBatch) : null;
+    var duoduoBatchDetails;
+    if (duoduoPrefetch && duoduoPrefetch.bi === bi) {
+      duoduoBatchDetails = await duoduoPrefetch.promise;
+    } else {
+      duoduoBatchDetails = await duoduoLoadBatchDetails(duoduoBatch);
+    }
+    duoduoPrefetch = duoduoNextPromise ? { bi: bi + DUODUO_DETAIL_BATCH, promise: duoduoNextPromise } : null;
     for (var bk = 0; bk < duoduoBatchDetails.length; bk++) {
+      if (juheShouldStop(params)) break duoduoScan;
     var ci = duoduoBatchDetails[bk].idx;
     var best = duoduoBatchDetails[bk].cand;
     var detail = duoduoBatchDetails[bk].detail;
@@ -10508,6 +10585,7 @@ async function loadResourceUncached(params, targetPanType) {
       });
     }
     for (var li = 0; li < lines.length;) {
+      if (juheShouldStop(params)) break duoduoScan;
       var jobs = [];
       var reservedPanCounts = {};
       while (li < lines.length && jobs.length < lineConcurrency) {
@@ -10606,1636 +10684,29 @@ async function loadResourceUncached(params, targetPanType) {
   };
 })();
 
-var JUHE_MOD_woniu = (function () {
-  var WidgetMetadata;
-WidgetMetadata = {
-  id: "forward.woniu.115",
-  title: "蜗牛4K · 115 / 百度",
-  version: "1.1.2",
-  requiredVersion: "0.0.1",
-  description: "蜗牛4K的115和百度资源：支持网站Cookie或账号密码登录，115和百度 Cookie单独设置，按需获取播放地址。",
-  author: "夏恩/Operit",
-  site: "https://wn4k.com",
-  detailCacheDuration: 0,
-  globalParams: [
-    {name:"site",title:"蜗牛站点",type:"input",value:"https://wn4k.com"},
-    {name:"woniuCookie",title:"蜗牛网站 Cookie",type:"input",placeholders:[{title:"已登录网站的完整 Cookie；与网盘 Cookie 分开",value:""}]},
-    {name:"username",title:"蜗牛账号",type:"input"},
-    {name:"password",title:"蜗牛密码",type:"input"},
-    {name:"baiduCookie",title:"百度 Cookie",type:"input",placeholders:[{title:"填写百度网盘完整Cookie，包含BDUSS",value:""}]},
-    { name:"cookie115",title:"115 Cookie",type:"input",placeholders:[{title:"填写完整115登录Cookie（UID、CID、SEID）",value:""}] },
-    {
-      name: "multiSource",
-      title: "是否启用聚合搜索",
-      type: "enumeration",
-      value: "enabled",
-      enumOptions: [
-        { title: "启用", value: "enabled" },
-        { title: "禁用", value: "disabled" }
-      ]
-    },
-    {
-      name: "preloadCount",
-      title: "详情页预取播放数量",
-      type: "enumeration",
-      value: "3",
-      enumOptions: [
-        { title: "1 个", value: "1" },
-        { title: "2 个", value: "2" },
-        { title: "3 个", value: "3" },
-        { title: "5 个", value: "5" },
-        { title: "10 个", value: "10" },
-        { title: "全部", value: "0" }
-      ]
-    }
-  ],
-  modules: [
-    {id:"refreshCatalog",title:"刷新目录缓存",functionName:"clearRexCatalogCache",cacheDuration:0,params:[]},
-    {id:"p115Diagnostics",title:"115诊断",functionName:"load115Diagnostics",cacheDuration:0,params:[]},
-    { id: "diagnostics", title: "蜗牛诊断", functionName: "loadDiagnostics", cacheDuration: 0, params: [] },
 
-    {
-      id: "movies",
-      title: "电影",
-      functionName: "loadCategory",
-      cacheDuration: 600,
-      params: [
-        { name: "categoryId", title: "分类", type: "constant", value: "1" },
-        { name: "page", title: "页码", type: "page" }
-      ]
-    },
-    {
-      id: "tv",
-      title: "剧集",
-      functionName: "loadCategory",
-      cacheDuration: 600,
-      params: [
-        { name: "categoryId", title: "分类", type: "constant", value: "2" },
-        { name: "page", title: "页码", type: "page" }
-      ]
-    },
-    {
-      id: "anime",
-      title: "动漫",
-      functionName: "loadCategory",
-      cacheDuration: 600,
-      params: [
-        { name: "categoryId", title: "分类", type: "constant", value: "4" },
-        { name: "page", title: "页码", type: "page" }
-      ]
-    },
-    {
-      id: "variety",
-      title: "综艺",
-      functionName: "loadCategory",
-      cacheDuration: 600,
-      params: [
-        { name: "categoryId", title: "分类", type: "constant", value: "3" },
-        { name: "page", title: "页码", type: "page" }
-      ]
-    },
-    {
-      id: "loadResource",
-      title: "加载资源",
-      functionName: "loadResource",
-      type: "stream",
-      cacheDuration: 0,
-      params: []
-    }
-  ],
-  search: {
-    title: "搜索",
-    functionName: "search",
-    params: [
-      { name: "keyword", title: "关键词", type: "input" },
-      { name: "page", title: "页码", type: "page" }
-    ]
-  }
-};
-
-const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
-const CACHE_FOLDER = "ftv-cache";
-const STORAGE_COOKIE_KEY = "forward.woniu.quark.cookie";
-const STORAGE_SITE_KEY = "forward.woniu.quark.site";
-const STORAGE_PRELOAD_KEY = "forward.woniu.quark.preloadCount";
-let CURRENT_COOKIE = "";
-
-function getSite(params) {
-  const incoming = params && params.site ? String(params.site).trim() : "";
-  if (incoming) {
-    const oldSite=safeStorageGet(STORAGE_SITE_KEY);
-    if(oldSite && oldSite!==incoming)safeStorageSet("forward.woniu.session", "");
-    safeStorageSet(STORAGE_SITE_KEY, incoming);
-    return incoming.replace(/\/$/, "");
-  }
-  const saved = safeStorageGet(STORAGE_SITE_KEY);
-  return String(saved || WidgetMetadata.globalParams.find(param => param.name === "site").value).replace(/\/$/, "");
-}
-
-function safeStorageGet(key) {
-  try {
-    return Widget && Widget.storage && Widget.storage.get ? Widget.storage.get(key) : "";
-  } catch (e) {
-    console.log("[Storage] get failed:", key, e.message || e);
-    return "";
-  }
-}
-
-function safeStorageSet(key, value) {
-  try {
-    if (Widget && Widget.storage && Widget.storage.set) Widget.storage.set(key, value);
-  } catch (e) {
-    console.log("[Storage] set failed:", key, e.message || e);
-  }
-}
-
-function normalizeCookie(cookie) {
-  return String(cookie || "").trim();
-}
-
-function ensureCookie(cookie) {
-  const incoming = normalizeCookie(cookie);
-  if (incoming) {
-    CURRENT_COOKIE = incoming;
-    safeStorageSet(STORAGE_COOKIE_KEY, incoming);
-    return CURRENT_COOKIE;
-  }
-  if (CURRENT_COOKIE) return CURRENT_COOKIE;
-  CURRENT_COOKIE = normalizeCookie(safeStorageGet(STORAGE_COOKIE_KEY));
-  return CURRENT_COOKIE;
-}
-
-function getPreloadCount(params) {
-  const incoming = params && params.preloadCount !== undefined ? Number(params.preloadCount) : NaN;
-  if (!Number.isNaN(incoming)) {
-    const n = Math.max(0, Math.floor(incoming));
-    safeStorageSet(STORAGE_PRELOAD_KEY, String(n));
-    return n;
-  }
-  const saved = Number(safeStorageGet(STORAGE_PRELOAD_KEY));
-  if (!Number.isNaN(saved)) return Math.max(0, Math.floor(saved));
-  return 3;
-}
-
-function bindForwardParams(params = {}) {
-  getSite(params);
-  bindWoniuAuth(params);
-  getPreloadCount(params);
-  if(Object.prototype.hasOwnProperty.call(params,"cookie115")) safeStorageSet("forward.woniu.115.cookie",normalizeCookie(params.cookie115));
-  if (params.multiSource === "enabled" || params.multiSource === "disabled") {
-    safeStorageSet("forward.woniu.multiSource", params.multiSource);
-  }
-  const ck = params.quarkCookie || params.cookie || params.quarkck || "";
-  if(Object.prototype.hasOwnProperty.call(params,"quarkCookie")) {
-    CURRENT_COOKIE=normalizeCookie(params.quarkCookie);
-    safeStorageSet(STORAGE_COOKIE_KEY,CURRENT_COOKIE);
-  } else ensureCookie(ck);
-  if (Object.prototype.hasOwnProperty.call(params, "baiduCookie")) {
-    safeStorageSet("forward.woniu.baidu.cookie", normalizeCookie(params.baiduCookie));
-  }
-}
-
-function toQuery(obj) {
-  return Object.keys(obj || {}).map(k => k + "=" + encodeURIComponent(obj[k])).join("&");
-}
-
-function absUrl(url, site) {
-  if (!url) return "";
-  if (/^https?:\/\//i.test(url)) return url;
-  if (url.startsWith("//")) return "https:" + url;
-  if (url.startsWith("/")) return site + url;
-  return site + "/" + url;
-}
-
-function pickText($, el, selector) {
-  return $(el).find(selector).text().trim();
-}
-
-function idFromHref(href) {
-  const s = String(href || "");
-  const m = s.match(/\/detail\/id\/(\d+)\.html/) || s.match(/\/vod\/detail\/id\/(\d+)\.html/) || s.match(/id\/(\d+)/);
-  return m ? m[1] : s;
-}
-
-function encodeLink(obj) {
-  return "woniu:" + encodeURIComponent(JSON.stringify(obj));
-}
-
-function decodeLink(link) {
-  const raw = String(link || "");
-  if (!raw.startsWith("woniu:")) return null;
-  try { return JSON.parse(decodeURIComponent(raw.slice(6))); } catch (_) { return null; }
-}
-
-async function httpTextFresh(url, options) {
-  rexAssertWithinUsagePeriod();
-  const site=getSite();
-  if(!String(url).startsWith(site + "/"))throw new Error("蜗牛页面地址不属于当前站点");
-  return await woniuPage(url,options);
-}
-
-async function httpJsonCore(method, url, data, headers) {
-  const baseHeaders = headers || quarkHeaders();
-  let res;
-  if (method === "POST") {
-    res = await Widget.http.post(url, JSON.stringify(data || {}), {
-      timeout: 8000,
-      headers: Object.assign({}, baseHeaders, { "Content-Type": "application/json" })
-    });
-  } else {
-    res = await Widget.http.get(url, { headers: baseHeaders, timeout: 8000 });
-  }
-  const json=typeof res.data === "string" ? JSON.parse(res.data) : res.data;
-  const httpStatus=Number(res.status || res.statusCode || 0);
-  if(httpStatus>=400) {
-    const error=new Error("网盘接口 HTTP 错误");
-    error.status=httpStatus;
-    error.code=json && (json.errno !== undefined ? json.errno : json.error_code !== undefined ? json.error_code : json.code);
-    throw error;
-  }
-  recordApiResponse(url,res,json);
-  return json;
-}
-
-function quarkHeaders(cookie) {
-  const ck = ensureCookie(cookie);
-  return {
-    "User-Agent": UA,
-    "Cookie": ck,
-    "Referer": "https://pan.quark.cn/"
-  };
-}
-
-function playHeaders() {
-  return { "User-Agent": UA, "Cookie": CURRENT_COOKIE };
-}
-
-async function loadCategory(params = {}) {
-  rexAssertWithinUsagePeriod();
-  bindForwardParams(params);
-  const site = getSite(params);
-  const page = Number(params.page || 1);
-  const tid = String(params.categoryId || "1");
-  const url = `${site}/vodtype/${tid}${page > 1 ? "-" + page : ""}/`;
-  const html = await httpText(url);
-  const $ = Widget.html.load(html);
-  const list = [];
-
-  return woniuCards($, site);
-}
-
-async function search(params = {}, siteOverride) {
-  rexAssertWithinUsagePeriod();
-  bindForwardParams(params);
-  const keyword=String(params.keyword || "").trim();
-  if(!keyword)return [];
-  const site=siteOverride || getSite(params);
-  const page=Math.max(1,Number(params.page)||1);
-  const html=await httpText(`${site}/vodsearch/${encodeURIComponent(keyword)}-------------${page > 1 ? page : ""}/`);
-  return woniuCards(Widget.html.load(html),site);
-}
-
-async function loadBaiduDiagnostics() {
-  return [{ id: "woniu-baidu-diagnostics", type: "url", title: "百度最近一次取链诊断",
-    description: diagnosticView("baidu"),
-    link: "woniu:baidu-diagnostics" }];
-}
-function baiduDiagnostic(data) {
-  const report=Object.assign({version:"1.0.0"}, data);
-  savePanDiagnostic("baidu",report);
-}
-
-async function loadDiagnostics() {
-  return [{ id: "woniu-diagnostics", type: "url", title: "蜗牛 1.0.0 最近一次资源调用",
-    description: diagnosticView("module"),
-    link: "woniu:diagnostics" }];
-}
-
-async function loadDetail(link) {
-  rexAssertWithinUsagePeriod();
-  if(link === "woniu:baidu-playback-address") return (await loadBaiduPlaybackAddress())[0];
-  if(link === "woniu:115-diagnostics") return (await load115Diagnostics())[0];
-  if(link === "woniu:uc-network-diagnostics") return networkDiagnosticItem("uc");
-  if(link === "woniu:baidu-network-diagnostics") return networkDiagnosticItem("baidu");
-  if (link === "woniu:uc-diagnostics") return (await loadUcDiagnostics())[0];
-  if (link === "woniu:baidu-diagnostics") return (await loadBaiduDiagnostics())[0];
-  if (link === "woniu:diagnostics") return (await loadDiagnostics())[0];
-  ensureCookie();
-  const info = decodeLink(link);
-  if (!info) return null;
-  return await buildDetailItem(info);
-}
-
-async function runProviderTasks(items, work) {
-  const groups = new Map();
-  for (const item of items) {
-    const provider = item.provider || "quark";
-    if (!groups.has(provider)) groups.set(provider, []);
-    groups.get(provider).push(item);
-  }
-  await Promise.all(Array.from(groups.values()).map(async group => {
-    for (const item of group) await work(item);
-  }));
-}
-
-async function buildDetailItem(info) {
-  rexAssertWithinUsagePeriod();
-  const site = String(info.site || getSite()).replace(/\/$/, "");
-  const tid = String(info.id || "");
-  const html = await httpText(absUrl(tid,site));
-  const $ = Widget.html.load(html);
-  const title = $(".detail-title").first().text().trim() || $("h1").first().text().trim() || `蜗牛-${tid}`;
-  const poster = $(".premium-poster img").attr("data-src") || $(".premium-poster img").attr("src") || "";
-  const desc = $("#detailDescText").text().trim().replace(/\[收起部分\]/g, "");
-
-  const shares = extractShareLinks($).filter(share => share.provider === "115" || share.provider === "baidu");
-  traceResource({ step: "shares", providers: shares.map(share => share.provider) });
-  const episodeItems = [];
-  const failures = [];
-  const counts = {};
-  await runProviderTasks(shares, async share => {
-    counts[share.provider] = (counts[share.provider] || 0) + 1;
-    const lineName = providerName(share.provider) + "#" + counts[share.provider];
-    try {
-      const detail = await rexShareCatalog(share);
-      console.log(`[Woniu 1.0.0] ${lineName}: ${((detail && detail.list) || []).length} 个视频`);
-      traceResource({ step: "listing", provider: share.provider, count: ((detail && detail.list) || []).length });
-      ((detail && detail.list) || []).forEach((v, idx) => {
-        const epTitle = formatVideoName(v.file_name, v.size) || `视频 ${idx + 1}`;
-        episodeItems.push({
-          id: `${share.provider}-${share.shareId}-${v.fid}`,
-          type: "url", title: epTitle, description: lineName,
-          link: encodeLink({ action: "play", provider: share.provider, lineName, videoInfo: v, title: epTitle })
-        });
-      });
-    } catch (e) {
-      traceResource({ step: "listingFailed", provider: share.provider, errorType: e.name || "Error" });
-      failures.push(`${lineName}: ${e.message || e}`);
-      console.error(`[${lineName}] 分享解析失败:`, e.message || e);
-    }
-  });
-
-  return {
-    id: `woniu-${tid}`,
-    type: "url",
-    title,
-    posterPath: absUrl(poster, site),
-    description: [desc || (shares.length ? `已发现 ${shares.length} 个网盘分享链接` : "未发现支持的网盘分享链接"), ...failures].filter(Boolean).join("\n"),
-    episodeItems: groupEpisodeLines(episodeItems, tid),
-    link: encodeLink({ action: "detail", id: tid, site })
-  };
-}
-
-function traceResource(data) {
-  appendDiagnosticEvent("module", "trace", data);
-  let trace = [];
-  try { trace = JSON.parse(safeStorageGet("forward.woniu.trace") || "[]"); } catch (_) {}
-  trace.push(data);
-  safeStorageSet("forward.woniu.trace", JSON.stringify(trace.slice(-30)));
-}
-
-async function loadResource(params = {}) {
-  rexAssertWithinUsagePeriod();
-  safeStorageSet("forward.woniu.trace", "[]");
-  const callId=newDiagnosticId();
-  const startedMs=Date.now();
-  const context=safeEntryContext(params);
-  appendDiagnosticEvent("module","entry",Object.assign({callId},context));
-  const report = { callId,startedAt:new Date().toISOString(),context,version: "1.0.0", title: params.seriesName || params.title || params.name || "未收到片名",
-    season: params.season, episode: params.episode, hasLink: !!params.link, stage: "已进入资源入口" };
-  const save = () => {
-    try { report.trace = JSON.parse(safeStorageGet("forward.woniu.trace") || "[]"); } catch (_) {}
-    safeStorageSet("forward.woniu.diagnostics", JSON.stringify(report));
-  };
-  save();
-  try {
-    const items = await loadResourceImpl(Object.assign({},params,{_muouCallId:callId}));
-    report.stage = "资源入口已返回";
-    report.elapsedMs=Date.now()-startedMs;
-    report.resources = items.filter(item => item.url).map(item => item.name);
-    appendDiagnosticEvent("module","returned",{callId,elapsedMs:report.elapsedMs,resources:report.resources});
-    items.filter(item => item.url).forEach(recordFinalPlaybackResource);
-    save();
-    return items;
-  } catch (error) {
-    report.stage = "资源入口异常";
-    report.elapsedMs=Date.now()-startedMs;
-    report.errorType = error && error.name || "Error";
-    appendDiagnosticEvent("module","failed",{callId,elapsedMs:report.elapsedMs,error:safeErrorInfo(error)});
-    save();
-    throw error;
-  }
-}
-
-async function loadResourceImpl(params) {
-  rexAssertWithinUsagePeriod();
-  console.log("[Woniu 聚合入口]", JSON.stringify({
-    seriesName: params && params.seriesName, title: params && params.title,
-    type: params && params.type, season: params && params.season,
-    episode: params && params.episode, hasLink: !!(params && params.link)
-  }));
-  bindForwardParams(params || {});
-  traceResource({ step: "settings", site: getSite(params), multiSource: safeStorageGet("forward.woniu.multiSource") || "enabled",
-    hasBaiduCookie: !!safeStorageGet("forward.woniu.baidu.cookie"), hasQuarkCookie: !!CURRENT_COOKIE });
-  const link = params && params.link;
-  let info = decodeLink(link);
-  if (!info || info.action !== "play") {
-    
-    if (!info && (safeStorageGet("forward.woniu.multiSource") || "enabled") !== "enabled") {
-      traceResource({ step: "stopped", reason: "聚合开关关闭" });
-      return [];
-    }
-    info = await findEpisodeResource(params || {}, info);
-    if (!info) return [];
-  }
-  if(Array.isArray(info.sources)) info.sources=info.sources.map(source=>Object.assign({},source,{_muouCallId:params._muouCallId}));
-  else info=Object.assign({},info,{_muouCallId:params._muouCallId});
-  console.log(`[Woniu 1.0.0] 本集候选线路: ${(info.sources || [info]).map(source => source.lineName || providerName(source.provider)).join(" / ")}`);
-  if (Array.isArray(info.sources)) {
-    info=Object.assign({},info,{sources:info.sources.filter(source=>rexProviderEnabled(source.provider||"quark"))});
-    if(!info.sources.length)return [];
-    const resources = [];
-    const resolvedProviders = new Set();
-    await runProviderTasks(info.sources, async source => {
-      const provider = source.provider || "quark";
-      const identity = episodeIdentity((source.videoInfo || {}).file_name);
-      const resourceKey = provider + ":" + identity.key;
-      if (resolvedProviders.has(resourceKey)) return;
-      const items = await resolvePlaySource(source);
-      console.log(`[Woniu 1.0.0] ${source.lineName || providerName(source.provider)}: ${items.filter(item => item.url).length} 个播放地址`);
-      const resource = items.find(item => item.url);
-      if (resource) {
-        resources.push(formatPlaybackResource(resource, source, params || {}));
-        resolvedProviders.add(resourceKey);
-      }
-    });
-    return resources.length ? resources : [{ name: "蜗牛网盘", description: "本集所有线路获取失败，请检查 Cookie 或刷新详情", url: "" }];
-  }
-  const items = await resolvePlaySource(info);
-  return items.map(item => formatPlaybackResource(item, info, params || {}));
-}
-
-async function resolvePlaySource(info) {
-  if(!rexProviderEnabled(info.provider||"quark"))return [];
-  const videoInfo = info.videoInfo || {};
-  if(info.provider==="uc" || info.provider==="baidu") safeStorageSet("forward.woniu."+info.provider+".lastSource",JSON.stringify({provider:info.provider,videoInfo}));
-  appendDiagnosticEvent(info.provider || "quark","sourceStart",{callId:info._muouCallId,file:safeFileInfo(videoInfo)});
-  try {
-    if (info.provider === "115") return await get115Resource(info);
-    if (info.provider === "uc") return await getUcResource(info);
-    if (info.provider === "baidu") return await serialBaidu(() => getBaiduResource(info));
-    const fid = await saveShareFile(videoInfo);
-    if (!fid) throw new Error("转存失败");
-    const urls = await getPlayUrl(fid);
-    const best = urls.find(v => v.resolution === "4k") || urls.find(v => v.resolution === "2k") || urls[0];
-    if (best && best.url) {
-      return [{
-        name: "夸克",
-        customHeaders: playHeaders(),
-        description: best.resolution ? `清晰度: ${best.resolution}` : "",
-        url: best.url
-      }];
-    }
-  } catch (e) {
-    appendDiagnosticEvent(info.provider || "quark","sourceFailed",{callId:info._muouCallId,error:safeErrorInfo(e)});
-    traceResource({ step: "playFailed", provider: info.provider || "quark", errorType: e.name || "Error" });
-    console.error("[Woniu] loadResource 获取播放直链失败:", JSON.stringify(safeErrorInfo(e)));
-  }
-  return [{
-    name: info.title || "夸克视频",
-    description: info.provider === "uc" ? "UC免登直链获取失败，请重开详情刷新分享信息" : "获取播放地址失败，请检查对应网盘 Cookie 和提取码",
-    url: ""
-  }];
-}
-
-async function getStoken(shareId, passcode) {
-  const url = "https://drive-h.quark.cn/1/clouddrive/share/sharepage/token?pr=ucpro&fr=pc&uc_param_str=";
-  const json = await httpJson("POST", url, { pwd_id: shareId, passcode: passcode || "" }, quarkHeaders());
-  return json && json.status === 200 && json.data ? json.data.stoken : "";
-}
-
-async function getShareDetail(shareId, stoken) {
-  const back = { movieName: "", list: [] };
-  const folderQueue = ["0"];
-  while (folderQueue.length > 0) {
-    const pdir = folderQueue.shift();
-    const params = {
-      pr: "ucpro", fr: "pc", uc_param_str: "", ver: "2",
-      pwd_id: shareId, stoken, pdir_fid: pdir,
-      force: "0", _page: "1", _size: "200", _sort: "file_type:asc,file_name:asc"
-    };
-    const url = `https://drive-h.quark.cn/1/clouddrive/share/sharepage/detail?${toQuery(params)}`;
-    const json = await httpJson("GET", url, null, quarkHeaders());
-    const items = (json && json.data && json.data.list) || [];
-    for (const item of items) {
-      if (item.dir) {
-        back.movieName = item.file_name || back.movieName;
-        folderQueue.push(item.fid);
-      } else if (String(item.file_type || "").includes("video") || item.obj_category === "video") {
-        back.list.push({
-          fid: item.fid,
-          file_name: item.file_name,
-          pdir_fid: item.pdir_fid,
-          size: item.size,
-          share_fid_token: item.share_fid_token || "",
-          video_max_resolution: item.video_max_resolution || "",
-          dir: false,
-          file: true,
-          shareId,
-          stoken
-        });
-      }
-    }
-  }
-  if (!back.movieName && back.list[0]) back.movieName = String(back.list[0].file_name || "").replace(/\.(mp4|mkv|flv|avi|mov|m3u8)$/i, "");
-  return back;
-}
-
-async function getVideosFromShareLink(shareLink, passcode) {
-  const match = String(shareLink || "").match(/\/s\/([a-zA-Z0-9]+)/);
-  const shareId = match ? match[1] : "";
-  if (!shareId) return { movieName: "", list: [] };
-  const stoken = await getStoken(shareId, passcode || "");
-  if (!stoken) throw new Error("夸克分享令牌获取失败，请检查分享和 Cookie");
-  return await getShareDetail(shareId, stoken);
-}
-
-async function checkFolderExists(folderName) {
-  const url = "https://drive-pc.quark.cn/1/clouddrive/file/sort?pr=ucpro&fr=pc&uc_param_str=&pdir_fid=0&_page=1&_size=50&_fetch_total=1&_fetch_sub_dirs=0&_sort=file_type:asc,updated_at:desc&fetch_all_file=1&fetch_risk_file_name=1";
-  const json = await httpJson("GET", url, null, quarkHeaders());
-  const list = (json && json.data && json.data.list) || [];
-  const folder = list.find(x => x.dir && x.file_name === folderName);
-  return folder ? folder.fid : "";
-}
-
-async function deleteFiles(filelist) {
-  if (!Array.isArray(filelist) || filelist.length === 0) return false;
-  const url = "https://drive-pc.quark.cn/1/clouddrive/file/delete?pr=ucpro&fr=pc&uc_param_str=";
-  try {
-    const json = await httpJson("POST", url, { action_type: 2, filelist: filelist, exclude_fids: [] }, quarkHeaders());
-    if (json && json.status === 200 && json.code === 0) {
-      console.log(`[QuarkAPI] 删除成功，共删除 ${filelist.length} 个文件/文件夹`);
-      return true;
-    }
-    console.error("[QuarkAPI] 删除失败:", json);
-    return false;
-  } catch (e) {
-    console.error("[QuarkAPI] 删除异常:", e.message || e);
-    return false;
-  }
-}
-
-async function createFolder(folderName, pdirFid = "0") {
-  
-  const existingFid = await checkFolderExists(folderName);
-  if (existingFid) {
-    return existingFid;
-  }
-  
-  const url = "https://drive-pc.quark.cn/1/clouddrive/file?pr=ucpro&fr=pc&uc_param_str=";
-  try {
-    const json = await httpJson("POST", url, {
-      pdir_fid: pdirFid,
-      file_name: folderName,
-      dir_path: "",
-      dir_init_lock: false
-    }, quarkHeaders());
-    if (json && json.status === 200 && json.code === 0 && json.data) {
-      console.log(`[QuarkAPI] 创建缓存文件夹成功: ${folderName}, fid=${json.data.fid}`);
-      return json.data.fid;
-    }
-    console.error("[QuarkAPI] 创建文件夹失败:", json);
-    return "0";
-  } catch (e) {
-    console.error("[QuarkAPI] 创建文件夹异常:", e.message || e);
-    return "0";
-  }
-}
-
-async function saveShareFile(videoInfo) {
-  const toFid = await createFolder(CACHE_FOLDER);
-  if (!toFid || toFid === "0") {
-    console.error("[QuarkAPI] 缓存文件夹获取失败");
-    return "";
-  }
-  const url = "https://drive-h.quark.cn/1/clouddrive/share/sharepage/save?pr=ucpro&fr=pc&uc_param_str=";
-  const body = {
-    fid_list: [videoInfo.fid],
-    fid_token_list: [videoInfo.share_fid_token],
-    pdir_fid: videoInfo.pdir_fid,
-    pwd_id: videoInfo.shareId,
-    scene: "link",
-    stoken: videoInfo.stoken,
-    to_pdir_fid: toFid
-  };
-  try {
-    const json = await httpJson("POST", url, body, quarkHeaders());
-    const inner = json && json.data && json.data.task_resp && json.data.task_resp.data;
-    const fids = inner && (inner.save_as && (inner.save_as.save_as_top_fids || inner.save_as.save_as_select_top_fids));
-    return fids && fids.length ? fids[0] : "";
-  } catch (e) {
-    console.error("[QuarkAPI] 转存失败:", e.message || e);
-    return "";
-  }
-}
-
-async function getPlayUrl(myFid) {
-  const url = "https://drive-pc.quark.cn/1/clouddrive/file/v2/play?pr=ucpro&fr=pc&uc_param_str=";
-  const json = await httpJson("POST", url, { fid: myFid, resolutions: "normal,low,high,super,2k,4k" }, quarkHeaders());
-  const arr = json && json.status === 200 && json.code === 0 && json.data ? (json.data.video_list || []) : [];
-  return arr.map(v => ({ resolution: v.resolution, file_name: json.data.file_name, url: v.video_info && v.video_info.url })).filter(v => v.url);
-}
-
-function formatVideoName(fileName, size) {
-  if (!fileName) return "视频";
-  const gb = Number(size || 0) / 1024 / 1024 / 1024;
-  const sizeText = gb > 0 ? ` ${gb >= 1 ? gb.toFixed(2) + "GB" : Math.round(gb * 1024) + "MB"}` : "";
-  return String(fileName).trim() + sizeText;
-}
-
-function playbackLineName(provider) {
-  return { quark: "夸克", baidu: "百度", uc: "UC", "115":"115" }[provider] || "网盘";
-}
-
-function providerName(provider) {
-  return { quark: "夸克网盘", baidu: "百度", uc: "UC无限", "115":"115" }[provider] || "网盘";
-}
-
-function extractShareLinks($) {
-  const shares = [];
-  const seen = new Set();
-  $(".pan-link-meta, .pan-link-meta a").each((i, el) => {
-    const text = (($(el).attr("data-clipboard-text") || "") + " " + ($(el).attr("href") || "") + " " + $(el).text()).replace(/&amp;/g, "&");
-    const regex = /https?:\/\/(pan\.quark\.cn|drive\.uc\.cn|pan\.baidu\.com|115\.com|anxia\.com|115cdn\.com)\/(s\/[A-Za-z0-9_-]+(?:\?[^\s<>"'，。]*)?|share\/init\?[^\s<>"'，。]+)/g;
-    let m;
-    while ((m = regex.exec(text))) {
-      const provider = m[1] === "pan.baidu.com" ? "baidu" : m[1] === "drive.uc.cn" ? "uc" : /^(115|anxia|115cdn)\.com$/.test(m[1]) ? "115" : "quark";
-      const id = m[2].match(/^s\/([^?&#]+)/) || m[2].match(/[?&]surl=([^&#]+)/);
-      if (!id) continue;
-      const queryPwd = m[0].match(/[?&](?:pwd|password|passcode)=([^&#\s]+)/);
-      const nearbyPwd = text.slice(m.index + m[0].length, m.index + m[0].length + 80).match(/(?:提取码|提取密碼|密码|密碼)\s*[:：]?\s*([A-Za-z0-9]{4,8})/);
-      const passcode = queryPwd ? decodeURIComponent(queryPwd[1]) : nearbyPwd ? nearbyPwd[1] : "";
-      const key = provider + ":" + id[1];
-      const existing = shares.find(x => x.key === key);
-      if (existing) { if (!existing.passcode && passcode) existing.passcode = passcode; continue; }
-      if (!seen.has(key)) {
-        seen.add(key);
-        shares.push({ key, provider, shareId: id[1], passcode, url: m[0] });
-      }
-    }
-  });
-  return shares.filter(share=>rexProviderEnabled(share.provider));
-}
-
-function isVideoFile(item) {
-  return item.obj_category === "video" || String(item.category) === "1" ||
-    /\.(mp4|mkv|avi|mov|flv|wmv|ts|m2ts|webm|m4v)$/i.test(item.file_name || item.server_filename || "");
-}
-
-const UC_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) uc-cloud-drive/2.5.20 Chrome/100.0.4896.160 Electron/18.3.5.4-b478491100 Safari/537.36 Channel/pckk_other_ch";
-function ucHeaders() { return { "User-Agent": UC_UA, Referer: "https://drive.uc.cn" }; }
-async function ucApi(path, data) {
-  const json = await httpJson(data ? "POST" : "GET", "https://pc-api.uc.cn/1/clouddrive/" + path, data, ucHeaders());
-  if (!json || (json.status && json.status !== 200) || (json.code && json.code !== 0)) {
-    const error=new Error("UC分享请求失败");
-    error.code=json && json.code; error.status=json && json.status;
-    throw error;
-  }
-  return json.data;
-}
-async function getUcToken(shareId, passcode) {
-  const data = await ucApi("share/sharepage/token?pr=UCBrowser&fr=pc", { pwd_id: shareId, passcode: passcode || "" });
-  if (!data || !data.stoken) throw new Error("UC分享失效或提取码错误");
-  return data.stoken;
-}
-async function getUcVideos(share) {
-  const stoken = await getUcToken(share.shareId, share.passcode);
-  const queue = ["0"], visited = new Set(), seen = new Set(), list = [];
-  while (queue.length) {
-    const folder = queue.shift();
-    if (visited.has(String(folder))) continue;
-    visited.add(String(folder));
-    for (let page = 1; ; page++) {
-      const data = await ucApi("share/sharepage/detail?" + toQuery({ pr: "UCBrowser", fr: "pc", pwd_id: share.shareId, stoken, pdir_fid: folder, force: 0, _page: page, _size: 100, _sort: "file_type:asc,file_name:asc" }));
-      const items = data && data.list || [];
-      let added = 0;
-      for (const item of items) {
-        if (seen.has(String(item.fid))) continue;
-        seen.add(String(item.fid)); added++;
-        if (item.dir) queue.push(item.fid);
-        else if (isVideoFile(item)) list.push(Object.assign({}, item, { shareId: share.shareId, passcode: share.passcode, stoken }));
-      }
-      if (!added || items.length < 100) break;
-    }
-  }
-  return { list };
-}
-async function getUcResource(info) {
-  let v = info.videoInfo || {};
-  const started = Date.now();
-  const report = {callId:info._muouCallId,version:"1.0.0",startedAt:new Date().toISOString(),steps:[],file:safeFileInfo(v)};
-  const step = (stage, fields) => {
-    report.stage=stage; report.elapsedMs=Date.now()-started;
-    report.steps.push(Object.assign({stage,elapsedMs:report.elapsedMs},fields || {}));
-    savePanDiagnostic("uc",report);
-  };
-  const download = async video => {
-    step("file/download",{hasStoken:!!video.stoken,hasFileToken:!!video.share_fid_token,hasCookie:false});
-    const data = await ucApi("file/download?pr=UCBrowser&fr=pc", {
-      fids:[video.fid], fids_token:[video.share_fid_token], pwd_id:video.shareId,
-      stoken:video.stoken, speedup_session:""
-    });
-    return Array.isArray(data) ? data[0] : data;
-  };
-  try {
-    let item;
-    if (v.stoken && v.share_fid_token) {
-      try { item=await download(v); } catch(e) { step("旧会话取链失败",{error:safeErrorInfo(e)}); }
-    }
-    if (!item || !item.download_url) {
-      step("成对刷新分享和文件token");
-      const detail=await getUcVideos({shareId:v.shareId,passcode:v.passcode});
-      v=detail.list.find(file=>String(file.fid)===String(v.fid));
-      if(!v) throw new Error("UC分享文件已失效");
-      item=await download(v);
-    }
-    if(!item || !/^https?:\/\//i.test(item.download_url || "")) throw new Error("UC免登下载地址为空或格式无效");
-    
-    const headers={"User-Agent":UC_UA,Referer:item.download_url+"\\","Accept-Encoding":"identity"};
-    const resource={name:"UC",description:"免登录 · 原画",url:item.download_url,customHeaders:headers,headers:Object.assign({},headers)};
-    report.file=safeFileInfo(v,item); report.address=safeAddressInfo(item.download_url);
-    report.playback=safePlaybackInfo(resource,"uc");
-    step("已返回免登原画直链");
-    return [resource];
-  } catch(e) {
-    report.failedAt=report.stage; step("失败",{error:safeErrorInfo(e)}); throw e;
-  }
-}
-
-let baiduQueue = Promise.resolve();
-function serialBaidu(work) {
-  const queuedAt=Date.now();
-  const execute=()=>{appendDiagnosticEvent("baidu","queueStart",{waitMs:Date.now()-queuedAt});return work();};
-  const next = baiduQueue.then(execute, execute);
-  baiduQueue = next.catch(() => {});
-  return next;
-}
-function baiduHeaders(share, randsk) {
-  let cookie = normalizeCookie(safeStorageGet("forward.woniu.baidu.cookie"));
-  if (!cookie) throw new Error("请先在插件设置填写百度 Cookie");
-  
-  cookie = cookie.split(";").map(p => p.trim()).filter(p => p && !/^BDCLND\s*=/i.test(p)).join("; ");
-  if (randsk) cookie += "; BDCLND=" + randsk;
-  return { "User-Agent": BAIDU_WEB_UA, Cookie: cookie, Referer: share.url || "https://pan.baidu.com/share/init?surl=" + encodeURIComponent(baiduShortId(share.shareId)) };
-}
-function baiduQuery(data){
-  
-  const quote=value=>encodeURIComponent(String(value)).replace(/[!'()*]/g,c=>"%"+c.charCodeAt(0).toString(16).toUpperCase()).replace(/%20/g,"+");
-  return Object.keys(data).map(key=>quote(key)+"="+quote(data[key])).join("&");
-}
-function baiduShortId(shareId) { return shareId.charAt(0) === "1" ? shareId.slice(1) : shareId; }
-async function baiduVerifyCore(share) {
-  
-  const res = await Widget.http.post("https://pan.baidu.com/share/verify?" + toQuery({ surl: baiduShortId(share.shareId), pwd: share.passcode || "" }),
-    toQuery({ pwd: share.passcode || "", vcode: "", vcode_str: "" }),
-    { timeout: 8000, headers: Object.assign(baiduHeaders(share), { "Content-Type": "application/x-www-form-urlencoded" }) });
-  const json = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
-  
-  if (!json || Number(json.errno) !== 0 || !json.randsk) {
-    const error=new Error("百度提取码验证失败或需要验证码");
-    error.status=Number(res.status || res.statusCode || 0) || undefined;
-    error.code=json && json.errno;
-    throw error;
-  }
-  return json.randsk;
-}
-async function getBaiduVideos(share) {
-  return serialBaidu(async () => {
-    const randsk = await baiduVerify(share);
-    const headers = baiduHeaders(share, randsk);
-    const queue = [null], visited = new Set(), seen = new Set(), list = [];
-    let uk, shareid;
-    while (queue.length) {
-      const dir = queue.shift();
-      if (visited.has(dir)) continue;
-      visited.add(dir);
-      for (let page = 1; ; page++) {
-        const pageSize = dir === null ? 20 : 100;
-        const params = { app_id:250528, web:1, channel:"chunlei", view_mode:1, showempty:0,
-          page, num:pageSize, order:dir === null ? "time" : "name", desc:dir === null ? 1 : 0 };
-        if (dir === null) Object.assign(params,{root:1, clienttype:0, shorturl:baiduShortId(share.shareId)});
-        else Object.assign(params,{dir, uk, shareid, is_from_web:true});
-        const json = await httpJson("GET", "https://pan.baidu.com/share/list?" + toQuery(params), null, headers);
-        if (!json || Number(json.errno) !== 0 || !Array.isArray(json.list)) throw new Error("百度目录读取失败，请检查 Cookie、分享或验证码");
-        if (dir === null) { uk = json.uk || uk; shareid = json.share_id || json.shareid || shareid; }
-        let added = 0;
-        for (const item of json.list) {
-          const fid = String(item.fs_id || item.fsid || item.path);
-          if (seen.has(fid)) continue;
-          seen.add(fid); added++;
-          if (Number(item.isdir) === 1 || String(item.category) === "6") queue.push(item.path);
-          else if (isVideoFile(item)) list.push({ fid, file_name: item.server_filename, size: item.size, path: item.path, uk, shareid, shareId: share.shareId, passcode: share.passcode });
-        }
-        if (!added || json.list.length < pageSize) break;
-      }
-    }
-    return { list };
-  });
-}
-const BAIDU_WEB_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36";
-const BAIDU_PLAY_UA = "netdisk;P2SP;2.2.91.136;android-android;";
-const BAIDU_APP_VERSION="12.0.0";
-function baiduSha1(message) {
-  const encoded = encodeURIComponent(String(message));
-  const bytes = [];
-  for (let i = 0; i < encoded.length; i++) {
-    if (encoded[i] === "%") { bytes.push(parseInt(encoded.slice(i + 1, i + 3), 16)); i += 2; }
-    else bytes.push(encoded.charCodeAt(i));
-  }
-  const bitLength = bytes.length * 8;
-  bytes.push(128);
-  while (bytes.length % 64 !== 56) bytes.push(0);
-  const high = Math.floor(bitLength / 4294967296);
-  for (let i = 3; i >= 0; i--) bytes.push((high >>> (i * 8)) & 255);
-  for (let i = 3; i >= 0; i--) bytes.push((bitLength >>> (i * 8)) & 255);
-  const rotate = (n, count) => (n << count) | (n >>> (32 - count));
-  let h0 = 0x67452301, h1 = 0xefcdab89, h2 = 0x98badcfe, h3 = 0x10325476, h4 = 0xc3d2e1f0;
-  for (let offset = 0; offset < bytes.length; offset += 64) {
-    const w = [];
-    for (let i = 0; i < 16; i++) {
-      const start = offset + i * 4;
-      w[i] = (bytes[start] << 24) | (bytes[start + 1] << 16) | (bytes[start + 2] << 8) | bytes[start + 3];
-    }
-    for (let i = 16; i < 80; i++) w[i] = rotate(w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16], 1);
-    let a = h0, b = h1, c = h2, d = h3, e = h4;
-    for (let i = 0; i < 80; i++) {
-      const f = i < 20 ? (b & c) | (~b & d) : i < 40 ? b ^ c ^ d : i < 60 ? (b & c) | (b & d) | (c & d) : b ^ c ^ d;
-      const k = i < 20 ? 0x5a827999 : i < 40 ? 0x6ed9eba1 : i < 60 ? 0x8f1bbcdc : 0xca62c1d6;
-      const next = (rotate(a, 5) + f + e + k + w[i]) | 0;
-      e = d; d = c; c = rotate(b, 30); b = a; a = next;
-    }
-    h0 = (h0 + a) | 0; h1 = (h1 + b) | 0; h2 = (h2 + c) | 0; h3 = (h3 + d) | 0; h4 = (h4 + e) | 0;
-  }
-  return [h0, h1, h2, h3, h4].map(n => (n >>> 0).toString(16).padStart(8, "0")).join("");
-}
-
-async function getBaiduResource(info) {
-  const v = info.videoInfo || {};
-
-  try {
-    
-    if (!v.shareid || !v.uk || !v.fid) throw new Error("百度分享文件信息不完整，请重新打开详情");
-    const headers = baiduHeaders(v);
-    const bduss = headers.Cookie.match(/(?:^|;)\s*BDUSS=([^;]+)/);
-    if (!bduss) throw new Error("百度 Cookie 缺少 BDUSS");
-    
-    let randsk = await baiduVerify(v);
-    
-    const account = await httpJson("GET", "https://mbd.baidu.com/userx/v1/info/get?" + toQuery({
-      appname:"baiduboxapp", fields:'        ["bg_image","member","uid","avatar", "avatar_member"]',
-      client:"", clientfrom:"", lang:"zh-cn", tpl:"", ttt:""
-    }), null, headers);
-    const accountUid = account && account.data && account.data.fields && account.data.fields.uid;
-    const uid = accountUid || "default_uid";
-    const devuid = "73CED981D0F186D12BC18CAE1684FFD5|VSRCQTF6W";
-    const requestDlink = async () => {
-      
-      let sekey = randsk;
-      try { sekey = decodeURIComponent(randsk); } catch (_) {}
-      const time = String(Date.now());
-      const rand = baiduSha1(baiduSha1(bduss[1]) + uid + "ebrcUYiuxaZv2XGu7KIYKxUrqfnOfpDF" + time + devuid + BAIDU_APP_VERSION + "ae5821440fab5e1a61a025f014bd8972");
-      
-      return await httpJson("GET", "https://pan.baidu.com/share/list?" + toQuery({
-        shareid:v.shareid, uk:v.uk, fid:v.fid, sekey, origin:"dlna", devuid,
-        clienttype:1, channel:"android_12_zhao_bd-netdisk_1024266h", version:BAIDU_APP_VERSION, time, rand
-      }), null, Object.assign(baiduHeaders(v, randsk), {"User-Agent":BAIDU_PLAY_UA, Referer:"https://pan.baidu.com/"}));
-    };
-    let json = await requestDlink();
-    if (json && Number(json.errno) === -9 && v.passcode) {
-      
-      randsk = await baiduVerify(v);
-      json = await requestDlink();
-    }
-    const items = json && (Array.isArray(json.list) ? json.list : Array.isArray(json.info) ? json.info : []) || [];
-    const fileId = file => file && (file.fs_id || file.fsid || file.fid);
-    
-    const item = items.find(file => String(fileId(file)) === String(v.fid)) ||
-      (items.length === 1 && !fileId(items[0]) ? items[0] : null);
-
-    if (!json || Number(json.errno) !== 0 || !item || !/^https?:\/\//i.test(item.dlink || "")) {
-      const error = new Error("百度不转存直链获取失败");
-      if (json && Number.isFinite(Number(json.errno))) error.code = Number(json.errno);
-      throw error;
-    }
-    
-    const playbackHeaders = {"User-Agent":BAIDU_PLAY_UA, Referer:"https://pan.baidu.com/"};
-    
-    const playbackUrl = item.dlink.replace(/\|/g, "%7C");
-
-    return [{name:"百度", description:"原画", url:playbackUrl, customHeaders:playbackHeaders, headers:playbackHeaders}];
-  } catch (error) {
-
-    throw error;
-  }
-}
-
-function episodeIdentity(fileName) {
-  const name = String(fileName || "").replace(/\.[a-z0-9]{2,5}$/i, "");
-  const seasonMatch = name.match(/s(\d{1,2})[ ._-]*e(\d{1,3})(?!\d)/i);
-  if (seasonMatch) return { key: `s${Number(seasonMatch[1])}e${Number(seasonMatch[2])}`, season: Number(seasonMatch[1]), episode: Number(seasonMatch[2]) };
-  const season = name.match(/第\s*(\d+)\s*季/);
-  const episode = name.match(/第\s*(\d{1,3})\s*[集话]/) || name.match(/(?:^|[^a-z])(?:ep?|episode)[ ._-]*(\d{1,3})(?!\d)/i) || name.match(/^\s*(\d{1,3})(?:$|[ ._\-])/);
-  if (episode) return { key: `s${season ? Number(season[1]) : 1}e${Number(episode[1])}`, season: season ? Number(season[1]) : 1, episode: Number(episode[1]) };
-  return { key: "name:" + name.toLowerCase().replace(/[\s._\-]+/g, "") };
-}
-
-function groupEpisodeLines(items, tid) {
-  const groups = new Map();
-  for (const item of items) {
-    const source = decodeLink(item.link);
-    if (!source) continue;
-    const identity = episodeIdentity(source.videoInfo.file_name);
-    if (!groups.has(identity.key)) groups.set(identity.key, { identity, item, sources: [] });
-    groups.get(identity.key).sources.push(source);
-  }
-  return Array.from(groups.values()).sort((a, b) => {
-    if (a.identity.episode !== undefined && b.identity.episode !== undefined) return a.identity.season - b.identity.season || a.identity.episode - b.identity.episode;
-    return a.item.title.localeCompare(b.item.title, "zh-CN", { numeric: true });
-  }).map(group => ({
-    id: `woniu-${tid}-${group.identity.key}`, type: "url",
-    title: group.identity.episode !== undefined ? `第${group.identity.episode}集` : group.item.title,
-    description: Array.from(new Set(group.sources.map(source => playbackLineName(source.provider || "quark")))).join(" / "),
-    link: encodeLink({ action: "play", title: group.item.title, sources: group.sources })
-  }));
-}
-
-async function findEpisodeResource(params, linkInfo) {
-  let detail;
-  if (linkInfo && linkInfo.action === "detail") {
-    detail = await buildDetailItem(linkInfo);
-  } else {
-    const title = String(params.seriesName || params.title || params.name || params.keyword || "").trim();
-    if (!title) return null;
-    const baseTitle = value => String(value || "").replace(/\s*(?:第\s*[一二三四五六七八九十百\d]+\s*季|season\s*\d+)\s*$/i, "").trim();
-    const keyword = baseTitle(title);
-    console.log("[Woniu 聚合] 搜索:", keyword, "季:", params.season, "集:", params.episode);
-    const normalize = value => baseTitle(value).replace(/[\s·:：._\-]/g, "").toLowerCase();
-    const sites = Array.from(new Set([getSite(params), ...[]]));
-    let match;
-    for (const candidateSite of sites) {
-      try {
-        const results = await search(Object.assign({}, params, { keyword }), candidateSite);
-        traceResource({ step: "search", site: candidateSite, keyword, titles: results.map(item => item.title).slice(0, 20) });
-        const matches=results.filter(item=>normalize(item.title)===normalize(title));
-        const details=[];
-        for(const candidate of matches){
-          try{
-            const candidateDetail=await buildDetailItem(decodeLink(candidate.link));
-            traceResource({step:"sameTitleCandidate",id:candidate.id,episodes:(candidateDetail.episodeItems||[]).length});
-            if(candidateDetail.episodeItems && candidateDetail.episodeItems.length)details.push(candidateDetail);
-          }catch(error){traceResource({step:"candidateFailed",id:candidate.id,error:safeErrorInfo(error)});}
-        }
-        if(details.length){match=matches[0];detail=combineSameTitleDetails(details);break;}
-      } catch (error) {
-        traceResource({ step: "searchFailed", site: candidateSite, errorType: error.name || "Error" });
-      }
-    }
-    if (!match) { traceResource({ step: "stopped", reason: "所有线路搜索均未匹配片名" }); return null; }
-    if(!detail) detail = await buildDetailItem(decodeLink(match.link));
-  }
-  const episodes = detail && detail.episodeItems || [];
-  traceResource({ step: "episodes", count: episodes.length, titles: episodes.slice(0, 12).map(item => item.title) });
-  const ep = Number(params.episode);
-  const season = Number(params.season || 1);
-  if (Number.isFinite(ep) && ep > 0) {
-    const target = episodes.find(item => {
-      const source = decodeLink(item.link);
-      const identity = source && source.sources && source.sources[0] && episodeIdentity(source.sources[0].videoInfo.file_name);
-      return identity && identity.episode === ep && identity.season === season;
-    });
-    traceResource({ step: "episodeMatch", season, episode: ep, matched: !!target });
-    return target ? decodeLink(target.link) : null;
-  }
-  
-  if (episodes.length) {
-    return { action: "play", sources: episodes.reduce((sources, item) => sources.concat(decodeLink(item.link).sources || []), []) };
-  }
-  return null;
-}
-
-function formatPlaybackResource(resource, source, params) {
-  const provider = source.provider || "quark";
-  const video = source.videoInfo || {};
-  const name = playbackLineName(provider);
-  const title = params.seriesName || params.title || source.title || video.file_name || "蜗牛";
-  const episode = params.episode ? ` 第${params.episode}集` : "";
-  return Object.assign({}, resource, {
-    id: ["muou", provider, video.shareId || "", video.fid || "", params.season || 1, params.episode || ""].map(part => encodeURIComponent(String(part))).join("_"),
-    name,
-    type: params.type === "movie" ? "movie" : "tv",
-    description: `${title}${episode} [${name}]` + (resource.description ? ` · ${resource.description}` : "")
-  });
-}
-
-function safeAddressInfo(url) {
-  const value=String(url || "");
-  const match=value.match(/^(https?):\/\/([^/?#]+)/i);
-  const names=Array.from(new Set((value.split("?")[1] || "").split("&").map(part=>part.split("=")[0]).filter(Boolean)));
-  return {validHttpUrl:!!match,protocol:match ? match[1] : "",host:match ? match[2] : "",length:value.length,fingerprint:baiduSha1(value),
-    whitespacePresent:/\s/.test(value),literalBackslashPresent:value.includes("\\"),invalidPercentEscape:/%(?![0-9a-f]{2})/i.test(value),
-    expiresAt:diagnosticExpiry(value),queryNames:names,hasSignature:names.some(name=>/sign|token|auth|key/i.test(name)),hasExpiry:names.some(name=>/expir|dstime|timestamp/i.test(name))};
-}
-function safeFileInfo(request,returned) {
-  returned=returned || {};
-  const fid=returned.fs_id || returned.fsid || returned.fid;
-  return {name:request.file_name || returned.server_filename || returned.file_name || "",size:Number(returned.size || request.size || 0),
-    returnedFileIdPresent:!!fid,fileIdMatches:fid ? String(fid)===String(request.fid) : null};
-}
-function safeErrorInfo(error) {
-  return {type:error && error.name || "Error",httpStatus:Number(error && (error.status || error.statusCode || (error.response && error.response.status)) || 0) || null,
-    serviceCode:error && (typeof error.code==="number" || /^[A-Z_0-9]{1,40}$/.test(String(error.code || ""))) ? error.code : null};
-}
-function safePlaybackInfo(resource,provider) {
-  const headers=resource.customHeaders || resource.headers || {};
-  const alt=resource.headers || {};
-  const ua=headers["User-Agent"] || "";
-  return {ua,mode:"original",uaMatches:ua===(provider==="baidu" ? BAIDU_PLAY_UA : provider==="115" ? P115_UA : UC_UA),headerNames:Object.keys(headers),
-    headerAliasesMatch:!!resource.headers && Object.keys(headers).length===Object.keys(alt).length && Object.keys(headers).every(key=>headers[key]===alt[key]),
-    hasCookie:!!headers.Cookie,hasReferer:!!headers.Referer,
-    ucRefererExact:provider==="uc" ? headers.Referer===resource.url+"\\" : null,
-    identityEncoding:provider==="uc" ? headers["Accept-Encoding"]==="identity" : null,
-    playerType:resource.playerType || "未指定（客户端默认）",resourceCacheDuration:(WidgetMetadata.modules.find(m=>m.id==="loadResource") || {}).cacheDuration,
-    staticRangeHeader:!!headers.Range,headerLengths:Object.fromEntries(Object.entries(headers).map(([key,value])=>[key,String(value).length])),
-    playbackRequestObserved:false};
-}
-function recordFinalPlaybackResource(resource) {
-  const provider=resource.name==="百度" ? "baidu" : resource.name==="UC" ? "uc" : resource.name==="115" ? "115" : "";
-  if(!provider) return;
-  const key="forward.woniu."+provider+".diagnostics";
-  let report=diagnosticSnapshots.get(provider+":"+baiduSha1(resource.url)) || {};
-  if(!report.address) {try {report=JSON.parse(safeStorageGet(key) || "{}");} catch(_) {}}
-  report=JSON.parse(JSON.stringify(report));
-  const old=report.address || {};
-  report.finalResource={name:resource.name,type:resource.type,hasId:!!resource.id,
-    addressUnchanged:old.fingerprint===baiduSha1(resource.url),
-    playback:safePlaybackInfo(resource,provider),returnedAt:new Date().toISOString()};
-  safeStorageSet(key,JSON.stringify(report));
-  appendDiagnosticEvent(provider,"finalResource",{callId:report.callId,file:report.file,address:report.address,checks:report.finalResource});
-}
-async function loadUcDiagnostics() {
-  return [{id:"woniu-uc-diagnostics",type:"url",title:"UC最近一次取链诊断",link:"woniu:uc-diagnostics",
-    description:diagnosticView("uc")}];
-}
-
-let diagnosticSequence=0;
-const diagnosticSnapshots=new Map();
-function newDiagnosticId(){return Date.now().toString(36)+"-"+(++diagnosticSequence);}
-function appendDiagnosticEvent(provider,event,details){
-  try{
-    const key="forward.woniu."+provider+".history";
-    let history=[];try{history=JSON.parse(safeStorageGet(key)||"[]");}catch(_){}
-    history.push(Object.assign({time:new Date().toISOString(),event},details||{}));
-    safeStorageSet(key,JSON.stringify(history.slice(-120)));
-  }catch(_){}
-}
-function savePanDiagnostic(provider,report){
-  safeStorageSet("forward.woniu."+provider+".diagnostics",JSON.stringify(report));
-  const step=(report.steps||[]).slice(-1)[0];
-  appendDiagnosticEvent(provider,"stage",{callId:report.callId,stage:report.stage,elapsedMs:report.elapsedMs,step,error:report.error});
-  if(report.address && report.address.fingerprint){
-    diagnosticSnapshots.set(provider+":"+report.address.fingerprint,JSON.parse(JSON.stringify(report)));
-    while(diagnosticSnapshots.size>40)diagnosticSnapshots.delete(diagnosticSnapshots.keys().next().value);
-  }
-}
-function safeEntryContext(params){
-  const keys=Object.keys(params||{});
-  const positionKeys=["time","timePos","position","startTime","seekTime","currentTime","playbackPosition"];
-  const positions={};for(const key of positionKeys)if(Number.isFinite(Number(params[key])) && params[key]!==undefined)positions[key]=Number(params[key]);
-  return {parameterNames:keys.filter(key=>!/^_muou/.test(key)),season:params.season,episode:params.episode,type:params.type,
-    hasLink:!!params.link,hasVideoUrl:!!params.videoUrl,positions,
-    linkAction:(decodeLink(params.link)||{}).action||"unknown"};
-}
-function diagnosticEndpoint(url){
-  const match=String(url||"").match(/^https?:\/\/([^/?#]+)([^?#]*)/i);
-  if(!match)return null;
-  const provider=/uc\.cn$/.test(match[1])?"uc":/baidu\.com$/.test(match[1])?"baidu":/115\.com$/.test(match[1])?"115":null;
-  if(!provider)return null;
-  return {provider,host:match[1],path:match[2],queryNames:safeAddressInfo(url).queryNames};
-}
-async function httpJson(method,url,data,headers){
-  const start=Date.now(),endpoint=diagnosticEndpoint(url);
-  if(endpoint)appendDiagnosticEvent(endpoint.provider,"apiStart",{endpoint,method,hasCookie:!!(headers&&headers.Cookie),bodyKeys:data?Object.keys(data):[]});
-  try{
-    const result=await httpJsonCore(method,url,data,headers);
-    if(endpoint)appendDiagnosticEvent(endpoint.provider,"apiComplete",{endpoint,method,elapsedMs:Date.now()-start});
-    return result;
-  }catch(e){
-    if(endpoint)appendDiagnosticEvent(endpoint.provider,"apiFailed",{endpoint,method,elapsedMs:Date.now()-start,error:safeErrorInfo(e)});
-    throw e;
-  }
-}
-function recordApiResponse(url,response,json){
-  const endpoint=diagnosticEndpoint(url);if(!endpoint)return;
-  const headers=response.headers||{};
-  const typeKey=Object.keys(headers).find(key=>key.toLowerCase()==="content-type");
-  appendDiagnosticEvent(endpoint.provider,"apiResponse",{endpoint,httpStatus:Number(response.status||response.statusCode||0)||null,
-    contentType:typeKey?headers[typeKey]:null,serviceStatus:json&&json.status,serviceCode:json&&(json.errno!==undefined?json.errno:json.code),
-    itemCount:json&&Array.isArray(json.list)?json.list.length:json&&json.data&&Array.isArray(json.data.list)?json.data.list.length:null});
-}
-function diagnosticExpiry(url){
-  const match=String(url).match(/[?&](?:Expires|expires|expire|expiry|timestamp|dstime)=([^&#]+)/i);
-  if(!match)return {available:false};
-  const value=match[1];if(!/^\d{9,13}$/.test(value))return {available:false,valueKind:"duration-or-other"};
-  const timestamp=Number(value)*(value.length<=10?1000:1);
-  return {available:true,parameter:match[0].slice(1).split("=")[0],time:new Date(timestamp).toISOString(),
-    
-    isExpiry:/^[?&](Expires|expire|expiry)=/i.test(match[0]),deltaSeconds:Math.round((timestamp-Date.now())/1000)};
-}
-function diagnosticView(provider){
-  let latest={},history=[],moduleHistory=[];
-  try{latest=JSON.parse(safeStorageGet(provider==="module"?"forward.woniu.diagnostics":"forward.woniu."+provider+".diagnostics")||"{}");}catch(_){}
-  try{history=JSON.parse(safeStorageGet("forward.woniu."+provider+".history")||"[]");}catch(_){}
-  try{moduleHistory=JSON.parse(safeStorageGet("forward.woniu.module.history")||"[]");}catch(_){}
-  let network={};try{network=JSON.parse(safeStorageGet("forward.woniu."+provider+".network")||"{}");}catch(_){}
-  return JSON.stringify({version:"1.0.0",latest,network,history,moduleCalls:provider==="module"?undefined:moduleHistory.filter(e=>e.event!=="trace").slice(-20),
-    limits:{playerRangeRequestsObserved:false,playerBuffersObserved:false,decodeErrorsObserved:false,
-      note:"模块日志仅覆盖资源调用和取链；快进若未重新调用模块，不会产生新日志。"}});
-}
-
-async function baiduVerify(share){
-  const start=Date.now(),endpoint={provider:"baidu",host:"pan.baidu.com",path:"/share/verify"};
-  appendDiagnosticEvent("baidu","apiStart",{endpoint,method:"POST",hasPasscode:!!share.passcode});
-  try{
-    const token=await baiduVerifyCore(share);
-    appendDiagnosticEvent("baidu","apiComplete",{endpoint,elapsedMs:Date.now()-start,hasRandsk:!!token});
-    return token;
-  }catch(error){
-    appendDiagnosticEvent("baidu","apiFailed",{endpoint,elapsedMs:Date.now()-start,error:safeErrorInfo(error)});
-    throw error;
-  }
-}
-
-async function runUcNetworkDiagnostics(params={}){return runPanNetworkDiagnostics("uc",params);}
-async function runBaiduNetworkDiagnostics(params={}){return runPanNetworkDiagnostics("baidu",params);}
-function networkDiagnosticItem(provider){
-  return {id:"woniu-"+provider+"-network-diagnostics",type:"url",title:playbackLineName(provider)+"起播/快进网络测试结果",
-    link:"woniu:"+provider+"-network-diagnostics",description:safeStorageGet("forward.woniu."+provider+".network") || "请先播放该线路，再运行网络测试。"};
-}
-async function runPanNetworkDiagnostics(provider,params){
-  bindForwardParams(params);
-  const key="forward.woniu."+provider+".network";
-  const report={version:"1.0.0",provider,testId:newDiagnosticId(),startedAt:new Date().toISOString(),stage:"开始",tests:[],
-    scope:"模块发起的真实小范围请求；模拟首段和seek，不是播放器内部日志",doesNotBlockPlayback:true};
-  const save=()=>safeStorageSet(key,JSON.stringify(report));save();
-  try{
-    let source;try{source=JSON.parse(safeStorageGet("forward.woniu."+provider+".lastSource")||"null");}catch(_){}
-    if(!source)throw new Error("先播放该线路以保存文件信息，再运行网络测试");
-    report.file=safeFileInfo(source.videoInfo);
-    report.stage="重新获取直链";save();
-    const resources=provider==="baidu" ? await serialBaidu(()=>getBaiduResource(source)) : await getUcResource(source);
-    const resource=resources.find(item=>item.url);if(!resource)throw new Error("未获得直链");
-    report.address=safeAddressInfo(resource.url);report.headers=safePlaybackInfo(resource,provider);
-    const size=Number(source.videoInfo.size || 0);
-    const middle=size>2048?Math.floor(size/2):1024;
-    const tests=[{name:"首次读取",range:"bytes=0-1023",headers:resource.customHeaders || resource.headers},
-      {name:"模拟seek中段",range:`bytes=${middle}-${middle+1023}`,headers:resource.customHeaders || resource.headers},
-      {name:"尾段读取",range:"bytes=-1024",headers:resource.customHeaders || resource.headers},
-      {name:"默认请求头对照",range:"bytes=0-1023",headers:{}}];
-    if(provider==="baidu") {
-      const loginCookie=normalizeCookie(safeStorageGet("forward.woniu.baidu.cookie")).split(";").filter(part=>!/^\s*BDCLND=/.test(part)).join(";");
-      tests.push({name:"仅百度UA对照",range:"bytes=0-1023",headers:{"User-Agent":BAIDU_PLAY_UA}});
-      tests.push({name:"附带登录Cookie对照",range:"bytes=0-1023",headers:Object.assign({},resource.customHeaders,{Cookie:loginCookie})});
-    }
-    for(const test of tests){
-      report.stage=test.name;save();
-      const result=await diagnosticRangeRequest(provider,resource.url,test);
-      report.tests.push(result);save();
-    }
-    report.stage=report.tests.every(test=>!test.status)?"测试结束（未取得HTTP状态，无法判定读取结果）":"测试完成";
-    const head=report.tests[0],seek=report.tests[1],tail=report.tests[2],defaults=report.tests[3];
-    const outcome=test=>test.status ? test.status===206 : null;
-    report.comparison={firstReadSucceeded:outcome(head),seekReadSucceeded:outcome(seek),tailReadSucceeded:outcome(tail),
-      defaultsSucceeded:outcome(defaults),firstSlowOrFailedButSeekSucceeded:head.status && seek.status ? seek.status===206&&(head.status!==206 || head.elapsedMs>seek.elapsedMs*3) : null,
-      headerDependent:head.status && defaults.status ? head.status===206 && defaults.status!==206 : null,
-      note:"HTTP读取成功不代表Forward播放器首次起播成功；此测试不解码、不下载整部影片。"};
-  }catch(error){report.failedAt=report.stage;report.stage="测试失败";report.error=networkErrorInfo(error);}
-  report.finishedAt=new Date().toISOString();save();return [networkDiagnosticItem(provider)];
-}
-function redactDiagnosticText(value){
-  return String(value || "").replace(/\\\//g,"/")
-    .replace(/https?:\/\/[^\s"'<>]+/gi,"[URL redacted]")
-    .replace(/(?:Cookie|Authorization)\s*[:=][^\r\n]*/gi,"[credential redacted]")
-    .replace(/(?:BDUSS|STOKEN|BDCLND|Signature|sign|stoken|randsk|token)\s*[:=]\s*[^;\s,"'}]+/gi,"[secret redacted]")
-    .slice(0,1200);
-}
-function networkErrorInfo(error){
-  const basic=safeErrorInfo(error);
-  let message="",errorString="",keys=[],native={};
-  try{message=String(error&&error.message || "");}catch(_){}
-  try{errorString=String(error);}catch(_){}
-  try{keys=Object.getOwnPropertyNames(error || {});}catch(_){}
-  for(const key of ["domain","localizedDescription","localizedFailureReason","localizedRecoverySuggestion","description","reason"]){
-    try{const value=error&&error[key];if(typeof value==="string"||typeof value==="number")native[key]=redactDiagnosticText(value);}catch(_){}
-  }
-  try{const value=error&&error.cause;if(value)native.cause=redactDiagnosticText(value.message||String(value));}catch(_){}
-  const text=[message,errorString,...Object.values(native)].join(" ");
-  const explicitHttp=text.match(/\bHTTP(?:\/\d(?:\.\d)?)?\s+(?:status\s*[:=]?\s*)?([1-5]\d{2})\b/i);
-  if(!basic.httpStatus && explicitHttp) {basic.httpStatus=Number(explicitHttp[1]);basic.httpStatusSource="explicit-error-text";}
-  else if(basic.httpStatus)basic.httpStatusSource="error-field";
-  
-  return Object.assign(basic,{message:redactDiagnosticText(message),errorString:redactDiagnosticText(errorString),ownPropertyNames:keys,native,
-    timeout:/timeout|timed out|超时/i.test(text),networkFailure:/network|connect|connection|网络|连接/i.test(text),
-    bridgeDecodeFailure:/json|utf.?8|encoding|decode|解析|编码/i.test(text)});
-}
-
-async function diagnosticRangeRequest(provider,initialUrl,test){
-  const started=Date.now();
-  const result={name:test.name,range:test.range,requestHeaderNames:Object.keys(test.headers||{}),hasUA:!!(test.headers||{})["User-Agent"],
-    hasReferer:!!(test.headers||{}).Referer,hasCookie:!!(test.headers||{}).Cookie,redirects:[]};
-  let url=initialUrl;
-  try{
-    for(let hop=0;hop<=5;hop++){
-      const response=await Widget.http.get(url,{headers:Object.assign({},test.headers,{Range:test.range}),timeout:5000,allow_redirects:false});
-      result.status=Number(response.status||response.statusCode||0)||null;
-      const headers=response.headers||{};
-      const get=name=>{const key=Object.keys(headers).find(key=>key.toLowerCase()===name);return key?String(headers[key]):null;};
-      result.responseHeaders={contentType:get("content-type"),contentLength:get("content-length"),contentRange:get("content-range"),
-        acceptRanges:get("accept-ranges"),contentEncoding:get("content-encoding"),connection:get("connection"),server:get("server")};
-      if([301,302,303,307,308].includes(result.status)){
-        const location=get("location")||"";
-        result.redirects.push({status:result.status,fromHost:safeAddressInfo(url).host,toHost:safeAddressInfo(location).host,
-          absolute:/^https?:\/\//i.test(location),sameAddress:location===url});
-        if(!/^https?:\/\//i.test(location)){result.redirectIssue="非绝对地址或缺少Location";break;}
-        if(hop===5){result.redirectIssue="超过5次跳转";break;}
-        url=location;continue;
-      }
-      result.finalHost=safeAddressInfo(url).host;
-      result.urlChanged=url!==initialUrl;
-      result.bodyKind=typeof response.data;
-      if(typeof response.data==="string"){
-        result.bridgeStringLength=response.data.length;
-        try{const json=JSON.parse(response.data);result.serviceErrorCode=json.error_code!==undefined?json.error_code:json.code;
-          result.serviceErrorCategory=/sign/i.test(String(json.error_msg||json.message||""))?"signature":/token/i.test(String(json.error_msg||json.message||""))?"token":undefined;
-        }catch(_){}
-        const xmlCode=response.data.match(/<Code>([A-Za-z0-9_]{1,80})<\/Code>/);
-        if(xmlCode) result.serviceErrorCode=xmlCode[1];
-      }
-      break;
-    }
-  }catch(error){result.error=networkErrorInfo(error);result.status=result.error.httpStatus;}
-  result.elapsedMs=Date.now()-started;
-  appendDiagnosticEvent(provider,"networkProbe",result);
-  return result;
-}
-
-const P115_UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 115Browser/36.0.0 Chromium/125.0";
-function headers115(required=false){
-  const cookie=normalizeCookie(safeStorageGet("forward.woniu.115.cookie"));
-  if(required&&!cookie)throw new Error("请在插件设置填写115 Cookie");
-  const headers={"User-Agent":P115_UA,Referer:"https://115.com/"};
-  if(cookie)headers.Cookie=cookie;
-  return headers;
-}
-async function get115Videos(share){
-  const queue=[""],visited=new Set(),seen=new Set(),list=[];
-  while(queue.length){
-    const cid=String(queue.shift());if(visited.has(cid))continue;visited.add(cid);
-    for(let offset=0;;){
-      const json=await httpJson("GET","https://webapi.115.com/share/snap?"+toQuery({share_code:share.shareId,receive_code:share.passcode||"",cid,limit:100,offset}),null,headers115());
-      if(!json||!json.state||!json.data)throw new Error("115分享读取失败，检查提取码或登录状态");
-      const data=json.data,items=data.list||[];let added=0;
-      for(const item of items){
-        const key=String(item.fc)+":"+String(item.fid||item.cid);
-        if(seen.has(key))continue;seen.add(key);added++;
-        if(Number(item.fc)===0)queue.push(item.cid);
-        else if(Number(item.fc)===1&&isVideoFile({file_name:item.n}))list.push({fid:String(item.fid),file_name:item.n,size:Number(item.s||0),shareId:share.shareId,passcode:share.passcode||""});
-      }
-      offset+=items.length;
-      if(!added||(Number(data.count)?offset>=Number(data.count):items.length<100))break;
-    }
-  }
-  return {list};
-}
-async function get115Resource(info){
-  const v=info.videoInfo||{},start=Date.now();
-  const report={version:"1.0.0",callId:info._muouCallId,startedAt:new Date().toISOString(),stage:"开始",file:safeFileInfo(v),steps:[]};
-  const step=stage=>{report.stage=stage;report.elapsedMs=Date.now()-start;report.steps.push({stage,elapsedMs:report.elapsedMs});savePanDiagnostic("115",report);};
-  try{
-    step("检查115 Cookie和文件信息");
-    const headers=headers115(true);
-    if(!v.shareId||!v.fid)throw new Error("115分享文件信息缺失");
-    step("RSA加密分享下载请求");
-    const encoded=p115Encrypt(JSON.stringify({share_code:v.shareId,receive_code:v.passcode||"",file_id:String(v.fid)}));
-    const body=toQuery({data:encoded});
-    step("app/share/downurl");
-    const response=await Widget.http.post("https://proapi.115.com/app/share/downurl",body,{timeout:8000,headers:Object.assign({},headers,{"Content-Type":"application/x-www-form-urlencoded"})});
-    const json=typeof response.data==="string"?JSON.parse(response.data):response.data;
-    recordApiResponse("https://proapi.115.com/app/share/downurl",response,json);
-    if(!json||!json.state||typeof json.data!=="string"){
-      const error=new Error("115下载接口拒绝请求");error.code=json&&(json.errno||json.errcode);error.status=response.status;throw error;
-    }
-    step("RSA解密原画地址");
-    const data=JSON.parse(p115Decrypt(json.data));
-    const url=typeof data.url==="string"?data.url:data.url&&data.url.url;
-    if(!/^https?:\/\//i.test(url||""))throw new Error("115原画地址为空");
-    const playHeaders={"User-Agent":P115_UA,Referer:"https://115.com/"};
-    const auth=data.url&&data.url.auth_cookie||data.auth_cookie;
-    if(auth&&auth.name&&auth.value)playHeaders.Cookie=auth.name+"="+auth.value;
-    const resource={name:"115",description:"原画 · 分享直连",url,headers:playHeaders,customHeaders:Object.assign({},playHeaders)};
-    report.address=safeAddressInfo(url);report.playback=safePlaybackInfo(resource,"115");step("已返回115原画直链");
-    return [resource];
-  }catch(error){report.failedAt=report.stage;report.error=safeErrorInfo(error);step("失败");throw error;}
-}
-async function load115Diagnostics(){return [{id:"woniu-115-diagnostics",type:"url",title:"115最近一次取链诊断",link:"woniu:115-diagnostics",description:diagnosticView("115")}];}
-function combineSameTitleDetails(details){
-  const items=[],seen=new Set();
-  for(const detail of details)for(const episode of detail.episodeItems||[]){
-    const info=decodeLink(episode.link);
-    for(const source of info&&info.sources||[]){
-      const v=source.videoInfo||{},key=[source.provider,v.shareId,v.fid].join(":");if(seen.has(key))continue;seen.add(key);
-      items.push({title:source.title||v.file_name,link:encodeLink(source)});
-    }
-  }
-  return {episodeItems:groupEpisodeLines(items,"aggregate")};
-}
-function p115Utf8Encode(text){
-  const encoded=encodeURIComponent(text),bytes=[];
-  for(let i=0;i<encoded.length;i++){if(encoded[i]==="%"){bytes.push(parseInt(encoded.slice(i+1,i+3),16));i+=2;}else bytes.push(encoded.charCodeAt(i));}
-  return new Uint8Array(bytes);
-}
-function p115Utf8Decode(bytes){return decodeURIComponent(Array.from(bytes,b=>"%"+b.toString(16).padStart(2,"0")).join(""));}
-const P115_BASE64="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-function p115Base64Encode(bytes){
-  let text="";for(let i=0;i<bytes.length;i+=3){const n=(bytes[i]<<16)|((bytes[i+1]||0)<<8)|(bytes[i+2]||0);
-    text+=P115_BASE64[(n>>>18)&63]+P115_BASE64[(n>>>12)&63]+(i+1<bytes.length?P115_BASE64[(n>>>6)&63]:"=")+(i+2<bytes.length?P115_BASE64[n&63]:"=");}return text;
-}
-function p115Base64Decode(text){
-  const clean=String(text).replace(/\s/g,"");if(!/^[A-Za-z0-9+/]*={0,2}$/.test(clean)||clean.length%4)throw new Error("115加密响应Base64无效");
-  const bytes=[];for(let i=0;i<clean.length;i+=4){const n=(P115_BASE64.indexOf(clean[i])<<18)|(P115_BASE64.indexOf(clean[i+1])<<12)|((P115_BASE64.indexOf(clean[i+2])&63)<<6)|(P115_BASE64.indexOf(clean[i+3])&63);
-    bytes.push((n>>>16)&255);if(clean[i+2]!=="=")bytes.push((n>>>8)&255);if(clean[i+3]!=="=")bytes.push(n&255);}return new Uint8Array(bytes);
-}
-
-const p115G_kts = new Uint8Array([
-  0xf0, 0xe5, 0x69, 0xae, 0xbf, 0xdc, 0xbf, 0x8a,
-  0x1a, 0x45, 0xe8, 0xbe, 0x7d, 0xa6, 0x73, 0xb8,
-  0xde, 0x8f, 0xe7, 0xc4, 0x45, 0xda, 0x86, 0xc4,
-  0x9b, 0x64, 0x8b, 0x14, 0x6a, 0xb4, 0xf1, 0xaa,
-  0x38, 0x01, 0x35, 0x9e, 0x26, 0x69, 0x2c, 0x86,
-  0x00, 0x6b, 0x4f, 0xa5, 0x36, 0x34, 0x62, 0xa6,
-  0x2a, 0x96, 0x68, 0x18, 0xf2, 0x4a, 0xfd, 0xbd,
-  0x6b, 0x97, 0x8f, 0x4d, 0x8f, 0x89, 0x13, 0xb7,
-  0x6c, 0x8e, 0x93, 0xed, 0x0e, 0x0d, 0x48, 0x3e,
-  0xd7, 0x2f, 0x88, 0xd8, 0xfe, 0xfe, 0x7e, 0x86,
-  0x50, 0x95, 0x4f, 0xd1, 0xeb, 0x83, 0x26, 0x34,
-  0xdb, 0x66, 0x7b, 0x9c, 0x7e, 0x9d, 0x7a, 0x81,
-  0x32, 0xea, 0xb6, 0x33, 0xde, 0x3a, 0xa9, 0x59,
-  0x34, 0x66, 0x3b, 0xaa, 0xba, 0x81, 0x60, 0x48,
-  0xb9, 0xd5, 0x81, 0x9c, 0xf8, 0x6c, 0x84, 0x77,
-  0xff, 0x54, 0x78, 0x26, 0x5f, 0xbe, 0xe8, 0x1e,
-  0x36, 0x9f, 0x34, 0x80, 0x5c, 0x45, 0x2c, 0x9b,
-  0x76, 0xd5, 0x1b, 0x8f, 0xcc, 0xc3, 0xb8, 0xf5,
-]);
-const p115RSA_e = 0x8686980c0f5a24c4b9d43020cd2c22703ff3f450756529058b1cf88f09b8602136477198a6e2683149659bd122c33592fdb5ad47944ad1ea4d36c6b172aad6338c3bb6ac6227502d010993ac967d1aef00f0c8e038de2e4d3bc2ec368af2e9f10a6f1eda4f7262f136420c07c331b871bf139f74f3010e3c4fe57df3afb71683n;
-const p115RSA_n = 0x10001n;
-
-function p115ToBytes(value, length) {
-  if (length == undefined)
-    length = Math.ceil(value.toString(16).length / 2);
-  const buffer = new Uint8Array(length);
-  for (let i = length - 1; i >= 0; i--) {
-    buffer[i] = Number(value & 0xffn);
-    value >>= 8n;
-  }
-  return buffer;
-}
-
-function p115FromBytes(bytes) {
-  let intVal = 0n;
-  for (const b of bytes)
-    intVal = (intVal << 8n) | BigInt(b);
-  return intVal;
-}
-
-function* p115AccStep(start, stop, step = 1) {
-  for (let i = start + step; i < stop; i += step) {
-    yield [start, i, step];
-    start = i;
-  }
-  if (start !== stop)
-    yield [start, stop, stop - start];
-}
-
-function p115BytesXor(v1, v2) {
-  const result = new Uint8Array(v1.length);
-  for (let i = 0; i < v1.length; i++)
-    result[i] = v1[i] ^ v2[i];
-  return result;
-}
-
-function p115GenKey(randKey, skLen) {
-  const xorKey = new Uint8Array(skLen);
-  let length = skLen * (skLen - 1);
-  let index = 0;
-  for (let i = 0; i < skLen; i++) {
-    const x = (randKey[i] + p115G_kts[index]) & 0xff;
-    xorKey[i] = p115G_kts[length] ^ x;
-    length -= skLen;
-    index += skLen;
-  }
-  return xorKey;
-}
-
-function p115PadPkcs1V1_5(message) {
-  const msg_len = message.length
-  const buffer = new Uint8Array(128);
-  buffer.fill(0x02, 1, 127 - msg_len);
-  buffer.set(message, 128 - msg_len);
-  return p115FromBytes(buffer);
-}
-
-function p115Xor(src, key) {
-  const buffer = new Uint8Array(src.length);
-  const i = src.length & 0b11;
-  if (i)
-    buffer.set(p115BytesXor(src.subarray(0, i), key.subarray(0, i)));
-  for (const [j, k] of p115AccStep(i, src.length, key.length))
-    buffer.set(p115BytesXor(src.subarray(j, k), key), j);
-  return buffer;
-}
-
-function p115Pow(base, exponent, modulus) {
-  if (modulus === 1n)
-    return 0n;
-  let result = 1n;
-  base %= modulus;
-  while (exponent) {
-    if (exponent & 1n)
-      result = (result * base) % modulus;
-    exponent = exponent >> 1n;
-    base = (base * base) % modulus;
-  }
-  return result;
-}
-
-function p115Encrypt(data) {
-  if (typeof data === "string" || data instanceof String)
-    data = p115Utf8Encode(data);
-  const xorText = new Uint8Array(16 + data.length);
-  xorText.set(p115Xor(
-    p115Xor(data, new Uint8Array([0x8d, 0xa5, 0xa5, 0x8d])).reverse(),
-    new Uint8Array([0x78, 0x06, 0xad, 0x4c, 0x33, 0x86, 0x5d, 0x18, 0x4c, 0x01, 0x3f, 0x46])
-  ), 16);
-  const cipherData = new Uint8Array(Math.ceil(xorText.length / 117) * 128);
-  let start = 0;
-  for (const [l, r] of p115AccStep(0, xorText.length, 117))
-    cipherData.set(p115ToBytes(p115Pow(p115PadPkcs1V1_5(xorText.subarray(l, r)), p115RSA_n, p115RSA_e), 128), start, start += 128);
-  return p115Base64Encode(cipherData);
-}
-
-function p115Decrypt(cipherData) {
-  const cipher_data = p115Base64Decode(cipherData);
-  let data = [];
-  for (const [l, r] of p115AccStep(0, cipher_data.length, 128)) {
-    const p = p115Pow(p115FromBytes(cipher_data.subarray(l, r)), p115RSA_n, p115RSA_e);
-    const b = p115ToBytes(p);
-    data.push(...b.subarray(b.indexOf(0) + 1));
-  }
-  data = new Uint8Array(data);
-  const keyL = p115GenKey(data.subarray(0, 16), 12);
-  const tmp = p115Xor(data.subarray(16), keyL).reverse();
-  return p115Utf8Decode(p115Xor(tmp, new Uint8Array([0x8d, 0xa5, 0xa5, 0x8d])));
-}
-
-async function loadBaiduPlaybackAddress(){
-  return [{id:"woniu-baidu-playback-address",type:"url",title:"百度最近一次实际播放地址（复制测试）",link:"woniu:baidu-playback-address",
-    description:safeStorageGet("forward.woniu.baidu.playbackExport")||"尚无地址。先尝试百度播放或运行百度起播网络测试，再打开这里复制结果。"}];
-}
-
-let woniuLoginPromise=null;
-function bindWoniuAuth(params) {
-  const prior=safeStorageGet("forward.woniu.account") || {};
-  const account={username:Object.prototype.hasOwnProperty.call(params,"username") ? String(params.username||"").trim() : prior.username||"",
-    password:Object.prototype.hasOwnProperty.call(params,"password") ? String(params.password||"") : prior.password||""};
-  if(account.username!==prior.username || account.password!==prior.password){safeStorageSet("forward.woniu.session","");safeStorageSet("forward.woniu.account",account);}
-  if(Object.prototype.hasOwnProperty.call(params,"woniuCookie")){
-    const manual=String(params.woniuCookie||"").trim();
-    if(manual!==safeStorageGet("forward.woniu.manualCookie")){safeStorageSet("forward.woniu.manualCookie",manual);safeStorageSet("forward.woniu.session",manual);}
-  }
-}
-function woniuStoreCookies(response) {
-  const headers=response.headers||{};
-  const key=Object.keys(headers).find(k=>k.toLowerCase()==="set-cookie");
-  const raw=key ? headers[key] : [];
-  const lines=Array.isArray(raw) ? raw : String(raw||"").split(/,(?=\s*[^;,=\s]+=)/);
-  const jar={};
-  String(safeStorageGet("forward.woniu.session")||"").split(";").forEach(part=>{const i=part.indexOf("=");if(i>0)jar[part.slice(0,i).trim()]=part.slice(i+1).trim();});
-  lines.forEach(line=>{const first=String(line).split(";")[0],i=first.indexOf("=");if(i>0)jar[first.slice(0,i).trim()]=first.slice(i+1).trim();});
-  safeStorageSet("forward.woniu.session",Object.keys(jar).map(k=>k+"="+jar[k]).join("; "));
-}
-async function woniuLogin() {
-  rexAssertWithinUsagePeriod();
-  if(woniuLoginPromise)return await woniuLoginPromise;
-  woniuLoginPromise=(async()=>{
-    const account=safeStorageGet("forward.woniu.account")||{},site=getSite();
-    if(!account.username || !account.password)throw new Error("蜗牛资源需要登录，请填写网站 Cookie 或账号密码");
-    const response=await Widget.http.post(site+"/user/login.html","user_name="+encodeURIComponent(account.username)+"&user_pwd="+encodeURIComponent(account.password),
-      {timeout:15000,headers:{"User-Agent":UA,"Content-Type":"application/x-www-form-urlencoded",Referer:site+"/user/login.html",Origin:site}});
-    let body=response.data;
-    if(typeof body==="string"){try{body=JSON.parse(body);}catch(_){throw new Error("蜗牛登录未返回 JSON，请检查站点或验证码");}}
-    if(!body || Number(body.code)!==1)throw new Error("蜗牛登录失败，请检查账号密码或网站验证码");
-    woniuStoreCookies(response);
-    if(!safeStorageGet("forward.woniu.session"))throw new Error("登录成功但未读取到 Set-Cookie；请手动填写网站 Cookie");
-  })();
-  try{return await woniuLoginPromise;}finally{woniuLoginPromise=null;}
-}
-async function woniuPage(url,options) {
-  rexAssertWithinUsagePeriod();
-  const account=safeStorageGet("forward.woniu.account")||{};
-  if(!safeStorageGet("forward.woniu.session") && account.username && account.password)await woniuLogin();
-  async function read(){
-    const headers=Object.assign({"User-Agent":UA,Referer:getSite()+"/"},options&&options.headers||{});
-    const cookie=safeStorageGet("forward.woniu.session");if(cookie)headers.Cookie=cookie;
-    const response=await Widget.http.get(url,Object.assign({},options||{},{timeout:15000,headers}));
-    woniuStoreCookies(response);
-    return typeof response.data==="string" ? response.data : JSON.stringify(response.data||"");
-  }
-  let html=await read();
-  if(/登录后可见|用户登录 - 蜗牛/.test(html)){
-    safeStorageSet("forward.woniu.session","");await woniuLogin();html=await read();
-    if(/登录后可见|用户登录 - 蜗牛/.test(html))throw new Error("蜗牛登录后仍未开放资源，请检查账号权限");
-  }
-  return html;
-}
-function woniuCards($,site) {
-  const result=[];
-  $("a.video-card").each((_,el)=>{
-    const a=$(el),href=a.attr("href")||"",title=String(a.attr("title")||a.find(".video-title").text()||"").replace("立刻播放","").trim();
-    if(!href || !title)return;
-    result.push({id:"woniu-"+href,type:"url",title,posterPath:absUrl(a.find("img").attr("data-src")||a.find("img").attr("src")||"",site),description:a.find(".video-episode").text().trim(),link:encodeLink({action:"detail",id:href,site})});
-  });
-  return result;
-}
-
-const rexMemoryCache=new Map(),rexPending=new Map();
-let rexCacheGeneration=0;
-function rexClone(value){return JSON.parse(JSON.stringify(value));}
-async function rexCached(key,ttl,loader,accept) {
-  const hash=baiduSha1(key),storageKey="forward.woniu.catalog."+hash;
-  let entry=rexMemoryCache.get(hash);
-  if(!entry){try{entry=JSON.parse(safeStorageGet(storageKey)||"null");}catch(_){}}
-  if(entry&&entry.expires>Date.now())return rexClone(entry.value);
-  if(rexPending.has(hash))return rexClone(await rexPending.get(hash));
-  const generation=rexCacheGeneration;
-  const pending=(async()=>{
-    const value=await loader();
-    if(generation===rexCacheGeneration&&accept(value)){
-      const entry={expires:Date.now()+ttl,value:rexClone(value)};
-      rexMemoryCache.set(hash,entry);
-      while(rexMemoryCache.size>32)rexMemoryCache.delete(rexMemoryCache.keys().next().value);
-      let keys=[];try{keys=JSON.parse(safeStorageGet("forward.woniu.catalog.keys")||"[]");}catch(_){}
-      keys=keys.filter(k=>k!==hash);keys.push(hash);
-      while(keys.length>16)safeStorageSet("forward.woniu.catalog."+keys.shift(),"");
-      safeStorageSet(storageKey,JSON.stringify(entry));safeStorageSet("forward.woniu.catalog.keys",JSON.stringify(keys));
-    }
-    return value;
-  })();rexPending.set(hash,pending);
-  try{return rexClone(await pending);}finally{if(rexPending.get(hash)===pending)rexPending.delete(hash);}
-}
-async function httpText(url,options) {
-  rexAssertWithinUsagePeriod();
-  return rexCached("page:"+url+":"+baiduSha1(JSON.stringify(safeStorageGet("forward.woniu.account")||{})+String(safeStorageGet("forward.woniu.session")||"")),120000,()=>httpTextFresh(url,options),html=>typeof html==="string"&&html.length>1000&&!/页面不存在|>404</.test(html));
-}
-async function rexShareCatalog(share) {
-  const cookie=share.provider==="baidu"?safeStorageGet("forward.woniu.baidu.cookie"):
-    share.provider==="115"?safeStorageGet("forward.woniu.115.cookie"):share.provider==="quark"?ensureCookie():"";
-  const key=["share",share.provider,share.shareId,share.passcode||"",baiduSha1(String(cookie||""))].join(":");
-  return rexCached(key,180000,()=>share.provider==="uc"?getUcVideos(share):share.provider==="115"?get115Videos(share):share.provider==="baidu"?getBaiduVideos(share):getVideosFromShareLink(share.url,share.passcode),result=>!!(result&&result.list&&result.list.length));
-}
-async function clearRexCatalogCache() {
-  rexCacheGeneration++;rexMemoryCache.clear();rexPending.clear();
-  let keys=[];try{keys=JSON.parse(safeStorageGet("forward.woniu.catalog.keys")||"[]");}catch(_){}
-  keys.forEach(key=>safeStorageSet("forward.woniu.catalog."+key,""));safeStorageSet("forward.woniu.catalog.keys","[]");
-  return [{id:"woniu-cache-cleared",type:"url",title:"目录缓存已清除",description:"重新打开详情即可获取最新集数。"}];
-}
-
-function rexProviderEnabled(provider) {
-  if(provider==="uc")return true;
-  if(provider==="115")return !!normalizeCookie(safeStorageGet("forward.woniu.115.cookie"));
-  if(provider==="baidu")return !!normalizeCookie(safeStorageGet("forward.woniu.baidu.cookie"));
-  if(provider==="quark")return !!ensureCookie();
+// ============ 聚合控制平面：提前停止 / 取消 / 超时 ============
+var JUHE_RACE_GRACE_MS = 3000;       // 首家命中后的结果宽限
+var JUHE_RACE_TIMEOUT_MS = 30000;    // 竞速兜底：30s 无任何结果直接返回已有
+var JUHE_SOURCE_DEADLINE_MS = 60000; // 单源解析总时限（搜索+明细+直链）
+
+// 统一停止检查：竞速已决出胜负，或超过单源总时限
+function juheShouldStop(params) {
+  params = params || {};
+  var race = params._juheRace;
+  if (race && race.finished) return true;
+  var dl = params._juheDeadline;
+  if (dl && Date.now() > dl) return true;
   return false;
 }
 
-const REX_USAGE_EXPIRES_AT=Date.parse("2027-01-01T00:00:00+08:00");
-function rexAssertWithinUsagePeriod() {}
-
-  return {
-    metadata: WidgetMetadata,
-    search: (typeof search === "function") ? search : null,
-    loadDetail: (typeof loadDetail === "function") ? loadDetail : null,
-    loadResource: (typeof loadResource === "function") ? loadResource : null
-  };
-})();
+// 给源级 params 挂上控制信号（竞速态 + 总时限）
+function juheAttachControl(sp, race) {
+  sp = sp || {};
+  if (race) sp._juheRace = race;
+  if (!sp._juheDeadline) sp._juheDeadline = Date.now() + JUHE_SOURCE_DEADLINE_MS;
+  return sp;
+}
 
 var JUHE_SOURCES = [
   { key: "huajuan", name: "花卷", kind: "template", defaultHost: "https://www.hjzhencai.top", api: JUHE_MOD_huajuan },
@@ -12438,7 +10909,7 @@ async function loadResource(params) {
   var route = juheParseLink(params.link || "");
   var raw;
   if (route) {
-    raw = await route.src.api.loadResource(juheParamsFor(route.src.key, params, route.orig));
+    raw = await route.src.api.loadResource(juheAttachControl(juheParamsFor(route.src.key, params, route.orig)));
     raw = [{ src: route.src, items: raw || [] }];
   } else {
     var enabled = juheEnabledSources(params);
@@ -12449,7 +10920,7 @@ async function loadResource(params) {
       return Promise.resolve()
         .then(function () {
           if (!src.api || typeof src.api.loadResource !== "function") return [];
-          return src.api.loadResource(juheParamsFor(src.key, params));
+          return src.api.loadResource(juheAttachControl(juheParamsFor(src.key, params)));
         })
         .catch(function (e) {
           console.warn("[juhe] " + src.key + " 解析失败:", (e && e.message) || e);
@@ -12502,13 +10973,16 @@ function juheMergeBaidu(raw) {
 }
 
 function juheRaceWithGrace(params, enabled) {
-  var GRACE_MS = 3000;
+  var GRACE_MS = JUHE_RACE_GRACE_MS;
+  var RACE_TIMEOUT_MS = JUHE_RACE_TIMEOUT_MS;
   return new Promise(function (resolve) {
     if (!enabled.length) { resolve([]); return; }
     var rawByKey = {};
     var doneCount = 0;
     var resolved = false;
     var firstAt = 0;
+    var startAt = Date.now();
+    var race = { finished: false }; // 提前停止信号：决出后失败者停掉多余请求
     var g = typeof globalThis !== "undefined" ? globalThis : null;
     var timer = g && g.setTimeout;
     function mergeAll() {
@@ -12521,15 +10995,17 @@ function juheRaceWithGrace(params, enabled) {
     }
     function tryResolve() {
       if (resolved) return;
-      if (doneCount >= enabled.length || (firstAt && Date.now() - firstAt >= GRACE_MS)) {
+      if (doneCount >= enabled.length || (firstAt && Date.now() - firstAt >= GRACE_MS) || Date.now() - startAt >= RACE_TIMEOUT_MS) {
         resolved = true;
+        race.finished = true; // 通知未完成的源：提前停止多余请求
         resolve(mergeAll());
       }
     }
+    if (typeof timer === "function") timer.call(g, tryResolve, RACE_TIMEOUT_MS); // 兜底：超时直接返回
     enabled.forEach(function (src) {
       Promise.resolve().then(function () {
         if (!src.api || typeof src.api.loadResource !== "function") return [];
-        return src.api.loadResource(juheParamsFor(src.key, params));
+        return src.api.loadResource(juheAttachControl(juheParamsFor(src.key, params), race));
       }).then(function (items) {
         rawByKey[src.key] = items || [];
         doneCount++;

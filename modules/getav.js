@@ -204,7 +204,7 @@ async function gaFillJavdbPosters(items) {
 WidgetMetadata = {
     id: "rex.getav",
     title: "GetAV",
-    version: "1.1.19",
+    version: "1.1.20",
     requiredVersion: "0.0.1",
     description: "Getav视频",
     author: "Coko",
@@ -1048,45 +1048,4 @@ async function loadResource(params) {
     return result;
 }
 
-
-// 从 JavDB 获取磁力链接
-async function gaJavdbMagnets(code) {
-    const magnets = [];
-    try {
-        const searchHtml = String((await Widget.http.get(GA_JAVDB_SEARCH + encodeURIComponent(code) + "&f=all", {
-            headers: { "User-Agent": GA_UA, "Accept": "text/html,application/xhtml+xml" },
-            timeout: GA_JAVDB_TIMEOUT
-        })).data || "");
-        if (!searchHtml || searchHtml.length < 2000) return magnets;
-        const $ = Widget.html.load(searchHtml);
-        const want = gaNormCode(code);
-        let detailUrl = "";
-        $("a.box").each((_, el) => {
-            if (detailUrl) return;
-            try {
-                const box = $(el);
-                let t = String(box.find(".video-title strong").first().text() || "").trim();
-                if (!t) t = String(box.find(".video-title").first().text() || "").trim();
-                const nt = gaNormCode(t);
-                if (!nt || (nt.indexOf(want) !== 0 && want.indexOf(nt) !== 0)) return;
-                detailUrl = box.attr("href") || "";
-            } catch (e) {}
-        });
-        if (!detailUrl) return magnets;
-        if (detailUrl.indexOf("http") !== 0) detailUrl = "https://javdb.com" + detailUrl;
-        const detailHtml = String((await Widget.http.get(detailUrl, {
-            headers: { "User-Agent": GA_UA, "Accept": "text/html,application/xhtml+xml" },
-            timeout: GA_JAVDB_TIMEOUT
-        })).data || "");
-        // 提取磁力链接
-        const $$ = Widget.html.load(detailHtml);
-        $$("a[href^='magnet:?']").each((_, el) => {
-            try {
-                const href = $$(el).attr("href") || "";
-                if (href && magnets.indexOf(href) < 0) magnets.push(href);
-            } catch (e) {}
-        });
-    } catch (e) {}
-    return magnets.slice(0, 5);
-}
 

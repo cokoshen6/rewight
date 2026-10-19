@@ -204,7 +204,7 @@ async function gaFillJavdbPosters(items) {
 WidgetMetadata = {
     id: "rex.getav",
     title: "GetAV",
-    version: "1.1.17",
+    version: "1.1.18",
     requiredVersion: "0.0.1",
     description: "Getav视频",
     author: "Coko",
@@ -949,6 +949,14 @@ function gaCodeFromParams(params) {
         const hashIdx = rest.indexOf("#");
         return (hashIdx >= 0 ? rest.slice(0, hashIdx) : rest).trim();
     }
+    // 跨模块：从 id 或 link 里提取番号（如 missav 的 URL 里带 pred-847）
+    const raw = String(p.id || "") + " " + link;
+    const m = raw.toUpperCase().match(/([A-Z]{2,6})-?(\d{2,6})([A-Z]?)(?![A-Z0-9])/);
+    if (m) {
+        const code = m[1] + "-" + m[2] + (m[3] || "");
+        // 排除纯数字误匹配
+        if (m[1].length >= 2) return code;
+    }
     return String(p.id || "").trim();
 }
 
@@ -1026,7 +1034,7 @@ async function loadResource(params) {
     
     const hi = lines.filter(l => (l.rank || 0) >= 1080);
     const keep = hi.length ? hi : lines.slice(0, 1);
-    return keep.map(l => ({
+    const result = keep.map(l => ({
         name: l.name,
         description: gaLineDescription(code, l.name),
         url: l.url,
@@ -1037,4 +1045,48 @@ async function loadResource(params) {
         },
         playerType: "app"
     }));
+    return result;
 }
+
+
+// 从 JavDB 获取磁力链接
+async function gaJavdbMagnets(code) {
+    const magnets = [];
+    try {
+        const searchHtml = String((await Widget.http.get(GA_JAVDB_SEARCH + encodeURIComponent(code) + "&f=all", {
+            headers: { "User-Agent": GA_UA, "Accept": "text/html,application/xhtml+xml" },
+            timeout: GA_JAVDB_TIMEOUT
+        })).data || "");
+        if (!searchHtml || searchHtml.length < 2000) return magnets;
+        const $ = Widget.html.load(searchHtml);
+        const want = gaNormCode(code);
+        let detailUrl = "";
+        $("a.box").each((_, el) => {
+            if (detailUrl) return;
+            try {
+                const box = $(el);
+                let t = String(box.find(".video-title strong").first().text() || "").trim();
+                if (!t) t = String(box.find(".video-title").first().text() || "").trim();
+                const nt = gaNormCode(t);
+                if (!nt || (nt.indexOf(want) !== 0 && want.indexOf(nt) !== 0)) return;
+                detailUrl = box.attr("href") || "";
+            } catch (e) {}
+        });
+        if (!detailUrl) return magnets;
+        if (detailUrl.indexOf("http") !== 0) detailUrl = "https://javdb.com" + detailUrl;
+        const detailHtml = String((await Widget.http.get(detailUrl, {
+            headers: { "User-Agent": GA_UA, "Accept": "text/html,application/xhtml+xml" },
+            timeout: GA_JAVDB_TIMEOUT
+        })).data || "");
+        // 提取磁力链接
+        const $$ = Widget.html.load(detailHtml);
+        $$("a[href^='magnet:?']").each((_, el) => {
+            try {
+                const href = $$(el).attr("href") || "";
+                if (href && magnets.indexOf(href) < 0) magnets.push(href);
+            } catch (e) {}
+        });
+    } catch (e) {}
+    return magnets.slice(0, 5);
+}
+

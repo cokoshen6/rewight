@@ -204,7 +204,7 @@ async function gaFillJavdbPosters(items) {
 WidgetMetadata = {
     id: "rex.getav",
     title: "GetAV",
-    version: "1.1.20",
+    version: "1.1.21",
     requiredVersion: "0.0.1",
     description: "Getav视频",
     author: "Coko",
@@ -949,13 +949,16 @@ function gaCodeFromParams(params) {
         const hashIdx = rest.indexOf("#");
         return (hashIdx >= 0 ? rest.slice(0, hashIdx) : rest).trim();
     }
-    // 跨模块：从 id/link/title 里提取番号（如 missav 的 URL 里带 pred-847）
-    const raw = String(p.id || "") + " " + link + " " + String(p.title || "");
-    const m = raw.toUpperCase().match(/([A-Z]{2,6})-?(\d{2,6})([A-Z]?)(?![A-Z0-9])/);
-    if (m) {
-        const code = m[1] + "-" + m[2] + (m[3] || "");
-        // 排除纯数字误匹配
-        if (m[1].length >= 2) return code;
+    // 跨模块：优先从 title 提取番号（最准），再从 id/link 找
+    const sources = [String(p.title || ""), String(p.id || ""), link];
+    for (const src of sources) {
+        const m = String(src).toUpperCase().match(/([A-Z]{2,6})-(\d{2,6})([A-Z]?)(?![A-Z0-9])/);
+        if (m) return m[1] + "-" + m[2] + (m[3] || "");
+    }
+    // 兜底：无横杠的格式（如 pred847）
+    for (const src of sources) {
+        const m = String(src).toUpperCase().match(/([A-Z]{2,6})(\d{3,6})(?![A-Z0-9])/);
+        if (m && m[1].length >= 2) return m[1] + "-" + m[2];
     }
     return String(p.id || "").trim();
 }

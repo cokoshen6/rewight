@@ -7,7 +7,7 @@ WidgetMetadata = {
     title: "JAVMIT",
     description: "JAVMIT - 無修正 JAV (在线播放)",
     author: "Coko",
-    version: "1.6.5",
+    version: "1.6.6",
     requiredVersion: "0.0.1",
     site: "https://javmit.com",
     iconurl: "https://javmit.com/wp-content/uploads/2026/04/cropped-red-play-icon-circle-with-white-triangle-middle_609989-1987-192x192.jpg",
@@ -133,7 +133,7 @@ function jm_toItem(p) {
     var code = jm_code(rawTitle, html);
     var jpTitle = jm_jpTitle(rawTitle);
     return {
-        id: "jm:" + p.id,
+        id: code || ("jm:" + p.id),
         type: "video",
         mediaType: "movie",
         title: code || rawTitle,
@@ -283,7 +283,7 @@ async function loadDetail(link) {
         var dur = jm_meta(html, "视频时长") || jm_meta(html, "Video Duration");
         var img = jm_featured(p);
         var detail = {
-            id: "jm:" + p.id,
+            id: code || ("jm:" + p.id),
             type: "video",
             mediaType: "movie",
             title: code || rawTitle,

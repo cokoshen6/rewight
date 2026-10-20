@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "porcore",
   title: "Porcore",
-  version: "1.0.1",
+  version: "1.0.2",
   requiredVersion: "0.0.1",
   description: "Porcore 3D/Hentai 视频：最新、分类、标签搜索，HLS 多档播放",
   author: "Coko",
@@ -250,6 +250,30 @@ WidgetMetadata = {
       ]
     },
     {
+      id: "keyword",
+      title: "关键词",
+      functionName: "loadKeyword",
+      type: "video",
+      cacheDuration: 600,
+      params: [
+        { name: "keyword", title: "关键词", type: "input", value: "bbc", placeholders: [{ title: "bbc", value: "bbc" }] },
+        {
+          name: "sort",
+          title: "排序",
+          type: "enumeration",
+          enumOptions: [
+            { title: "最新", value: "newest" },
+            { title: "最早", value: "oldest" },
+            { title: "最长", value: "longest" },
+            { title: "最短", value: "shortest" },
+            { title: "最多观看", value: "mostviewed" },
+            { title: "最高评分", value: "toprated" }
+          ]
+        },
+        { name: "page", title: "页码", type: "page" }
+      ]
+    },
+    {
       id: "loadResource",
       title: "播放资源",
       functionName: "loadResource",
@@ -331,18 +355,29 @@ async function loadCategory(params) {
   return pcParseList(html);
 }
 
+async function pcTagList(kw, page, sort) {
+  var base = PC_HOST + "/show/" + encodeURIComponent(kw);
+  var items = pcParseList(await pcGet(pcListUrl(base, page, sort)));
+  if (!items.length && page <= 1 && kw.indexOf(" ") >= 0) {
+    var alt = PC_HOST + "/show/" + encodeURIComponent(kw.replace(/\s+/g, "-"));
+    items = pcParseList(await pcGet(pcListUrl(alt, page, sort)));
+  }
+  return items;
+}
+
+async function loadKeyword(params) {
+  params = params || {};
+  var kw = (params.keyword || "").trim() || "bbc";
+  var page = parseInt(params.page, 10) || 1;
+  return pcTagList(kw, page, params.sort);
+}
+
 async function search(params) {
   params = params || {};
   var kw = (params.keyword || "").trim();
   if (!kw) return [];
   var page = parseInt(params.page, 10) || 1;
-  var base = PC_HOST + "/show/" + encodeURIComponent(kw);
-  var items = pcParseList(await pcGet(pcListUrl(base, page, "")));
-  if (!items.length && page <= 1 && kw.indexOf(" ") >= 0) {
-    var alt = PC_HOST + "/show/" + encodeURIComponent(kw.replace(/\s+/g, "-"));
-    items = pcParseList(await pcGet(pcListUrl(alt, page, "")));
-  }
-  return items;
+  return pcTagList(kw, page, "");
 }
 
 function pcDetailId(link) {

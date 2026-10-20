@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "porcore",
   title: "Porcore",
-  version: "1.0.3",
+  version: "1.0.4",
   requiredVersion: "0.0.1",
   description: "Porcore 3D/Hentai 视频：最新、分类、标签搜索，HLS 多档播放",
   author: "Coko",
@@ -385,6 +385,25 @@ function pcDetailId(link) {
   return m ? m[1] : "";
 }
 
+function pcMasterOf(html) {
+  var mm = String(html || "").match(/src="(https?:\/\/[^"]+\.m3u8)"/) || String(html || "").match(/(https?:\/\/[^\s"'<>]+\.m3u8)/);
+  return mm ? mm[1] : "";
+}
+
+function pcDeriveTopVariant(master) {
+  var dm = String(master || "").match(/^(https?:\/\/.+?)-,([0-9a-z,]+),\.mp4\.urlset\/master\.m3u8$/i);
+  if (!dm) return null;
+  var toks = dm[2].split(",");
+  var best = null;
+  var bestN = -1;
+  for (var i = 0; i < toks.length; i++) {
+    var n = parseInt(toks[i], 10);
+    if (!isNaN(n) && n > bestN) { bestN = n; best = toks[i]; }
+  }
+  if (!best) return null;
+  return { name: bestN + "P", url: dm[1] + "-" + best + ".mp4/index-v1-a1.m3u8" };
+}
+
 async function loadDetail(link) {
   var url = String(link || "");
   if (url.indexOf("http") !== 0) return null;
@@ -395,6 +414,10 @@ async function loadDetail(link) {
   if (!title) return null;
   var desc = ($('meta[property="og:description"]').attr("content") || $('meta[name="description"]').attr("content") || "").trim();
   var vid = pcDetailId(url);
+  var master = pcMasterOf(html);
+  if (master && vid) {
+    try { Widget.storage.set("pc:m3u8:" + vid, master); } catch (e) {}
+  }
   var backdrop = $('meta[property="og:image"]').attr("content") || "";
   if (!backdrop && vid) backdrop = PC_HOST + "/res.php?q=91&w=854&h=480&src=media/thumbs/" + vid + "/i101.jpg";
   var genres = [];
@@ -422,19 +445,28 @@ async function loadDetail(link) {
 
 async function loadResource(params) {
   params = params || {};
+  var headers = { "User-Agent": PC_UA, "Referer": PC_HOST + "/" };
+  var pvid = "";
+  if (params.id) pvid = String(params.id).replace(/^pc:/, "");
+  if (!/^\d+$/.test(pvid) && params.link) pvid = pcDetailId(params.link);
+  var cachedMaster = "";
+  if (/^\d+$/.test(pvid)) {
+    try { cachedMaster = Widget.storage.get("pc:m3u8:" + pvid) || ""; } catch (e) {}
+  }
+  if (cachedMaster) {
+    var dv0 = pcDeriveTopVariant(cachedMaster);
+    if (dv0) return [{ name: dv0.name, url: dv0.url, customHeaders: headers, playerType: "app" }];
+  }
   var url = "";
   if (params.link && String(params.link).indexOf("porcore.com/video/") >= 0) url = String(params.link);
-  if (!url && params.id) {
-    var vid = String(params.id).replace(/^pc:/, "");
-    if (/^\d+$/.test(vid)) url = PC_HOST + "/video/" + vid + "/";
-  }
+  if (!url && /^\d+$/.test(pvid)) url = PC_HOST + "/video/" + pvid + "/";
   if (!url) return [];
   var html = await pcGet(url);
   if (!html) return [];
-  var mm = html.match(/src="(https?:\/\/[^"]+\.m3u8)"/) || html.match(/(https?:\/\/[^\s"'<>]+\.m3u8)/);
-  if (!mm) return [];
-  var master = mm[1];
-  var headers = { "User-Agent": PC_UA, "Referer": PC_HOST + "/" };
+  var master = pcMasterOf(html);
+  if (!master) return [];
+  var dv = pcDeriveTopVariant(master);
+  if (dv) return [{ name: dv.name, url: dv.url, customHeaders: headers, playerType: "app" }];
   var lines = [];
   try {
     var m3u = await pcGet(master);

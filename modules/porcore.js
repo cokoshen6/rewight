@@ -1,9 +1,9 @@
 WidgetMetadata = {
   id: "porcore",
   title: "Porcore",
-  version: "1.0.4",
+  version: "1.0.5",
   requiredVersion: "0.0.1",
-  description: "Porcore 3D/Hentai 视频：最新、分类、标签搜索，HLS 多档播放",
+  description: "Porcore 3D/Hentai 视频：最新、分类、关键词，HLS 最高档播放",
   author: "Coko",
   site: "https://porcore.com",
   iconurl: "https://porcore.com/favicon-96x96.png",
@@ -44,7 +44,7 @@ WidgetMetadata = {
           title: "分类",
           type: "enumeration",
           enumOptions: [
-            { title: "3D Porn", value: "3d" },
+                        { title: "3D Porn", value: "3d" },
         { title: "69", value: "69" },
         { title: "ai", value: "ai" },
         { title: "Aliens", value: "aliens" },
@@ -294,24 +294,23 @@ WidgetMetadata = {
 
 var PC_HOST = "https://porcore.com";
 var PC_UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
+var PC_HEADERS = { "User-Agent": PC_UA, "Referer": PC_HOST + "/" };
 
 async function pcGet(url) {
-  var res = await Widget.http.get(url, {
-    headers: { "User-Agent": PC_UA, "Referer": PC_HOST + "/" }
-  });
+  var res = await Widget.http.get(url, { headers: PC_HEADERS });
   var d = res && res.data;
-  if (d == null) return "";
-  return typeof d === "string" ? d : String(d);
+  return d == null ? "" : (typeof d === "string" ? d : String(d));
+}
+
+function pcPage(params) {
+  return parseInt((params || {}).page, 10) || 1;
 }
 
 function pcListUrl(base, page, sort) {
-  if (page <= 1) {
-    return sort && sort !== "newest" ? base + "?sort=" + sort : base;
-  }
-  var sep = base.charAt(base.length - 1) === "/" ? "&" : "?";
-  var u = base + sep + "ajax&p=" + page;
-  if (sort && sort !== "newest") u += "&sort=" + sort;
-  return u;
+  var hasSort = sort && sort !== "newest";
+  if (page <= 1) return hasSort ? base + "?sort=" + sort : base;
+  var u = base + (base.charAt(base.length - 1) === "/" ? "&" : "?") + "ajax&p=" + page;
+  return hasSort ? u + "&sort=" + sort : u;
 }
 
 function pcParseList(html) {
@@ -322,45 +321,40 @@ function pcParseList(html) {
     var a = $(el).find("a.clip-link").first();
     var href = a.attr("href") || "";
     var m = href.match(/\/video\/(\d+)\//);
-    if (!m) return;
     var title = (a.attr("title") || "").trim();
-    if (!title) return;
-    var img = $(el).find("img").first().attr("src") || "";
-    var dur = $(el).find(".videoparams .floatlefttop").first().text().replace(/\s+/g, " ").trim();
+    if (!m || !title) return;
     var item = {
       id: "pc:" + m[1],
       type: "url",
       title: title,
       link: href.indexOf("http") === 0 ? href : PC_HOST + href,
-      backdropPath: img
+      backdropPath: $(el).find("img").first().attr("src") || ""
     };
+    var dur = $(el).find(".videoparams .floatlefttop").first().text().replace(/\s+/g, " ").trim();
     if (dur) item.durationText = dur;
     out.push(item);
   });
   return out;
 }
 
+async function pcListPage(base, params) {
+  return pcParseList(await pcGet(pcListUrl(base, pcPage(params), (params || {}).sort)));
+}
+
 async function loadLatest(params) {
-  params = params || {};
-  var page = parseInt(params.page, 10) || 1;
-  var html = await pcGet(pcListUrl(PC_HOST + "/", page, params.sort));
-  return pcParseList(html);
+  return pcListPage(PC_HOST + "/", params || {});
 }
 
 async function loadCategory(params) {
   params = params || {};
-  var page = parseInt(params.page, 10) || 1;
   var cat = params.genreId || params.cat || "3d";
-  var html = await pcGet(pcListUrl(PC_HOST + "/show/" + cat, page, params.sort));
-  return pcParseList(html);
+  return pcListPage(PC_HOST + "/show/" + cat, params);
 }
 
 async function pcTagList(kw, page, sort) {
-  var base = PC_HOST + "/show/" + encodeURIComponent(kw);
-  var items = pcParseList(await pcGet(pcListUrl(base, page, sort)));
+  var items = pcParseList(await pcGet(pcListUrl(PC_HOST + "/show/" + encodeURIComponent(kw), page, sort)));
   if (!items.length && page <= 1 && kw.indexOf(" ") >= 0) {
-    var alt = PC_HOST + "/show/" + encodeURIComponent(kw.replace(/\s+/g, "-"));
-    items = pcParseList(await pcGet(pcListUrl(alt, page, sort)));
+    items = pcParseList(await pcGet(pcListUrl(PC_HOST + "/show/" + encodeURIComponent(kw.replace(/\s+/g, "-")), page, sort)));
   }
   return items;
 }
@@ -368,40 +362,46 @@ async function pcTagList(kw, page, sort) {
 async function loadKeyword(params) {
   params = params || {};
   var kw = (params.keyword || "").trim() || "bbc";
-  var page = parseInt(params.page, 10) || 1;
-  return pcTagList(kw, page, params.sort);
+  return pcTagList(kw, pcPage(params), params.sort);
 }
 
 async function search(params) {
   params = params || {};
   var kw = (params.keyword || "").trim();
   if (!kw) return [];
-  var page = parseInt(params.page, 10) || 1;
-  return pcTagList(kw, page, "");
+  return pcTagList(kw, pcPage(params), "");
 }
 
-function pcDetailId(link) {
-  var m = String(link || "").match(/\/video\/(\d+)/);
-  return m ? m[1] : "";
+function pcVideoId(str) {
+  var m = String(str || "").match(/\/video\/(\d+)/);
+  if (m) return m[1];
+  var bare = String(str || "").replace(/^pc:/, "");
+  return /^\d+$/.test(bare) ? bare : "";
 }
 
 function pcMasterOf(html) {
-  var mm = String(html || "").match(/src="(https?:\/\/[^"]+\.m3u8)"/) || String(html || "").match(/(https?:\/\/[^\s"'<>]+\.m3u8)/);
+  var s = String(html || "");
+  var mm = s.match(/src="(https?:\/\/[^"]+\.m3u8)"/) || s.match(/(https?:\/\/[^\s"'<>]+\.m3u8)/);
   return mm ? mm[1] : "";
 }
 
-function pcDeriveTopVariant(master) {
+function pcLine(name, url) {
+  return { name: name, url: url, customHeaders: PC_HEADERS, playerType: "app" };
+}
+
+function pcTopLine(master) {
   var dm = String(master || "").match(/^(https?:\/\/.+?)-,([0-9a-z,]+),\.mp4\.urlset\/master\.m3u8$/i);
-  if (!dm) return null;
-  var toks = dm[2].split(",");
-  var best = null;
-  var bestN = -1;
-  for (var i = 0; i < toks.length; i++) {
-    var n = parseInt(toks[i], 10);
-    if (!isNaN(n) && n > bestN) { bestN = n; best = toks[i]; }
+  if (dm) {
+    var toks = dm[2].split(",");
+    var best = null;
+    var bestN = -1;
+    for (var i = 0; i < toks.length; i++) {
+      var n = parseInt(toks[i], 10);
+      if (!isNaN(n) && n > bestN) { bestN = n; best = toks[i]; }
+    }
+    if (best) return pcLine(bestN + "P", dm[1] + "-" + best + ".mp4/index-v1-a1.m3u8");
   }
-  if (!best) return null;
-  return { name: bestN + "P", url: dm[1] + "-" + best + ".mp4/index-v1-a1.m3u8" };
+  return master ? pcLine("自动", master) : null;
 }
 
 async function loadDetail(link) {
@@ -412,8 +412,7 @@ async function loadDetail(link) {
   var $ = Widget.html.load(html);
   var title = ($('meta[property="og:title"]').attr("content") || $("h1").first().text() || "").replace(/\s+/g, " ").trim();
   if (!title) return null;
-  var desc = ($('meta[property="og:description"]').attr("content") || $('meta[name="description"]').attr("content") || "").trim();
-  var vid = pcDetailId(url);
+  var vid = pcVideoId(url);
   var master = pcMasterOf(html);
   if (master && vid) {
     try { Widget.storage.set("pc:m3u8:" + vid, master); } catch (e) {}
@@ -423,78 +422,40 @@ async function loadDetail(link) {
   var genres = [];
   var seenG = {};
   $('a[href^="/show/"]').each(function (i, el) {
-    var href = $(el).attr("href") || "";
-    var slug = href.replace("/show/", "").replace(/\/$/, "");
+    var slug = ($(el).attr("href") || "").replace("/show/", "").replace(/\/$/, "");
     var name = $(el).text().replace(/\s+/g, " ").trim();
     if (slug && name && !seenG[slug]) {
       seenG[slug] = 1;
       genres.push({ id: slug, title: name });
     }
   });
-  var item = {
+  return {
     id: "pc:" + vid,
     type: "url",
     title: title,
     link: url,
     backdropPath: backdrop,
-    description: desc,
+    description: ($('meta[property="og:description"]').attr("content") || $('meta[name="description"]').attr("content") || "").trim(),
     genreItems: genres
   };
-  return item;
 }
 
 async function loadResource(params) {
   params = params || {};
-  var headers = { "User-Agent": PC_UA, "Referer": PC_HOST + "/" };
-  var pvid = "";
-  if (params.id) pvid = String(params.id).replace(/^pc:/, "");
-  if (!/^\d+$/.test(pvid) && params.link) pvid = pcDetailId(params.link);
-  var cachedMaster = "";
-  if (/^\d+$/.test(pvid)) {
-    try { cachedMaster = Widget.storage.get("pc:m3u8:" + pvid) || ""; } catch (e) {}
+  var vid = pcVideoId(params.id) || pcVideoId(params.link);
+  var master = "";
+  if (vid) {
+    try { master = Widget.storage.get("pc:m3u8:" + vid) || ""; } catch (e) {}
   }
-  if (cachedMaster) {
-    var dv0 = pcDeriveTopVariant(cachedMaster);
-    if (dv0) return [{ name: dv0.name, url: dv0.url, customHeaders: headers, playerType: "app" }];
+  if (!master) {
+    var url = "";
+    if (params.link && String(params.link).indexOf("porcore.com/video/") >= 0) url = String(params.link);
+    else if (vid) url = PC_HOST + "/video/" + vid + "/";
+    if (!url) return [];
+    var html = await pcGet(url);
+    if (!html) return [];
+    master = pcMasterOf(html);
   }
-  var url = "";
-  if (params.link && String(params.link).indexOf("porcore.com/video/") >= 0) url = String(params.link);
-  if (!url && /^\d+$/.test(pvid)) url = PC_HOST + "/video/" + pvid + "/";
-  if (!url) return [];
-  var html = await pcGet(url);
-  if (!html) return [];
-  var master = pcMasterOf(html);
-  if (!master) return [];
-  var dv = pcDeriveTopVariant(master);
-  if (dv) return [{ name: dv.name, url: dv.url, customHeaders: headers, playerType: "app" }];
-  var lines = [];
-  try {
-    var m3u = await pcGet(master);
-    var raw = m3u.split("\n");
-    for (var i = 0; i < raw.length; i++) {
-      var line = raw[i].trim();
-      if (line.indexOf("#EXT-X-STREAM-INF") === 0) {
-        var rm = line.match(/RESOLUTION=(\d+)x(\d+)/);
-        var h = rm ? parseInt(rm[2], 10) : 0;
-        var vurl = "";
-        for (var j = i + 1; j < raw.length; j++) {
-          var cand = raw[j].trim();
-          if (cand) { vurl = cand; break; }
-        }
-        if (vurl) {
-          if (vurl.indexOf("http") !== 0) {
-            vurl = master.slice(0, master.lastIndexOf("/") + 1) + vurl;
-          }
-          lines.push({ h: h, name: h ? h + "P" : "自动", url: vurl });
-        }
-      }
-    }
-  } catch (e) {}
-  lines.sort(function (a, b) { return b.h - a.h; });
-  lines = lines.slice(0, 1);
-  var out = lines.map(function (l) {
-    return { name: l.name, url: l.url, customHeaders: headers, playerType: "app" };
-  });
-  if (!out.length) out = [{ name: "自动", url: master, customHeaders: headers, playerType: "app" }];
-  return out;
+  var line = pcTopLine(master);
+  return line ? [line] : [];
 }

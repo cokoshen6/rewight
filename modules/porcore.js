@@ -1,7 +1,7 @@
 WidgetMetadata = {
-  id: "rex.porcore",
+  id: "porcore",
   title: "Porcore",
-  version: "1.0.0",
+  version: "1.0.1",
   requiredVersion: "0.0.1",
   description: "Porcore 3D/Hentai 视频：最新、分类、标签搜索，HLS 多档播放",
   author: "Coko",

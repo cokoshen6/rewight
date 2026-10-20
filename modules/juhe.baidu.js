@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "rex.juhe.baidu",
   title: "聚合百度版",
-  version: "1.1.2",
+  version: "1.1.3",
   requiredVersion: "0.0.1",
   description: "纯百度聚合：并发搜索3个源（花卷/虎斑/多多），只返回百度网盘播放源。",
   author: "夏恩",
@@ -45,6 +45,85 @@ WidgetMetadata = {
     ]
   }
 };
+
+// ============ 全局：标题别名（中英繁 + TMDB 别名） ============
+var JUHE_S2T_S = "爱国过汉号后护华画话黄会机几将间见经开来兰乐里历丽联脸凉灵刘龙楼卢鲁陆伦妈门难脑农气乔桥亲轻庆穷区权让热认萨杀伤声实时谁师书术树双虽岁孙说台态坛谈汤体铁听头图团万为卫温无务鲜现线县乡项响协写谢兴学压亚严颜阳杨样养谣药爷页业叶医亿艺议阴银应营赢颖优邮于鱼语预员园远愿约跃云杂泽则择责贼赠债战张涨这着针诊镇睁执职质种众钟终轴猪诸驻专转赚装状准备复处尔儿发范丰风凤个达碍传点电东动队对关观广规贵红户欢环换唤辉汇绘击极级际继纪记夹价驾坚渐监检减简践鉴键奖讲脚较节洁结杰届紧进尽茎惊竞镜举剧惧决绝军凯颗课块宽矿亏扩阔赖蓝栏烂捞劳涝类泪垒礼连怜恋辆辽疗猎邻临鳞岭领聋垄拢陇娄搂篓芦庐炉掳卤虏赂禄录驴侣铝屡缕滤绿峦轮沦纶论萝罗逻络骆马玛码蚂骂吗买麦卖脉瞒满贸没闷梦弥面灭鸣铭谬谋亩闹内酿鸟聂宁拧泞纽浓诺欧盘庞抛赔喷鹏骗飘贫频评凭苹泼仆铺朴谱栖齐骑启弃迁签牵谦钱潜浅强抢窍翘窃钦寝倾顷请驱趋躯劝却确扰纫荣软锐润洒赛伞丧扫纱筛晒闪陕赏烧绍舍设绅婶肾渗胜圣尸诗湿狮识蚀驶势饰视适释寿兽枢输属数竖帅税顺硕烁丝饲松耸怂颂苏诉肃随绥损笋缩锁贪摊滩瘫叹烫涛讨腾题屉条贴厅烃铜统涂颓托脱驮驼洼袜弯湾顽绾网韦违围维苇伟伪纹闻稳问窝蜗涡卧乌诬芜吴鹉雾误恶锡习袭铣细戏虾辖峡侠狭厦吓纤咸贤闲显险宪厢镶详晓蝎挟携胁谐泻锌衅凶绣锈须虚嘘许叙绪续吁悬选癣绚勋询寻驯训讯逊鸦哑鸭讶娅烟盐阎檐厌谚彦艳验扬痒摇尧遥瑶钥遗仪蚁诣异译饮瘾樱婴鹰蝇荧萤荥莹滢佣拥痈鳙踊咏涌忧铀犹游诱娱舆窥屿龉郁狱誉滪缘圆辕粤悦阅匀陨运蕴酝韵灾载攒暂赞脏凿枣谮闸诈栅蜡毡盏斩辗崭占栈绽账胀帐赵诏啭砖颛妆庄壮锥坠缀谆浊镯咨资谘渍综总纵枞邹诹驺皱骤昼缯粽诅组钻镩撄鸳撺余干长车么还产场财导访购宠";
+var JUHE_S2T_T = "愛國過漢號後護華畫話黃會機幾將間見經開來蘭樂裡歷麗聯臉涼靈劉龍樓盧魯陸倫媽門難腦農氣喬橋親輕慶窮區權讓熱認薩殺傷聲實時誰師書術樹雙雖歲孫說臺態壇談湯體鐵聽頭圖團萬為衛溫無務鮮現線縣鄉項響協寫謝興學壓亞嚴顏陽楊樣養謠藥爺頁業葉醫億藝議陰銀應營贏穎優郵於魚語預員園遠願約躍雲雜澤則擇責賊贈債戰張漲這著針診鎮睜執職質種眾鐘終軸豬諸駐專轉賺裝狀準備復處爾兒發範豐風鳳個達礙傳點電東動隊對關觀廣規貴紅戶歡環換喚輝匯繪擊極級際繼紀記夾價駕堅漸監檢減簡踐鑑鍵獎講腳較節潔結傑屆緊進盡莖驚競鏡舉劇懼決絕軍凱顆課塊寬礦虧擴闊賴藍欄爛撈勞澇類淚壘禮連憐戀輛遼療獵鄰臨鱗嶺領聾壟攏隴婁摟簍蘆廬爐擄滷虜賂祿錄驢侶鋁屢縷濾綠巒輪淪綸論蘿羅邏絡駱馬瑪碼螞罵嗎買麥賣脈瞞滿貿沒悶夢彌麵滅鳴銘謬謀畝鬧內釀鳥聶寧擰濘紐濃諾歐盤龐拋賠噴鵬騙飄貧頻評憑蘋潑僕鋪樸譜棲齊騎啟棄遷簽牽謙錢潛淺強搶竅翹竊欽寢傾頃請驅趨軀勸卻確擾紉榮軟銳潤灑賽傘喪掃紗篩曬閃陝賞燒紹捨設紳嬸腎滲勝聖屍詩濕獅識蝕駛勢飾視適釋壽獸樞輸屬數豎帥稅順碩爍絲飼鬆聳慫頌蘇訴肅隨綏損筍縮鎖貪攤灘癱嘆燙濤討騰題屜條貼廳烴銅統塗頹託脫馱駝窪襪彎灣頑綰網韋違圍維葦偉偽紋聞穩問窩蝸渦臥烏誣蕪吳鵡霧誤惡錫習襲銑細戲蝦轄峽俠狹廈嚇纖鹹賢閒顯險憲廂鑲詳曉蠍挾攜脅諧瀉鋅釁兇繡鏽須虛噓許敘緒續籲懸選癬絢勛詢尋馴訓訊遜鴉啞鴨訝婭煙鹽閻簷厭諺彥艷驗揚癢搖堯遙瑤鑰遺儀蟻詣異譯飲癮櫻嬰鷹蠅熒螢滎瑩瀅傭擁癰鱅踴詠湧憂鈾猶遊誘娛輿窺嶼齬鬱獄譽澦緣圓轅粵悅閱勻隕運蘊醞韻災載攢暫讚髒鑿棗譖閘詐柵蠟氈盞斬輾嶄佔棧綻賬脹帳趙詔囀磚顓妝莊壯錐墜綴諄濁鐲諮資諮漬綜總縱樅鄒諏騶皺驟晝繒糉詛組鑽鑹攖鴛攛餘幹長車麼還產場財導訪購寵";
+function juheSTMap(str, mode) {
+  if (!str) return str;
+  var sMap = JUHE_S2T_S, tMap = JUHE_S2T_T;
+  var from = mode === "t" ? tMap : sMap;
+  var to = mode === "t" ? sMap : tMap;
+  var out = "", idx;
+  for (var i = 0; i < str.length; i++) {
+    idx = from.indexOf(str.charAt(i));
+    out += idx >= 0 ? to.charAt(idx) : str.charAt(i);
+  }
+  return out;
+}
+function juheTitleVariants(title) {
+  var out = [];
+  function push(v) { if (v && out.indexOf(v) < 0) out.push(v); }
+  push(title);
+  if (title) {
+    push(juheSTMap(title, "s")); // 转繁体
+    push(juheSTMap(title, "t")); // 转简体
+  }
+  return out;
+}
+var JUHE_TMDB_ALIAS_CACHE = {};
+async function juheFetchTmdbAliases(params) {
+  var out = [];
+  function push(v) { v = (v || "").trim(); if (v && out.indexOf(v) < 0) out.push(v); }
+  // 1. 已传入的标题先做简繁展开
+  var baseTitles = [];
+  if (params) {
+    if (params.seriesName) baseTitles.push(params.seriesName);
+    if (params.title) baseTitles.push(params.title);
+    if (params.name) baseTitles.push(params.name);
+    if (params.tmdbInfo) {
+      if (params.tmdbInfo.title || params.tmdbInfo.name) baseTitles.push(params.tmdbInfo.title || params.tmdbInfo.name);
+      if (params.tmdbInfo.originalTitle || params.tmdbInfo.originalName) baseTitles.push(params.tmdbInfo.originalTitle || params.tmdbInfo.originalName);
+    }
+  }
+  baseTitles.forEach(function (t) { juheTitleVariants(t).forEach(push); });
+  // 2. TMDB 别名（需要 tmdbId）
+  try {
+    var rawId = String((params && (params.tmdbId || (params.tmdbInfo && params.tmdbInfo.id))) || "");
+    var m = rawId.match(/(movie|tv)[.\/:_-]?(\d+)/i);
+    var type = "", id = "";
+    if (m) { type = m[1].toLowerCase(); id = m[2]; }
+    else if (/^\d+$/.test(rawId)) { id = rawId; type = (params.mediaType || params.type || "movie").toLowerCase().indexOf("tv") >= 0 ? "tv" : "movie"; }
+    if (id && typeof Widget !== "undefined" && Widget.tmdb && typeof Widget.tmdb.get === "function") {
+      var cacheKey = type + ":" + id;
+      if (JUHE_TMDB_ALIAS_CACHE[cacheKey]) {
+        JUHE_TMDB_ALIAS_CACHE[cacheKey].forEach(push);
+      } else {
+        var fetched = [];
+        function pushF(v) { v = (v || "").trim(); if (v && fetched.indexOf(v) < 0) fetched.push(v); }
+        try {
+          var alt = await Widget.tmdb.get(type + "/" + id + "/alternative_titles", {});
+          var arr = (alt && (alt.titles || alt.results)) || [];
+          for (var ai = 0; ai < arr.length; ai++) pushF(arr[ai] && arr[ai].title);
+        } catch (e1) {}
+        try {
+          var langs = ["zh-TW", "zh-CN", "en-US"];
+          for (var li = 0; li < langs.length; li++) {
+            var det = await Widget.tmdb.get(type + "/" + id, { params: { language: langs[li] } });
+            if (det) pushF(det.title || det.name);
+            if (det) pushF(det.original_title || det.original_name);
+          }
+        } catch (e2) {}
+        JUHE_TMDB_ALIAS_CACHE[cacheKey] = fetched;
+        fetched.forEach(push);
+      }
+    }
+  } catch (e) {}
+  // 3. 别名也做简繁展开
+  var expanded = [];
+  out.forEach(function (t) { juheTitleVariants(t).forEach(function (v) { if (expanded.indexOf(v) < 0) expanded.push(v); }); });
+  return expanded.slice(0, 24);
+}
 
 var JUHE_MOD_huajuan = (function () {
   var WidgetMetadata;
@@ -2891,6 +2970,8 @@ function buildSearchKeywords(params) {
     addBase(params.tmdbInfo.title || params.tmdbInfo.name);
     addBase(params.tmdbInfo.originalTitle || params.tmdbInfo.originalName);
   }
+  var _ta = params._tmdbAliases || [];
+  for (var _tai = 0; _tai < _ta.length; _tai++) addBase(_ta[_tai]);
   addBase(params.seriesName);
   addBase(params.title);
   addBase(params.name);
@@ -6433,6 +6514,8 @@ function buildSearchKeywords(params) {
     addBase(params.tmdbInfo.title || params.tmdbInfo.name);
     addBase(params.tmdbInfo.originalTitle || params.tmdbInfo.originalName);
   }
+  var _ta = params._tmdbAliases || [];
+  for (var _tai = 0; _tai < _ta.length; _tai++) addBase(_ta[_tai]);
   addBase(params.seriesName);
   addBase(params.title);
   addBase(params.name);
@@ -9987,6 +10070,8 @@ function buildSearchKeywords(params) {
     addBase(params.tmdbInfo.title || params.tmdbInfo.name);
     addBase(params.tmdbInfo.originalTitle || params.tmdbInfo.originalName);
   }
+  var _ta = params._tmdbAliases || [];
+  for (var _tai = 0; _tai < _ta.length; _tai++) addBase(_ta[_tai]);
   addBase(params.seriesName);
   addBase(params.title);
   addBase(params.name);
@@ -10765,7 +10850,7 @@ function juheParamsFor(key, params, origLink) {
     var sharedKeys = ["keyword", "page", "baidu_cookie",
       "load_speed_mode", "quality_tag", "episode", "seriesName", "title",
       "name", "type", "mediaType", "season",
-      "baidu_max_files", "search_extra_after_hit"];
+      "baidu_max_files", "search_extra_after_hit", "_tmdbAliases"];
     for (var i = 0; i < sharedKeys.length; i++) {
       var k = sharedKeys[i];
       if (params[k] !== undefined && params[k] !== null) p[k] = params[k];
@@ -10906,6 +10991,14 @@ async function loadDetail(link) {
 
 async function loadResource(params) {
   params = params || {};
+  if (!params._tmdbAliases) {
+    try {
+      params._tmdbAliases = await Promise.race([
+        juheFetchTmdbAliases(params),
+        new Promise(function (res) { setTimeout(function () { res([]); }, 5000); })
+      ]) || [];
+    } catch (e) { params._tmdbAliases = []; }
+  }
   var route = juheParseLink(params.link || "");
   var raw;
   if (route) {

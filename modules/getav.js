@@ -204,7 +204,7 @@ async function gaFillJavdbPosters(items) {
 WidgetMetadata = {
     id: "rex.getav",
     title: "GetAV",
-    version: "1.1.21",
+    version: "1.1.22",
     requiredVersion: "0.0.1",
     description: "Getav视频",
     author: "Coko",
@@ -745,12 +745,6 @@ async function loadGenre(params) {
     return gaListByFolder("genre", id, page, "latest");
 }
 
-async function loadStar(params) {
-    const page = gaPageNum(params);
-    const id = String(params && (params.starId || params.peopleId) || "").trim();
-    if (!id) return [];
-    return gaListByFolder("star", id, page, "popular");
-}
 
 async function search(params) {
     const page = gaPageNum(params);

@@ -6,7 +6,7 @@ WidgetMetadata = {
     title: "KanAV",
     description: "KanAV - 在线AV",
     author: "Coko",
-    version: "1.0.2",
+    version: "1.0.3",
     requiredVersion: "0.0.1",
     site: "https://kanav.ad",
     iconurl: "https://kanav.ad/favicon.ico",
@@ -105,7 +105,6 @@ function kv_item($, el) {
 function kv_parseList(html) {
     var $ = Widget.html.load(html);
     var out = [];
-    var self = this;
     $(".post-list .col-md-3").each(function(_, el) {
         var it = kv_item($, el);
         if (it) out.push(it);

@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "rex.juhe.baidu",
   title: "聚合百度版",
-  version: "1.1.3",
+  version: "1.1.4",
   requiredVersion: "0.0.1",
   description: "纯百度聚合：并发搜索3个源（花卷/虎斑/多多），只返回百度网盘播放源。",
   author: "夏恩",
@@ -850,11 +850,6 @@ function huajuanScoreItem(item, params, keyword) {
   return score;
 }
 
-function huajuanPickBest(items, params, keyword) {
-  items = Array.isArray(items) ? items : [];
-  if (!items.length) return null;
-  return huajuanRankItems(items, params, keyword)[0] || null;
-}
 
 function huajuanRankItems(items, params, keyword) {
   items = Array.isArray(items) ? items : [];
@@ -1077,13 +1072,6 @@ function normalizePlaybackUrl(url) {
   return base + "?" + query + hash;
 }
 
-function huajuanUrlHost(url) {
-  try {
-    return new URL(String(url || "")).host || "";
-  } catch (e) {
-    return "";
-  }
-}
 
 function appendQueryParam(url, key, value) {
   var s = String(url || "").trim();
@@ -4394,11 +4382,6 @@ function hubanScoreItem(item, params, keyword) {
   return score;
 }
 
-function hubanPickBest(items, params, keyword) {
-  items = Array.isArray(items) ? items : [];
-  if (!items.length) return null;
-  return hubanRankItems(items, params, keyword)[0] || null;
-}
 
 function hubanRankItems(items, params, keyword) {
   items = Array.isArray(items) ? items : [];
@@ -4621,13 +4604,6 @@ function normalizePlaybackUrl(url) {
   return base + "?" + query + hash;
 }
 
-function hubanUrlHost(url) {
-  try {
-    return new URL(String(url || "")).host || "";
-  } catch (e) {
-    return "";
-  }
-}
 
 function appendQueryParam(url, key, value) {
   var s = String(url || "").trim();
@@ -7953,11 +7929,6 @@ function duoduoScoreItem(item, params, keyword) {
   return score;
 }
 
-function duoduoPickBest(items, params, keyword) {
-  items = Array.isArray(items) ? items : [];
-  if (!items.length) return null;
-  return duoduoRankItems(items, params, keyword)[0] || null;
-}
 
 function duoduoRankItems(items, params, keyword) {
   items = Array.isArray(items) ? items : [];
@@ -8180,13 +8151,6 @@ function normalizePlaybackUrl(url) {
   return base + "?" + query + hash;
 }
 
-function duoduoUrlHost(url) {
-  try {
-    return new URL(String(url || "")).host || "";
-  } catch (e) {
-    return "";
-  }
-}
 
 function appendQueryParam(url, key, value) {
   var s = String(url || "").trim();

@@ -1,7 +1,7 @@
 WidgetMetadata = {
     id: "rex.javranking",
     title: "JavRanking 榜单",
-    version: "1.3.5",
+    version: "1.3.6",
     requiredVersion: "0.0.1",
     description: "JavRanking 影片榜单与元数据：DMM 销量榜 / JAVDB TOP250 / 神作总榜（含官方预告片）",
     author: "Coko",
@@ -654,7 +654,6 @@ async function loadDetail(link) {
     const ld = jrParseJsonLd(html);
     if (!ld || !ld.alternateName) return null;
     const code = String(ld.alternateName).trim().toUpperCase();
-    const ogImg = (html.match(/<meta property="og:image" content="([^"]+)"/) || [])[1] || "";
     const lines = [String(ld.name || "").trim(), ""];
     lines.push("番号: " + code);
     if (ld.aggregateRating && ld.aggregateRating.ratingValue) {

@@ -4,7 +4,7 @@ WidgetMetadata = {
     description: "大象视频 / 分类浏览 / 搜索",
     author: "Coko",
     site: "https://jj88mm.com",
-    version: "1.0.1",
+    version: "1.0.2",
     requiredVersion: "0.0.1",
     detailCacheDuration: 300,
     modules: [ {
@@ -123,7 +123,6 @@ var DX_MEDIA_HEADERS = {
     Referer: "https://jj88mm.com/"
 };
 
-var DX_M3U8_RE = /https?:\\?\/\\?\/[^"'\\\s<>]+\.m3u8[^"'\\\s<>]*/g;
 
 function dx_str(v) {
     return v == null ? "" : String(v);

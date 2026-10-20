@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "porcore",
   title: "Porcore",
-  version: "1.0.2",
+  version: "1.0.3",
   requiredVersion: "0.0.1",
   description: "Porcore 3D/Hentai 视频：最新、分类、标签搜索，HLS 多档播放",
   author: "Coko",
@@ -459,6 +459,7 @@ async function loadResource(params) {
     }
   } catch (e) {}
   lines.sort(function (a, b) { return b.h - a.h; });
+  lines = lines.slice(0, 1);
   var out = lines.map(function (l) {
     return { name: l.name, url: l.url, customHeaders: headers, playerType: "app" };
   });

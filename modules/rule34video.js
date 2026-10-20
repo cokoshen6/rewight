@@ -21,13 +21,13 @@ function proxiedPic(url) {
 }
 
 WidgetMetadata = {
-    id: "rex.rule34video",
+    id: "rule34video",
     title: "Rule34Video",
     description: "Rule34Video视频",
     author: "Coko",
     site: "https://rule34video.com",
     iconurl: "https://rule34video.com/favicon.ico",
-    version: "2.3.3",
+    version: "2.3.4",
     requiredVersion: "0.0.2",
     detailCacheDuration: 300,
     globalParams: [

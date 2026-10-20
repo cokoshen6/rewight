@@ -2,11 +2,11 @@ var KV_HOST = "https://kanav.ad";
 var KV_UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Mobile/15E148 Safari/604.1";
 
 WidgetMetadata = {
-    id: "rex.kanav",
+    id: "kanav",
     title: "KanAV",
     description: "KanAV - 在线AV",
     author: "Coko",
-    version: "1.0.3",
+    version: "1.0.4",
     requiredVersion: "0.0.1",
     site: "https://kanav.ad",
     iconurl: "https://kanav.ad/favicon.ico",

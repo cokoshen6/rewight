@@ -3,11 +3,11 @@ var JM_API = JM_HOST + "/zh-CN/wp-json/wp/v2";
 var JM_UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
 
 WidgetMetadata = {
-    id: "rex.javmit",
+    id: "javmit",
     title: "JAVMIT",
     description: "JAVMIT - 無修正 JAV (在线播放)",
     author: "Coko",
-    version: "1.6.6",
+    version: "1.6.7",
     requiredVersion: "0.0.1",
     site: "https://javmit.com",
     iconurl: "https://javmit.com/wp-content/uploads/2026/04/cropped-red-play-icon-circle-with-white-triangle-middle_609989-1987-192x192.jpg",

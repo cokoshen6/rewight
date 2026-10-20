@@ -1,10 +1,10 @@
 WidgetMetadata = {
-    id: "rex.daxiang",
+    id: "daxiang",
     title: "大象视频",
     description: "大象视频 / 分类浏览 / 搜索",
     author: "Coko",
     site: "https://jj88mm.com",
-    version: "1.0.2",
+    version: "1.0.3",
     requiredVersion: "0.0.1",
     detailCacheDuration: 300,
     modules: [ {

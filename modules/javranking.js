@@ -1,7 +1,7 @@
 WidgetMetadata = {
-    id: "rex.javranking",
+    id: "javranking",
     title: "JavRanking 榜单",
-    version: "1.3.6",
+    version: "1.3.7",
     requiredVersion: "0.0.1",
     description: "JavRanking 影片榜单与元数据：DMM 销量榜 / JAVDB TOP250 / 神作总榜（含官方预告片）",
     author: "Coko",

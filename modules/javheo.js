@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "javheo",
   title: "JavHeo",
-  version: "1.0.3",
+  version: "1.0.4",
   requiredVersion: "0.0.1",
   description: "JavHeo JAV/FC2 视频：最新、分类、搜索，OK CDN 直链播放",
   author: "Coko",
@@ -245,6 +245,7 @@ function jhParseList(html) {
     $(el).find(".meta li").each(function (j, li) {
       var t = jhClean($(li).text());
       if (/^\d{3,4}p$/i.test(t)) quality = t.toUpperCase();
+      else if (/^4k$/i.test(t)) quality = "4K";
       else {
         var dm = t.match(/\d+:\d{2}(?::\d{2})?/);
         if (dm) dur = dm[0];
@@ -288,6 +289,28 @@ async function search(params) {
   var slug = jhSlugify((params || {}).keyword);
   if (!slug) return [];
   return jhPagedList(JH_HOST + "/porn/" + slug + "/", slug, jhPage(params));
+}
+
+function jhQualityScore(label) {
+  var s = jhStr(label).toLowerCase();
+  if (/^4k$/.test(s)) return 2160;
+  var m = s.match(/(\d+)\s*p/);
+  return m ? parseInt(m[1], 10) : 0;
+}
+
+function jhBestQuality(html) {
+  var re = /html:\s*["']([^"']+)["']\s*,\s*url:\s*["']([^"']+)["']/g;
+  var best = null;
+  var bestScore = -1;
+  var m;
+  while ((m = re.exec(jhStr(html))) !== null) {
+    var score = jhQualityScore(m[1]);
+    if (score > bestScore && m[2].indexOf("http") === 0) {
+      bestScore = score;
+      best = { name: jhStr(m[1]).toUpperCase(), url: m[2] };
+    }
+  }
+  return best;
 }
 
 function jhWatchId(s) {
@@ -338,6 +361,15 @@ async function loadResource(params) {
   var convUrl = cm ? cm[0] : frameUrl.replace("/iframe/v1/", "/iframe/convert/v1/");
   if (!convUrl || convUrl === frameUrl) return [];
   var convHtml = await jhGet(convUrl, frameUrl);
+  var best = jhBestQuality(convHtml);
+  if (best) {
+    return [{
+      name: best.name,
+      url: best.url,
+      customHeaders: { "User-Agent": JH_UA, "Referer": convUrl },
+      playerType: "app"
+    }];
+  }
   var um = jhStr(convHtml).match(/url:\s*["']([^"']+)["']/);
   if (!um) return [];
   var mediaUrl = um[1];

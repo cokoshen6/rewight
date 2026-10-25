@@ -3,11 +3,11 @@ const MISSAV_UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_2 like Mac OS X) AppleW
 const MISSAV_BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0";
 
 var WidgetMetadata = {
-  id: "misavlite",
+  id: "missav.lite",
   title: "MissAV-lite",
   description: "获取 MissAV 推荐",
   author: "Coko",
-  version: "6.0.3",
+  version: "6.0.5",
   requiredVersion: "0.0.1",
   detailCacheDuration: 300,
   site: "https://missav.live",
@@ -1560,15 +1560,19 @@ function pickBestM3u8(masterText, uuid) {
   let bestVariant = null;
   for (let index = 0; index < lines.length - 1; index++) {
     const info = lines[index];
-    const bandwidthMatch = info.match(/^#EXT-X-STREAM-INF:.*BANDWIDTH=(\d+)/i);
-    if (!bandwidthMatch) continue;
+    if (!/^#EXT-X-STREAM-INF:/i.test(info)) continue;
+    const bandwidthMatch = info.match(/BANDWIDTH=(\d+)/i);
+    const resolutionMatch = info.match(/RESOLUTION=(\d+)x(\d+)/i);
+    if (!bandwidthMatch && !resolutionMatch) continue;
 
     const uri = lines[index + 1];
     if (!uri || uri.charAt(0) === "#" || uri.indexOf(".m3u8") < 0) continue;
 
-    const bandwidth = Number(bandwidthMatch[1]);
-    if (!bestVariant || bandwidth > bestVariant.bandwidth) {
-      bestVariant = { bandwidth: bandwidth, uri: uri };
+    const bandwidth = bandwidthMatch ? Number(bandwidthMatch[1]) : 0;
+    const pixels = resolutionMatch ? Number(resolutionMatch[1]) * Number(resolutionMatch[2]) : 0;
+    if (!bestVariant || pixels > bestVariant.pixels ||
+        (pixels === bestVariant.pixels && bandwidth > bestVariant.bandwidth)) {
+      bestVariant = { pixels: pixels, bandwidth: bandwidth, uri: uri };
     }
   }
 

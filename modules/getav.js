@@ -204,7 +204,7 @@ async function gaFillJavdbPosters(items) {
 WidgetMetadata = {
     id: "getav",
     title: "GetAV",
-    version: "1.1.23",
+    version: "1.3.3",
     requiredVersion: "0.0.1",
     description: "Getav视频",
     author: "Coko",

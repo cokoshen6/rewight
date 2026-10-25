@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "javheo",
   title: "JavHeo",
-  version: "1.0.6",
+  version: "1.0.7",
   requiredVersion: "0.0.1",
   description: "JavHeo JAV/FC2 视频：最新、分类、搜索，OK CDN 直链播放",
   author: "Coko",
@@ -318,21 +318,6 @@ function jhOwnedWatchId(link) {
   return m ? m[1] : "";
 }
 
-function jhExtractCode(s) {
-  var t = jhClean(s);
-  var sp = jhSplitTitle(t);
-  if (/^(FC2PPV-?\d+(?:_\d+)?|[A-Z]{2,8}-\d{3,})$/.test(sp.title)) return sp.title;
-  var up = jhSplitTitle(t.toUpperCase());
-  if (/^(FC2PPV-?\d+(?:_\d+)?|[A-Z]{2,8}-\d{3,})$/.test(up.title)) return up.title;
-  return "";
-}
-
-function jhCodeFromParams(params) {
-  var c = jhExtractCode(params.id);
-  if (c) return c;
-  return jhExtractCode(params.title);
-}
-
 async function loadDetail(link) {
   var url = jhStr(link);
   var wid = jhOwnedWatchId(url);
@@ -392,13 +377,6 @@ async function jhResolveWatch(wid) {
 async function loadResource(params) {
   params = params || {};
   var wid = jhOwnedWatchId(params.link);
-  if (wid) return jhResolveWatch(wid);
-  var code = jhCodeFromParams(params);
-  if (!code) return [];
-  var items = jhParseList(await jhGet(JH_HOST + "/porn/" + jhSlugify(code) + "/"));
-  var target = code.toUpperCase();
-  for (var i = 0; i < items.length; i++) {
-    if (jhStr(items[i].title).toUpperCase() === target) return jhResolveWatch(items[i].id);
-  }
-  return [];
+  if (!wid) return [];
+  return jhResolveWatch(wid);
 }

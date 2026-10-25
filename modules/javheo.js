@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "javheo",
   title: "JavHeo",
-  version: "1.0.4",
+  version: "1.0.5",
   requiredVersion: "0.0.1",
   description: "JavHeo JAV/FC2 视频：最新、分类、搜索，OK CDN 直链播放",
   author: "Coko",
@@ -313,20 +313,15 @@ function jhBestQuality(html) {
   return best;
 }
 
-function jhWatchId(s) {
-  var m = jhStr(s).match(/\/watch\/([A-Za-z0-9]+)/);
-  if (m) return m[1];
-  var bare = jhStr(s).replace(/^jh:/, "");
-  return /^[A-Za-z0-9]+$/.test(bare) ? bare : "";
+function jhOwnedWatchId(link) {
+  var m = jhStr(link).match(/^https?:\/\/javheo\.com\/watch\/([A-Za-z0-9]+)/);
+  return m ? m[1] : "";
 }
 
 async function loadDetail(link) {
   var url = jhStr(link);
-  if (url.indexOf("http") !== 0) {
-    var wid = jhWatchId(url);
-    if (!wid) return null;
-    url = JH_HOST + "/watch/" + wid;
-  }
+  var wid = jhOwnedWatchId(url);
+  if (!wid) return null;
   var html = await jhGet(url);
   if (!html) return null;
   var $ = Widget.html.load(html);
@@ -337,7 +332,7 @@ async function loadDetail(link) {
   var durSec = $('meta[property="video:duration"]').attr("content")
     || $('meta[property="og:video:duration"]').attr("content") || "";
   return {
-    id: jhWatchId(url),
+    id: wid,
     type: "video",
     title: sp.title,
     link: url,
@@ -349,7 +344,7 @@ async function loadDetail(link) {
 
 async function loadResource(params) {
   params = params || {};
-  var wid = jhWatchId(params.id) || jhWatchId(params.link);
+  var wid = jhOwnedWatchId(params.link);
   if (!wid) return [];
   var watchUrl = JH_HOST + "/watch/" + wid;
   var ifHtml = await jhPost({ mix: "moviesiframe2", num: wid }, watchUrl);

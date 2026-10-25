@@ -7,7 +7,7 @@ var WidgetMetadata = {
   title: "MissAV-lite",
   description: "获取 MissAV 推荐",
   author: "Coko",
-  version: "6.0.6",
+  version: "1.1.7",
   requiredVersion: "0.0.1",
   detailCacheDuration: 300,
   site: "https://missav.live",
@@ -1041,6 +1041,15 @@ var WidgetMetadata = {
 }, { value: "released_at" }),
         { name: "page", title: "页码", type: "page", description: "页码", value: "1" }
       ]
+    },
+    {
+      id: "loadResource",
+      title: "播放资源",
+      description: "根据当前视频信息匹配 MissAV 播放源",
+      functionName: "loadResource",
+      type: "stream",
+      cacheDuration: 0,
+      params: []
     }
   ],
   search: {
@@ -1845,6 +1854,432 @@ async function msFillJavdbPosters(items) {
   if (!jobs.length) return;
   await msPool(jobs, MS_JAVDB_CONCURRENCY, Date.now() + MS_JAVDB_STAGE_TIMEOUT);
   msJdbCacheSet(cache);
+}
+
+function msGetText(value) {
+  return String(value == null ? "" : value).trim();
+}
+
+function msNormalizeCode(value) {
+  return String(value || "").toUpperCase().replace(/[\s_\-]+/g, "");
+}
+
+function msSafeDecodePlaybackValue(value) {
+  try {
+    return decodeURIComponent(String(value || ""));
+  } catch (e) {
+    return String(value || "");
+  }
+}
+
+function msPlaybackFileName(value) {
+  const decoded = msSafeDecodePlaybackValue(msGetText(value));
+  if (!decoded) return "";
+  const clean = decoded.split("#")[0].split("?")[0];
+  const parts = clean.split(/[\\/]/);
+  return parts[parts.length - 1] || clean;
+}
+
+const MS_SEARCH_CODE_PATTERNS = [
+  /\bFC2(?:[- ]?PPV)?[- ]?\d{5,8}(?:[-_ ](?:\d{1,4}|[A-Z]{1,4}))*\b/,
+  /\bCARIB[- ]?\d{6,8}(?:[-_ ](?:\d{1,4}|[A-Z]{1,4}))*\b/,
+  /\b1PONDO[- ]?\d{6,8}(?:[-_ ](?:\d{1,4}|[A-Z]{1,4}))*\b/,
+  /\bHEYZO[- ]?\d{3,6}(?:[-_ ](?:\d{1,4}|[A-Z]{1,4}))*\b/,
+  /\bT28[- ]?\d{6,8}(?:[-_ ](?:\d{1,4}|[A-Z]{1,4}))*\b/,
+  /\b(?:S2M|MIAA|SSNI|SNIS|IPX|IPZZ|SSIS|JUQ|MIDE|MIDV|STARS|ABW|RKI|DVAJ|WANZ|LULU|DLDSS|VRTM|SDMU|SDDE|MKMP|HMN|MUDR|ADN|CAWD|PPPE|PRED|MGR|SHKD|MXGS|FSDSS|JUL|KTB|MIAB|GVH|MIMK|JUY|JUTA|IDBD|HND|DASD|CLO|BF|HONB|ROE|CEMD|MIUM|NITR|RCTD|RCT|IPVR|MIBD|JUR|JURD|SOE|ORE|PYO|START|NSFS)\s*[-_ ]?\d{2,6}[A-Z]?(?:[-_ ](?:\d{1,4}|[A-Z]{1,4}))*\b/,
+  /\b[A-Z]{2,10}[-_]\d{2,8}[A-Z]?(?:[-_](?:\d{1,4}|[A-Z]{1,4}))*\b/,
+  /\b\d{6,8}[-_]\d{1,4}(?:[-_]\d{1,4})*\b/
+];
+
+function msExtractSearchCode(text, options) {
+  const opts = options || {};
+  const allowPureNumeric = !!(opts.allowPureNumeric);
+  const upper = msGetText(text).toUpperCase();
+  if (!upper) return "";
+  const normalized = upper.replace(/\./g, " ").replace(/_/g, "-").replace(/\s+/g, " ").trim();
+  const patterns = MS_SEARCH_CODE_PATTERNS.slice();
+  if (allowPureNumeric) patterns.push(/\b\d{6,8}\b/);
+  for (let i = 0; i < patterns.length; i++) {
+    const match = normalized.match(patterns[i]);
+    if (match && match[0]) {
+      const isPureNumeric = allowPureNumeric && i === patterns.length - 1;
+      if (isPureNumeric && match.index > 0) continue;
+      return match[0].replace(/\s+/g, "").replace(/_/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "").toUpperCase();
+    }
+  }
+  return "";
+}
+
+function msIsKnownStandaloneCode(code) {
+  const norm = msNormalizeCode(code);
+  if (!norm) return false;
+  return /^(?:FC2(?:PPV)?\d{5,8}|CARIB\d{6,8}|1PONDO\d{6,8}|HEYZO\d{3,6}|T28\d{3,8}|N\d{4}|\d{6}\d{2,3}|\d{5,8})$/.test(norm) ||
+    /^(?:S2M|MIAA|SSNI|SNIS|IPX|IPZZ|SSIS|SIVR|JUQ|MIDE|MIDV|STARS|START|ABW|ABF|ABP|RKI|DVAJ|WANZ|LULU|DLDSS|VRTM|SDMU|SDDE|MKMP|HMN|MUDR|ADN|CAWD|CJOD|PPPE|PRED|MGR|SHKD|MXGS|FSDSS|JUL|KTB|MIAB|GVH|MIMK|JUY|JUTA|IDBD|HND|DASD|CLO|BF|HONB|ROE|CEMD|MIUM|NITR|RCTD|RCT|IPVR|MIBD|JUR|JURD|SOE|ORE|PYO|NSFS)\d/.test(norm) ||
+    /^\d{3}[A-Z]{2,10}\d{2,8}/.test(norm);
+}
+
+function msLooksLikeWesternPlayback(text) {
+  const value = msGetText(text);
+  return /[A-Za-z].*(?:^|[^0-9])(?:(?:19|20)\d{2}|\d{2})[._ -]\d{2}[._ -]\d{2}(?!\d)/.test(value);
+}
+
+function msExtractTrustedStandaloneCode(text, trusted, strict) {
+  const value = msGetText(text);
+  if (!value || /^tt\d+$/i.test(value)) return "";
+  const found = msExtractSearchCode(value, { allowPureNumeric: true });
+  if (found) {
+    const cleaned = found.replace(/(?:19|20)\d{2}-\d{2}-\d{2}.*$/, "");
+    if (msIsKnownStandaloneCode(cleaned) || trusted) return cleaned;
+    const digits = msNormalizeCode(cleaned).match(/(\d{2,10})/);
+    if (strict && digits && digits[1].length >= 3) return cleaned;
+    return "";
+  }
+  if (msLooksLikeWesternPlayback(value)) return "";
+  const stripped = value.toUpperCase().replace(/\.[A-Z0-9]{2,5}$/i, "").trim();
+  const nMatch = stripped.match(/(?:^|[^A-Z0-9])N[-_. ]?(\d{4})(?:[^0-9]|$)/);
+  if (nMatch) return "N-" + nMatch[1];
+  if (!trusted && !strict) return "";
+  const generic = stripped.match(/(?:^|[^A-Z0-9])(\d{3}[A-Z]{2,10}|[A-Z]{2,15})[-_. ]?(\d{2,10}[A-Z]?)(?:[^A-Z0-9]|$)/);
+  if (!generic) return "";
+  const digitRun = (generic[2].match(/\d+/) || [""])[0];
+  if (strict && !trusted && digitRun.length < 3) return "";
+  return generic[1] + "-" + generic[2];
+}
+
+function msIsHighConfidenceStandaloneTitle(title) {
+  const code = msExtractTrustedStandaloneCode(title, false, false);
+  return !!(code && msIsKnownStandaloneCode(code));
+}
+
+function msExtractLeadingStandaloneCode(text) {
+  const value = msSafeDecodePlaybackValue(String(text || "").trim());
+  if (!value || msLooksLikeWesternPlayback(value)) return "";
+  if (msIsHighConfidenceStandaloneTitle(value)) return msExtractTrustedStandaloneCode(value, false, false);
+  const leading = value.match(/^\s*(?:[\[【][^\]】]{1,20}[\]】]\s*)*((?:FC2(?:[-_ ]?PPV)?[-_ ]?\d{5,8}|\d{6}[-_]\d{2,3}|\d{3}[A-Z]{2,10}[-_]?\d{2,8}|[A-Z]{2,15}(?:[-_]?\d{3,10})[A-Z]?))(?![A-Z0-9])/i);
+  return leading ? msExtractTrustedStandaloneCode(leading[1], true, false) : "";
+}
+
+function msExtractLabeledStandaloneCode(text) {
+  const value = msSafeDecodePlaybackValue(String(text || "").trim());
+  const labeled = value.match(/(?:番号|番號|品番|作品番号|DVD\s*(?:ID|番号)?|CODE)\s*[:：#=]\s*([0-9A-Z][0-9A-Z._-]{2,32})/i);
+  return labeled ? msExtractTrustedStandaloneCode(labeled[1], true, false) : "";
+}
+
+function msParseAvdbPlaybackLink(link) {
+  const value = msGetText(link);
+  if (value.indexOf("avdb-detail:") !== 0) return null;
+  const rest = value.slice("avdb-detail:".length);
+  const colon = rest.indexOf(":");
+  return {
+    id: msSafeDecodePlaybackValue(colon >= 0 ? rest.slice(0, colon) : rest),
+    number: msSafeDecodePlaybackValue(colon >= 0 ? rest.slice(colon + 1) : "")
+  };
+}
+
+function msParseAvdbOnlinePlaybackLink(link) {
+  const value = msGetText(link);
+  if (value.indexOf("avdb-online://") !== 0) return null;
+  const q = value.indexOf("?");
+  if (q < 0) return null;
+  const query = value.slice(q + 1).split("#")[0];
+  const out = {};
+  const pairs = query.split("&");
+  for (let i = 0; i < pairs.length; i++) {
+    const pair = pairs[i];
+    if (!pair) continue;
+    const eq = pair.indexOf("=");
+    const key = msSafeDecodePlaybackValue(eq >= 0 ? pair.slice(0, eq) : pair);
+    const val = msSafeDecodePlaybackValue(eq >= 0 ? pair.slice(eq + 1) : "");
+    if (key === "id" || key === "number") out[key] = val;
+  }
+  return out;
+}
+
+const MS_JAV_HOSTS = /(?:jable(?:\.tv)?|javdb|missav|123av|kanav|insav|javbus|javlibrary|javmenu|javtrailers)/i;
+
+function msHasTrustedJavModuleHint(params) {
+  const p = params || {};
+  const joined = [p.link, p.id, p.url, p.site, p.source, p.provider, p.moduleId, p.moduleName].map(v => String(v || "")).join(" ");
+  return MS_JAV_HOSTS.test(joined);
+}
+
+function msHasNormalPlaybackIdentity(params) {
+  if (!params) return false;
+  if (params.tmdbId || params.imdbId || params.doubanId || params.douban_id) return true;
+  const id = msGetText(params.id);
+  return /^\d+$/.test(id) || /^tt\d+$/i.test(id);
+}
+
+function msExtractTrustedJavIdentityCode(params) {
+  const sources = [params.link, params.id, params.url];
+  for (let i = 0; i < sources.length; i++) {
+    const decoded = msSafeDecodePlaybackValue(String(sources[i] || "").trim());
+    if (!MS_JAV_HOSTS.test(decoded)) continue;
+    const noFrag = decoded.split("#")[0].split("?")[0];
+    const segments = noFrag.split(/[\\/]/).filter(Boolean);
+    for (let j = segments.length - 1; j >= 0; j--) {
+      const segment = segments[j].replace(/-(?:uncensored-leak(?:ed)?|chinese-subtitle)$/i, "");
+      const code = msExtractTrustedStandaloneCode(segment, true, false);
+      if (code) return code;
+    }
+  }
+  return "";
+}
+
+function msExtractCrossModulePlaybackCode(params) {
+  const trustedHint = msHasTrustedJavModuleHint(params);
+  const titles = [params.title, params.name, params.originalTitle, params.originalName, params.episodeName];
+  for (let i = 0; i < titles.length; i++) {
+    if (msIsHighConfidenceStandaloneTitle(titles[i])) {
+      const code = msExtractTrustedStandaloneCode(titles[i], false, false);
+      if (code) return code;
+    }
+    if (trustedHint) {
+      const leading = msExtractLeadingStandaloneCode(titles[i]);
+      if (leading) return leading;
+    }
+  }
+  const descriptions = [params.description, params.summary];
+  for (let i = 0; i < descriptions.length; i++) {
+    const labeled = msExtractLabeledStandaloneCode(descriptions[i]);
+    if (labeled) return labeled;
+    if (trustedHint) {
+      const leading = msExtractLeadingStandaloneCode(descriptions[i]);
+      if (leading) return leading;
+    }
+  }
+  return "";
+}
+
+function msExtractSafePlaybackCode(params) {
+  params = params || {};
+  const avdb = msParseAvdbPlaybackLink(params.link) || msParseAvdbOnlinePlaybackLink(params.link);
+  if (avdb) {
+    const code = msExtractTrustedStandaloneCode(avdb.number, true, false);
+    if (code) return code;
+  }
+  const candidates = [params.number, params.code];
+  for (let i = 0; i < candidates.length; i++) {
+    const code = msExtractTrustedStandaloneCode(candidates[i], true, false);
+    if (code) return code;
+  }
+  const trusted = msExtractTrustedJavIdentityCode(params);
+  if (trusted) return trusted;
+  const hasNormal = msHasNormalPlaybackIdentity(params);
+  const fileFields = [params.fileName, params.filename, params.file_name, params.path, params.filePath, params.file_path, params.mediaPath, params.media_path, params.itemPath, params.item_path, params.localPath, params.local_path, params.originalFilename, params.originalFileName, params.videoUrl];
+  if (params.mediaSource) fileFields.push(params.mediaSource.fileName, params.mediaSource.filename, params.mediaSource.path, params.mediaSource.url, params.mediaSource.streamUrl);
+  if (Array.isArray(params.mediaSources)) {
+    for (let i = 0; i < params.mediaSources.length; i++) {
+      const src = params.mediaSources[i] || {};
+      fileFields.push(src.fileName, src.filename, src.path, src.url, src.streamUrl);
+    }
+  }
+  for (let i = 0; i < fileFields.length; i++) {
+    const code = msExtractTrustedStandaloneCode(msPlaybackFileName(fileFields[i]), false, !hasNormal);
+    if (code && (msIsKnownStandaloneCode(code) || !hasNormal)) return code;
+  }
+  if (hasNormal) return "";
+  return msExtractCrossModulePlaybackCode(params);
+}
+
+function msExtractCodeFromMissAVLink(link) {
+  const text = msGetText(link);
+  if (!text) return "";
+  const last = text.split("?")[0].split("#")[0].split("/").filter(Boolean).pop() || "";
+  let segment = last;
+  try {
+    segment = decodeURIComponent(last);
+  } catch (e) {
+    segment = last;
+  }
+  segment = segment.replace(/-uncensored-leak/gi, "").replace(/-chinese-subtitle/gi, "");
+  return msExtractSearchCode(segment, { allowPureNumeric: true });
+}
+
+function msGetVersionTag(url) {
+  if (!url) return "有码";
+  if (url.includes("-chinese-subtitle")) return "中文字幕";
+  if (url.includes("-uncensored-leak")) return "无码破解";
+  return "有码";
+}
+
+function msToAbsoluteUrl(url) {
+  if (!url) return "";
+  if (url.startsWith("http")) return url;
+  if (url.startsWith("/")) return MISSAV_SITE + url;
+  return MISSAV_SITE + "/" + url;
+}
+
+function msParseSearchResults(html, code) {
+  if (!html || html.includes("Just a moment")) return [];
+  const $ = Widget.html.load(html);
+  const results = [];
+  const seen = new Set();
+  $("div.group").each((_, el) => {
+    const card = $(el);
+    const href = card.find("a.text-secondary").first().attr("href");
+    if (!href) return;
+    const link = msToAbsoluteUrl(href);
+    if (!link || seen.has(link)) return;
+    seen.add(link);
+    const title = card.text().trim();
+    const codeFromLink = msExtractCodeFromMissAVLink(link);
+    const codeFromTitle = msExtractSearchCode(title, { allowPureNumeric: true });
+    results.push({ title: title, link: link, code: codeFromLink || codeFromTitle, version: msGetVersionTag(link) });
+  });
+  if (results.length === 0) {
+    $("a[href]").each((_, el) => {
+      const anchor = $(el);
+      const href = anchor.attr("href");
+      if (!href) return;
+      const link = msToAbsoluteUrl(href);
+      if (!link.includes("/cn/")) return;
+      if (seen.has(link)) return;
+      const code = msExtractCodeFromMissAVLink(link);
+      if (!code) return;
+      seen.add(link);
+      results.push({ title: anchor.text().trim(), link: link, code: code, version: msGetVersionTag(link) });
+    });
+  }
+  const want = msNormalizeCode(code);
+  const exact = results.filter(item => {
+    const norm = msNormalizeCode(item.code);
+    if (norm === want) return true;
+    if (want.startsWith("FC2")) return norm.replace(/^FC2PPV/, "FC2") === want.replace(/^FC2PPV/, "FC2");
+    return false;
+  });
+  return exact.length ? exact : [];
+}
+
+async function msFindMissAVDetailByCode(code) {
+  const queries = [...new Set([code, String(code || "").replace(/-/g, "")].filter(Boolean))];
+  const want = msNormalizeCode(code);
+  for (const query of queries) {
+    const url = MISSAV_SITE + "/cn/search/" + encodeURIComponent(query);
+    try {
+      const response = await requestMissavPage(url, MISSAV_SITE + "/");
+      const html = response && response.data ? response.data : "";
+      const results = msParseSearchResults(html, code);
+      if (!results.length) continue;
+      const exact = results.filter(item => {
+        const norm = msNormalizeCode(item.code);
+        if (norm === want) return true;
+        if (want.startsWith("FC2")) return norm.replace(/^FC2PPV/, "FC2") === want.replace(/^FC2PPV/, "FC2");
+        return false;
+      });
+      if (!exact.length) continue;
+      const order = { "中文字幕": 0, "无码流出": 1, "有码": 2 };
+      exact.sort((a, b) => (order[a.version] ?? 99) - (order[b.version] ?? 99));
+      return exact.map(item => ({ link: item.link, version: item.version }));
+    } catch (e) {
+    }
+  }
+  return [];
+}
+
+async function msExtractUuidFromDetail(detailUrl) {
+  try {
+    const response = await requestMissavPage(detailUrl, MISSAV_SITE + "/");
+    const html = response && response.data ? response.data : "";
+    if (!html || html.includes("Just a moment")) return "";
+    return extractMissavUuid(html);
+  } catch (e) {
+    return "";
+  }
+}
+
+async function msIsM3U8Available(url) {
+  try {
+    const res = await Widget.http.get(url, {
+      headers: getPlayHeaders(MISSAV_SITE + "/"),
+      timeout: 1500
+    });
+    const status = res && (res.status || res.statusCode);
+    return status === 200 && String(res && res.data || "").includes("#EXTM3U");
+  } catch (e) {
+    return false;
+  }
+}
+
+function msGetWorkerUrl() {
+  try {
+    return Widget.storage.get("worker") || "";
+  } catch (e) {
+    return "";
+  }
+}
+
+async function msWorkerQualities(workerUrl, uuid) {
+  try {
+    const res = await Widget.http.get(workerUrl + "/qualities/" + uuid, {
+      headers: getPlayHeaders(MISSAV_SITE + "/")
+    });
+    const data = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
+    if (data && data.length) return data;
+  } catch (e) {
+  }
+  return null;
+}
+
+function msBuildStreamItem(name, description, url, detailUrl) {
+  return {
+    name: name,
+    description: description,
+    url: url,
+    customHeaders: getPlayHeaders(detailUrl)
+  };
+}
+
+async function msBuildStreamItems(uuid, code, detailUrl, version) {
+  const versionPrefix = version && version !== "有码" ? "[" + version + "]" : "";
+  const versionLine = version && version !== "有码" ? "\n版本：" + version : "";
+  const workerUrl = msGetWorkerUrl();
+  if (workerUrl) {
+    const qualities = await msWorkerQualities(workerUrl, uuid);
+    if (qualities && qualities.length) {
+      return qualities.map(q => msBuildStreamItem(versionPrefix + "MissAV " + q.label, "番号：" + code + "\n来源：MissAV\n清晰度：" + q.label + versionLine + "\n详情页：" + detailUrl, q.url, detailUrl));
+    }
+  }
+  if (String(code || "").toUpperCase().startsWith("FC2")) {
+    const hd = "https://surrit.com/" + uuid + "/1280x720/video.m3u8";
+    const sd = "https://surrit.com/" + uuid + "/720p/video.m3u8";
+    let target = hd;
+    let ok = await msIsM3U8Available(hd);
+    if (!ok) {
+      ok = await msIsM3U8Available(sd);
+      target = sd;
+    }
+    if (ok) return [msBuildStreamItem(versionPrefix + "MissAV 720P", "番号：" + code + "\n来源：MissAV\n清晰度：720P" + versionLine + "\n详情页：" + detailUrl, target, detailUrl)];
+    return [];
+  }
+  const full = "https://surrit.com/" + uuid + "/1080p/video.m3u8";
+  const sd = "https://surrit.com/" + uuid + "/720p/video.m3u8";
+  const items = [];
+  if (await msIsM3U8Available(full)) items.push(msBuildStreamItem(versionPrefix + "MissAV 1080P", "番号：" + code + "\n来源：MissAV\n清晰度：1080P" + versionLine + "\n详情页：" + detailUrl, full, detailUrl));
+  items.push(msBuildStreamItem(versionPrefix + "MissAV 720P", "番号：" + code + "\n来源：MissAV\n清晰度：720P" + versionLine + "\n详情页：" + detailUrl, sd, detailUrl));
+  return items;
+}
+
+async function loadResource(params) {
+  try {
+    const code = msExtractSafePlaybackCode(params || {});
+    if (!code) return [];
+    const details = await msFindMissAVDetailByCode(code);
+    if (!details.length) return [];
+    const seen = new Set();
+    const items = [];
+    for (const detail of details) {
+      const uuid = await msExtractUuidFromDetail(detail.link);
+      if (!uuid) continue;
+      if (seen.has(uuid)) continue;
+      seen.add(uuid);
+      const streams = await msBuildStreamItems(uuid, code, detail.link, detail.version);
+      items.push(...streams);
+    }
+    return items;
+  } catch (e) {
+    return [];
+  }
 }
 
 async function parseVideoList(html, params) {

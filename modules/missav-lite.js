@@ -7,7 +7,7 @@ var WidgetMetadata = {
   title: "MissAV-lite",
   description: "获取 MissAV 推荐",
   author: "Coko",
-  version: "6.0.5",
+  version: "6.0.6",
   requiredVersion: "0.0.1",
   detailCacheDuration: 300,
   site: "https://missav.live",
@@ -1655,6 +1655,198 @@ async function searchVideos(params = {}) {
   return await fetchVideoList(url, params);
 }
 
+const MS_DMM_PREFIX_MAP = {
+  FSDSS: "1", FCDSS: "1", FNS: "1", FTHTD: "1", FALENO: "1", FGAN: "1",
+  FSNF: "1", FLAV: "1", NHDTC: "1", KUSE: "1", SDNM: "1", STARS: "1",
+  STAR: "1", START: "1", SODS: "1", MOGI: "1", FTAV: "1", WSA: "2",
+  MBDD: "301", REBD: "h_346", REBDB: "h_346", GSHRB: "h_346",
+  NAAC: "h_706", MAAN: "h_1711"
+};
+
+function msDmmContentId(code) {
+  const m = String(code || "").toUpperCase().match(/^([A-Z]{2,6})-?(\d{2,6})([A-Z]?)$/);
+  if (!m) return "";
+  const prefix = m[1], num5 = m[2].padStart(5, "0"), suffix = (m[3] || "").toLowerCase();
+  const np = MS_DMM_PREFIX_MAP[prefix] || "";
+  return np + prefix.toLowerCase() + num5 + suffix;
+}
+
+function msDmmPoster(code) {
+  const cid = msDmmContentId(code);
+  if (!cid) return "";
+  return "https://awsimgsrc.dmm.co.jp/pics_dig/digital/video/" + cid + "/" + cid + "ps.jpg";
+}
+
+const MS_POSTER_MIN_RANGE = "bytes=100000-100000";
+
+async function msProbePoster(url) {
+  if (!url) return false;
+  try {
+    const res = await Widget.http.get(url, {
+      headers: { "User-Agent": MISSAV_UA, "Range": MS_POSTER_MIN_RANGE }
+    });
+    const status = res && (res.status || res.statusCode);
+    return status === 200 || status === 206 || status === 416;
+  } catch (e) {
+    return false;
+  }
+}
+
+const MS_DMM_CACHE_KEY = "missav_dmmcover";
+const MS_DMM_CACHE_MAX = 500;
+const MS_DMM_MISS_TTL = 24 * 3600 * 1000;
+
+function msDmmCacheGet() {
+  try {
+    const raw = Widget.storage.get(MS_DMM_CACHE_KEY);
+    const o = raw ? JSON.parse(raw) : null;
+    return o && typeof o === "object" ? o : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function msDmmCacheSet(map) {
+  try {
+    const keys = Object.keys(map);
+    while (keys.length > MS_DMM_CACHE_MAX) delete map[keys.shift()];
+    Widget.storage.set(MS_DMM_CACHE_KEY, JSON.stringify(map));
+  } catch (e) {}
+}
+
+async function msFillPosters(items) {
+  const cache = msDmmCacheGet();
+  const now = Date.now();
+  const jobs = items.map(async (it) => {
+    if (!it || it.posterPath) return;
+    const code = String(it.title || "").toUpperCase();
+    if (!code) return;
+    if (/^FC2/i.test(code) || /^\d{6,}-\d{3,}$/.test(code)) return;
+    const hit = cache[code];
+    if (hit && (hit.u || now - hit.t < MS_DMM_MISS_TTL)) {
+      if (hit.u) it.posterPath = hit.u;
+      return;
+    }
+    const url = msDmmPoster(code);
+    const ok = url ? await msProbePoster(url) : false;
+    cache[code] = { u: ok ? url : "", t: Date.now() };
+    if (ok) it.posterPath = url;
+  });
+  await Promise.all(jobs);
+  msDmmCacheSet(cache);
+  await msFillJavdbPosters(items);
+  return items;
+}
+
+const MS_JAVDB_SEARCH = "https://javdb.com/search?q=";
+const MS_JAVDB_TIMEOUT = 9000;
+const MS_JAVDB_CONCURRENCY = 4;
+const MS_JAVDB_STAGE_TIMEOUT = 15000;
+const MS_JDB_CACHE_KEY = "missav_jdbcover";
+const MS_JDB_CACHE_MAX = 300;
+const MS_JDB_MISS_TTL = 24 * 3600 * 1000;
+
+function msNormCode(s) {
+  return String(s || "").toUpperCase().replace(/-/g, "");
+}
+
+function msJdbCacheGet() {
+  try {
+    const raw = Widget.storage.get(MS_JDB_CACHE_KEY);
+    const o = raw ? JSON.parse(raw) : null;
+    return o && typeof o === "object" ? o : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function msJdbCacheSet(map) {
+  try {
+    const keys = Object.keys(map);
+    while (keys.length > MS_JDB_CACHE_MAX) delete map[keys.shift()];
+    Widget.storage.set(MS_JDB_CACHE_KEY, JSON.stringify(map));
+  } catch (e) {}
+}
+
+async function msJavdbCover(code) {
+  const res = await Widget.http.get(MS_JAVDB_SEARCH + encodeURIComponent(code) + "&f=all", {
+    headers: {
+      "User-Agent": MISSAV_UA,
+      "Accept": "text/html,application/xhtml+xml",
+      "Accept-Language": "zh-CN,zh;q=0.9"
+    },
+    timeout: MS_JAVDB_TIMEOUT
+  });
+  const html = String(res && res.data || "");
+  if (!html || html.length < 2000) return "";
+  if (/Just a moment|cf-browser-verification|Attention Required|Cloudflare/i.test(html)) return "";
+  const $ = Widget.html.load(html);
+  const want = msNormCode(code);
+  let cover = "";
+  $("a.box").each((_, el) => {
+    if (cover) return;
+    try {
+      const box = $(el);
+      let t = String(box.find(".video-title strong").first().text() || "").trim();
+      if (!t) t = String(box.find(".video-title").first().text() || "").trim();
+      const nt = msNormCode(t);
+      if (!nt || (nt.indexOf(want) !== 0 && want.indexOf(nt) !== 0)) return;
+      const img = box.find(".cover img").first();
+      cover = img.attr("data-src") || img.attr("src") || "";
+    } catch (e) {}
+  });
+  cover = String(cover || "").trim();
+  if (cover.indexOf("//") === 0) cover = "https:" + cover;
+  return /^https?:\/\//i.test(cover) ? cover : "";
+}
+
+async function msPool(jobs, limit, deadlineMs) {
+  let idx = 0;
+  const workers = [];
+  const n = Math.min(limit, jobs.length);
+  for (let w = 0; w < n; w++) {
+    workers.push((async () => {
+      while (idx < jobs.length) {
+        if (deadlineMs && Date.now() > deadlineMs) return;
+        const i = idx++;
+        try {
+          await jobs[i]();
+        } catch (e) {}
+      }
+    })());
+  }
+  await Promise.all(workers);
+}
+
+async function msFillJavdbPosters(items) {
+  const list = (items || []).filter(it => it && !it.posterPath && String(it.title || "").trim());
+  if (!list.length) return;
+  const cache = msJdbCacheGet();
+  const now = Date.now();
+  const jobs = [];
+  list.forEach(it => {
+    const code = String(it.title).toUpperCase();
+    const hit = cache[code];
+    if (hit && (hit.u || now - hit.t < MS_JDB_MISS_TTL)) {
+      if (hit.u) it.posterPath = hit.u;
+      return;
+    }
+    jobs.push(async () => {
+      let u = "";
+      try {
+        u = await msJavdbCover(code);
+      } catch (e) {
+        u = "";
+      }
+      cache[code] = { u: u, t: Date.now() };
+      if (u) it.posterPath = u;
+    });
+  });
+  if (!jobs.length) return;
+  await msPool(jobs, MS_JAVDB_CONCURRENCY, Date.now() + MS_JAVDB_STAGE_TIMEOUT);
+  msJdbCacheSet(cache);
+}
+
 async function parseVideoList(html, params) {
   const $ = Widget.html.load(html);
   const metadataByVideoId = extractListMetadataFromParsedDocument($);
@@ -1724,7 +1916,8 @@ async function parseVideoList(html, params) {
     }
   });
 
-  return await Promise.all(videoTasks);
+  const items = await Promise.all(videoTasks);
+  return msFillPosters(items);
 }
 
 async function loadDetail(link) {
@@ -1806,6 +1999,8 @@ async function loadDetail(link) {
       };
     }
 
+    const posterItems = await msFillPosters([{ title: videoCode }]);
+    const verticalPoster = (posterItems[0] && posterItems[0].posterPath) || "";
     const playbackUrl = videoUrl;
     const playHeaders = playbackUrl ? getPlayHeaders(linkStr) : undefined;
 
@@ -1818,7 +2013,7 @@ async function loadDetail(link) {
       title: `${videoCode}`,
       description: videoUrl ? officialDescription : `${officialDescription}\n未解析到 m3u8，请稍后重试`,
       releaseDate: releaseDate,
-      posterPath: cover,
+      posterPath: verticalPoster || cover,
       backdropPath: cover,
       mediaType: "movie",
       duration: duration,

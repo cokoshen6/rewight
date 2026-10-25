@@ -7,7 +7,7 @@ var WidgetMetadata = {
   title: "MissAV-lite",
   description: "获取 MissAV 推荐",
   author: "Coko",
-  version: "1.1.7",
+  version: "1.2.1",
   requiredVersion: "0.0.1",
   detailCacheDuration: 300,
   site: "https://missav.live",
@@ -2201,26 +2201,6 @@ async function msIsM3U8Available(url) {
   }
 }
 
-function msGetWorkerUrl() {
-  try {
-    return Widget.storage.get("worker") || "";
-  } catch (e) {
-    return "";
-  }
-}
-
-async function msWorkerQualities(workerUrl, uuid) {
-  try {
-    const res = await Widget.http.get(workerUrl + "/qualities/" + uuid, {
-      headers: getPlayHeaders(MISSAV_SITE + "/")
-    });
-    const data = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
-    if (data && data.length) return data;
-  } catch (e) {
-  }
-  return null;
-}
-
 function msBuildStreamItem(name, description, url, detailUrl) {
   return {
     name: name,
@@ -2230,15 +2210,62 @@ function msBuildStreamItem(name, description, url, detailUrl) {
   };
 }
 
+function msParseMasterVariants(masterText, uuid) {
+  const prefix = "https://surrit.com/" + uuid + "/";
+  const lines = String(masterText || "").split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  const variants = [];
+  const seen = new Set();
+  for (let index = 0; index < lines.length - 1; index++) {
+    const info = lines[index];
+    if (!/^#EXT-X-STREAM-INF:/i.test(info)) continue;
+    const uri = lines[index + 1];
+    if (!uri || uri.charAt(0) === "#" || uri.indexOf(".m3u8") < 0) continue;
+    const resolutionMatch = info.match(/RESOLUTION=(\d+)x(\d+)/i);
+    const bandwidthMatch = info.match(/BANDWIDTH=(\d+)/i);
+    let height = resolutionMatch ? Number(resolutionMatch[2]) : 0;
+    if (!height) {
+      const uriRes = uri.match(/(\d+)x(\d+)/);
+      if (uriRes) height = Number(uriRes[2]);
+    }
+    if (!height) {
+      const uriQuality = uri.match(/(\d+)p\//i);
+      if (uriQuality) height = Number(uriQuality[1]);
+    }
+    if (!height) continue;
+    let url = uri;
+    if (!/^https?:\/\//i.test(uri)) {
+      url = uri.charAt(0) === "/" ? "https://surrit.com" + uri : prefix + uri;
+    }
+    if (seen.has(url)) continue;
+    seen.add(url);
+    variants.push({ height: height, bandwidth: bandwidthMatch ? Number(bandwidthMatch[1]) : 0, url: url });
+  }
+  variants.sort((a, b) => (b.height - a.height) || (b.bandwidth - a.bandwidth));
+  return variants;
+}
+
+async function msFetchMasterVariants(uuid) {
+  try {
+    const res = await Widget.http.get("https://surrit.com/" + uuid + "/playlist.m3u8", {
+      headers: getPlayHeaders(MISSAV_SITE + "/"),
+      timeout: 5000
+    });
+    const status = res && (res.status || res.statusCode);
+    const text = String(res && res.data || "");
+    if (status !== 200 || !text.includes("#EXTM3U")) return [];
+    return msParseMasterVariants(text, uuid);
+  } catch (e) {
+    return [];
+  }
+}
+
 async function msBuildStreamItems(uuid, code, detailUrl, version) {
   const versionPrefix = version && version !== "有码" ? "[" + version + "]" : "";
   const versionLine = version && version !== "有码" ? "\n版本：" + version : "";
-  const workerUrl = msGetWorkerUrl();
-  if (workerUrl) {
-    const qualities = await msWorkerQualities(workerUrl, uuid);
-    if (qualities && qualities.length) {
-      return qualities.map(q => msBuildStreamItem(versionPrefix + "MissAV " + q.label, "番号：" + code + "\n来源：MissAV\n清晰度：" + q.label + versionLine + "\n详情页：" + detailUrl, q.url, detailUrl));
-    }
+  const masterVariants = await msFetchMasterVariants(uuid);
+  const hiVariants = masterVariants.filter(v => v.height >= 720);
+  if (hiVariants.length) {
+    return hiVariants.map(v => msBuildStreamItem(versionPrefix + "MissAV " + v.height + "P", "番号：" + code + "\n来源：MissAV\n清晰度：" + v.height + "P" + versionLine + "\n详情页：" + detailUrl, v.url, detailUrl));
   }
   if (String(code || "").toUpperCase().startsWith("FC2")) {
     const hd = "https://surrit.com/" + uuid + "/1280x720/video.m3u8";
@@ -2256,7 +2283,7 @@ async function msBuildStreamItems(uuid, code, detailUrl, version) {
   const sd = "https://surrit.com/" + uuid + "/720p/video.m3u8";
   const items = [];
   if (await msIsM3U8Available(full)) items.push(msBuildStreamItem(versionPrefix + "MissAV 1080P", "番号：" + code + "\n来源：MissAV\n清晰度：1080P" + versionLine + "\n详情页：" + detailUrl, full, detailUrl));
-  items.push(msBuildStreamItem(versionPrefix + "MissAV 720P", "番号：" + code + "\n来源：MissAV\n清晰度：720P" + versionLine + "\n详情页：" + detailUrl, sd, detailUrl));
+  if (await msIsM3U8Available(sd)) items.push(msBuildStreamItem(versionPrefix + "MissAV 720P", "番号：" + code + "\n来源：MissAV\n清晰度：720P" + versionLine + "\n详情页：" + detailUrl, sd, detailUrl));
   return items;
 }
 

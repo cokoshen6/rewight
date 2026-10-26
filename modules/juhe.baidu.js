@@ -1,4 +1,4 @@
-var WidgetMetadata = {"id":"juhe.baidu","title":"聚合百度版","version":"1.1.6","requiredVersion":"0.0.1","description":"纯百度聚合（CatPaw 引擎版）：并发搜索3个源（花卷/虎斑/多多），转存后返回百度网盘播放源；旧版收藏链接不兼容。","author":"夏恩","site":"https://github.com/InchStudio/ForwardWidgets","detailCacheDuration":3600,"credentialSource":"shared","globalParams":[{"name":"credentialSource","title":"百度账号来源","type":"enumeration","value":"shared","enumOptions":[{"title":"通用配置（推荐）","value":"shared"},{"title":"本模块单独设置","value":"local"}]},{"name":"baiduCookie","title":"百度 Cookie（本地）","type":"input","value":""},{"name":"resourceCategory","title":"清晰度标签","type":"enumeration","value":"8k","enumOptions":[{"title":"8K","value":"8k"},{"title":"4K","value":"4k"},{"title":"1080P","value":"1080p"},{"title":"其他","value":"other"}]},{"name":"host_huajuan","title":"花卷站点地址","type":"input","value":"https://www.hjzhencai.top"},{"name":"host_huban","title":"虎斑站点地址","type":"input","value":"http://43.248.128.118:16969"},{"name":"host_duoduo","title":"多多站点地址","type":"input","value":"https://tv.214521.xyz"}],"modules":[{"id":"loadResource","title":"聚合百度[盘]","description":"按当前影片详情并发搜索各源并返回百度网盘播放源","functionName":"loadResource","type":"stream","cacheDuration":0,"params":[]},{"id":"clearRexCatalogCache","title":"刷新网盘目录缓存","functionName":"clearRexCatalogCache","cacheDuration":0,"params":[]}],"search":{"title":"搜索聚合百度","functionName":"search","params":[{"name":"keyword","title":"关键词","type":"input","value":""},{"name":"page","title":"页码","type":"page","value":"1"}]}};
+var WidgetMetadata = {"id":"juhe.baidu","title":"聚合百度版","version":"1.1.7","requiredVersion":"0.0.1","description":"纯百度聚合（CatPaw 引擎版）：并发搜索3个源（花卷/虎斑/多多），转存后返回百度网盘播放源；百度 Cookie 只用本模块设置；旧版收藏链接不兼容。","author":"夏恩","site":"https://github.com/InchStudio/ForwardWidgets","detailCacheDuration":3600,"credentialSource":"local","globalParams":[{"name":"baiduCookie","title":"百度 Cookie","type":"input","value":""},{"name":"resourceCategory","title":"清晰度标签","type":"enumeration","value":"8k","enumOptions":[{"title":"8K","value":"8k"},{"title":"4K","value":"4k"},{"title":"1080P","value":"1080p"},{"title":"其他","value":"other"}]},{"name":"host_huajuan","title":"花卷站点地址","type":"input","value":"https://www.hjzhencai.top"},{"name":"host_huban","title":"虎斑站点地址","type":"input","value":"http://43.248.128.118:16969"},{"name":"host_duoduo","title":"多多站点地址","type":"input","value":"https://tv.214521.xyz"}],"modules":[{"id":"loadResource","title":"聚合百度[盘]","description":"按当前影片详情并发搜索各源并返回百度网盘播放源","functionName":"loadResource","type":"stream","cacheDuration":0,"params":[]},{"id":"clearRexCatalogCache","title":"刷新网盘目录缓存","functionName":"clearRexCatalogCache","cacheDuration":0,"params":[]}],"search":{"title":"搜索聚合百度","functionName":"search","params":[{"name":"keyword","title":"关键词","type":"input","value":""},{"name":"page","title":"页码","type":"page","value":"1"}]}};
 var DriveEngine = (function(){var WidgetMetadata;
 WidgetMetadata = {"id":"juhe.baidu.rex","title":"聚合百度版","version":"2.2.4","requiredVersion":"0.0.1","description":"全盘影视搜索，支持夸克、百度、UC、115、123、移动、天翼、迅雷网盘及外挂字幕。","author":"balge","site":"https://quanpan.xyz","detailCacheDuration":1800,"globalParams":[{"name":"site","title":"站点地址（留空使用全盘搜索）","type":"input","value":"https://quanpan.xyz"},{"name":"quarkCookie","title":"垮 Cookie","type":"input"},{"name":"baiduCookie","title":"佰 Cookie","type":"input"},{"name":"cookie115","title":"伍 Cookie","type":"input"},{"name":"xunleiAuth","title":"迅雷访问令牌","type":"input","value":"","placeholders":[{"title":"填写 access_token 或 Authorization；自动识别 Web/App；迅雷三项全部留空时使用通用配置","value":""}]},{"name":"xunleiRefreshToken","title":"迅雷刷新令牌","type":"input","value":"","placeholders":[{"title":"填写 refresh_token，用于自动续期；可留空；迅雷三项全部留空时使用通用配置","value":""}]},{"name":"xunleiDeviceId","title":"迅雷设备号","type":"input","value":"","placeholders":[{"title":"填写 device_id；留空优先从令牌读取，否则使用默认设备号；迅雷三项全部留空时使用通用配置","value":""}]},{"name":"guangyaAuth","title":"光鸭访问令牌","type":"input","value":"","placeholders":[{"title":"填写 accessToken；光鸭三项全部留空时使用通用配置","value":""}]},{"name":"guangyaRefreshToken","title":"光鸭刷新令牌","type":"input","value":"","placeholders":[{"title":"填写 refreshToken，用于自动续期；可留空；光鸭三项全部留空时使用通用配置","value":""}]},{"name":"guangyaDeviceId","title":"光鸭设备号","type":"input","value":"","placeholders":[{"title":"填写 deviceId；留空使用默认设备号；光鸭三项全部留空时使用通用配置","value":""}]},{"name":"multiSource","title":"聚合搜索","type":"enumeration","value":"enabled","enumOptions":[{"title":"启用","value":"enabled"},{"title":"禁用","value":"disabled"}]}],"modules":[{"id":"searchResources","title":"搜索网盘资源","functionName":"search","cacheDuration":0,"params":[{"name":"keyword","title":"关键词","type":"input"}]},{"id":"refreshCatalog","title":"刷新目录缓存","functionName":"clearRexCatalogCache","cacheDuration":0,"params":[]},{"id":"loadResource","title":"加载资源","functionName":"loadResource","type":"stream","cacheDuration":0,"params":[]}],"search":{"title":"全盘搜索","functionName":"search","params":[{"name":"keyword","title":"关键词","type":"input"},{"name":"page","title":"页码","type":"page"}]}};
 
@@ -5403,11 +5403,15 @@ return (function createNetdiskAdapter(options) {
 })({"linkPrefix":"juhebai:","site":"https://tv.214521.xyz"});
 })();
 // juhe.baidu 引擎版 runtime：三站 CMS 搜索 + CatPaw DriveEngine。
-// 引擎负责百度分享解析、转存、目录、分集匹配、播放头与通用账号；
+// 引擎负责百度分享解析、转存、目录、分集匹配、播放头；
 // 本文件只负责三站搜索、详情分享提取，以及 discovery 契约。
 // 注意：引擎链接（juhebai:）与旧版模块链接不兼容，旧收藏/历史需重新添加。
+// 注意：本模块只用单独 Cookie（credentialSource 强制 local，不继承通用配置）。
 // 注意：年份未知时跳过 prepareDirectoryIdentity（引擎对“查询有年份、
 // 条目无年份”返回 false，照抄示例会把无年份的 CMS 条目全丢弃）。
+// 注意：清晰度标签（resourceCategory）按旧版行为，只给资源标题加前缀
+// （8K/4K/1080P/其他），不做画质过滤；引擎自带的 resourceCategory
+// 只控展示分类，标题上看不见，等于没作用。
 
 var JUHE_SITES = [
   { key: 'huajuan', label: '花卷', hostParam: 'host_huajuan', defaultHost: 'https://www.hjzhencai.top' },
@@ -5803,8 +5807,41 @@ function juheDiscovery(params) {
   };
 }
 
+// 清晰度标签（旧版 sourceQualityConfig 的映射）：只定标题前缀，不做过滤。
+function juheQualityLabel(params) {
+  var value = juheText((params && (params.resourceCategory || params.quality_tag)) || '8k').toLowerCase();
+  if (value === '4k') return '4K';
+  if (value === '1080p' || value === '1080' || value === 'fhd') return '1080P';
+  if (value === 'other' || value === 'others' || value === '其他' || value === '其它') return '其他';
+  if (!value || value === '8k') return '8K';
+  return value.toUpperCase();
+}
+
+// 给引擎返回的资源标题加清晰度前缀（旧版 cardName 的做法）；
+// 不动 url/headers 等播放字段，已带前缀的不重复加。
+function juheLabelResources(resources, params) {
+  if (!Array.isArray(resources)) return resources;
+  var label = juheQualityLabel(params);
+  if (!label) return resources;
+  for (var i = 0; i < resources.length; i++) {
+    var item = resources[i];
+    if (!item || typeof item !== 'object') continue;
+    if (item.title && String(item.title).indexOf(label) !== 0) item.title = label + ' ' + item.title;
+    if (item.name && String(item.name).indexOf(label) !== 0) item.name = label + ' ' + item.name;
+  }
+  return resources;
+}
+
+function juheLabelDetail(detail, params) {
+  if (detail && Array.isArray(detail.episodeItems)) {
+    juheLabelResources(detail.episodeItems, params);
+  }
+  return detail;
+}
+
 async function search(params) {
   params = params || {};
+  params.credentialSource = 'local';
   DriveEngine.bind(params);
   var keyword = params.keyword || '';
   if (!juheText(keyword)) return [];
@@ -5813,26 +5850,28 @@ async function search(params) {
 
 async function loadDetail(input) {
   var params = typeof input === 'string' ? { link: input } : input || {};
+  params.credentialSource = 'local';
   DriveEngine.bind(params);
   var link = params.link || '';
   if (!DriveEngine.isLink(link)) throw new Error('不支持的资源链接');
   var info = DriveEngine.decode(link);
-  if (info && info.action === 'play') return DriveEngine.loadDetail(link);
+  if (info && info.action === 'play') return juheLabelDetail(await DriveEngine.loadDetail(link), params);
   if (info && info.action === 'detail' && info.shares && info.shares.length) {
-    return DriveEngine.loadDetail(link);
+    return juheLabelDetail(await DriveEngine.loadDetail(link), params);
   }
   var detail = await juheReadRow(link);
   if (!detail || !detail.shares.length) {
     return { id: link, type: 'url', title: (info && info.title) || '', link: link, episodeItems: [] };
   }
-  return DriveEngine.loadDetail(DriveEngine.encode(detail));
+  return juheLabelDetail(await DriveEngine.loadDetail(DriveEngine.encode(detail)), params);
 }
 
 async function loadResource(params) {
   params = params || {};
+  params.credentialSource = 'local';
   DriveEngine.bind(params);
-  if (DriveEngine.isLink(params.link)) return DriveEngine.loadResource(params);
-  return DriveEngine.loadResource(params, juheDiscovery(params));
+  if (DriveEngine.isLink(params.link)) return juheLabelResources(await DriveEngine.loadResource(params), params);
+  return juheLabelResources(await DriveEngine.loadResource(params, juheDiscovery(params)), params);
 }
 
 async function clearRexCatalogCache() { return DriveEngine.clear(); }

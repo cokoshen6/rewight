@@ -204,7 +204,7 @@ async function gaFillJavdbPosters(items) {
 WidgetMetadata = {
     id: "getav",
     title: "GetAV",
-    version: "1.3.3",
+    version: "1.3.4",
     requiredVersion: "0.0.1",
     description: "Getav视频",
     author: "Coko",
@@ -799,7 +799,7 @@ function gaDetailItem(data, code, zhTitle) {
         mediaType: "movie",
         link: GA_LINK + code,
         title: gaTitle(data.title, code),
-        posterPath: poster,
+        posterPath: "",
         backdropPath: poster,
         releaseDate: String(data.date || "").slice(0, 10),
         description: gaDescription(data, code, zhTitle)
@@ -867,6 +867,8 @@ async function loadDetail(link) {
     const data = await gaFetchDetail(code);
     if (!data) return null;
     const item = gaDetailItem(data, data.id || code, zhTitle);
+    await gaFillPosters([item]);
+    if (!item.posterPath) item.posterPath = item.backdropPath;
     if (!item.relatedItems || !item.relatedItems.length) {
         const related = await gaRelatedFallback(data, item.id);
         if (related.length) item.relatedItems = related;

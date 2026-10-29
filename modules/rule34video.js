@@ -27,7 +27,7 @@ WidgetMetadata = {
     author: "Coko",
     site: "https://rule34video.com",
     iconurl: "https://rule34video.com/favicon.ico",
-    version: "2.3.4",
+    version: "2.3.5",
     requiredVersion: "0.0.2",
     detailCacheDuration: 300,
     globalParams: [
@@ -236,13 +236,25 @@ function searchVideos(params) {
 }
 
 function extractVideoUrl(html) {
-    var raw = String(html || "");
+    var raw = String(html || "").replace(/\\\//g, "/");
+    var candidates = raw.match(/https?:\/\/[^"'\s<>]+\.mp4[^"'\s<>]*/gi) || [];
+    var best = "";
+    var bestScore = 0;
+    for (var i = 0; i < candidates.length; i++) {
+        var url = candidates[i].replace(/&amp;/g, "&");
+        var q = url.match(/[_-](1080|720|480|360|240)p?(?=[._\-?&#\/]|$)/);
+        var score = q ? parseInt(q[1], 10) : 0;
+        if (score > bestScore) {
+            bestScore = score;
+            best = url;
+        }
+    }
+    if (best) return best;
     var m = raw.match(/video_url\s*:\s*'([^']+\.mp4[^']*)'/i);
-    if (m) return m[1].replace(/\\\//g, "/");
+    if (m) return m[1].replace(/&amp;/g, "&");
     m = raw.match(/"contentUrl"\s*:\s*"([^"]+\.mp4[^"]*)"/i);
-    if (m) return m[1].replace(/\\\//g, "/");
-    m = raw.match(/https?:\/\/[^"'\s<>]+\.mp4[^"'\s<>]*/i);
-    if (m) return m[0];
+    if (m) return m[1].replace(/&amp;/g, "&");
+    if (candidates.length) return candidates[0].replace(/&amp;/g, "&");
     return "";
 }
 

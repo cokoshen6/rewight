@@ -6,7 +6,7 @@ WidgetMetadata = {
   title: "Perverzija Tube",
   description: "tube.perverzija.com 列表、片商、标签、搜索与 XtremeStream 播放源",
   author: "Coko",
-  version: "1.0.7",
+  version: "1.0.8",
   requiredVersion: "0.0.1",
   site: "https://tube.perverzija.com",
   detailCacheDuration: 30,
@@ -44,7 +44,6 @@ WidgetMetadata = {
       cacheDuration: 120,
       params: [
         { name: "path", title: "分类", type: "constant", value: "/full-movie/" },
-        { name: "sort", title: "排序", type: "enumeration", value: "date", enumOptions: [{ title: "最新发布", value: "date" }, { title: "最多播放", value: "view" }, { title: "最多点赞", value: "like" }, { title: "标题", value: "title" }, { title: "最多评论", value: "comment" }] },
         { name: "page", title: "页码", type: "page" },
       ],
     },
@@ -55,7 +54,6 @@ WidgetMetadata = {
       cacheDuration: 120,
       params: [
         { name: "studio", title: "片商", type: "enumeration", value: "brazzers", enumOptions: [{ title: "VR", value: "vr" }, { title: "AdultTime", value: "adulttime" }, { title: "ARXNetwork", value: "arxnetwork" }, { title: "BabesNetwork", value: "babesnetwork" }, { title: "BangBros", value: "bangbros" }, { title: "BellesaFilms", value: "bellesafilms" }, { title: "Brazzers", value: "brazzers" }, { title: "CzechAV", value: "czechav" }, { title: "DigitalPlayground", value: "digitalplayground" }, { title: "Dogfart", value: "dogfart" }, { title: "DorcelClub", value: "dorcelclub" }, { title: "EvilAngel", value: "evilangel" }, { title: "FakeHub", value: "fakehub" }, { title: "FapHouse", value: "faphouse" }, { title: "FemdomEmpire", value: "femdomempire" }, { title: "FittingRoom", value: "fittingroom" }, { title: "Hentaied", value: "hentaied" }, { title: "Kink", value: "kink" }, { title: "LethalHardcore", value: "lethalhardcore" }, { title: "LetsDoeIt", value: "letsdoeit" }, { title: "ManyVids", value: "manyvids" }, { title: "MetArtNetwork", value: "metartnetwork" }, { title: "MissaX", value: "missax" }, { title: "Mofos", value: "mofos" }, { title: "Mylf", value: "mylf" }, { title: "NaughtyAmerica", value: "naughtyamerica" }, { title: "NewSensations", value: "newsensations" }, { title: "Nubiles", value: "nubiles" }, { title: "OnlyFans", value: "onlyfans" }, { title: "PornPros", value: "pornpros" }, { title: "PornstarPlatinum", value: "pornstarplatinum" }, { title: "PornWorld", value: "pornworld" }, { title: "Private", value: "private" }, { title: "RealityKings", value: "realitykings" }, { title: "ScoreGroup", value: "scoregroup" }, { title: "TeamSkeet", value: "teamskeet" }, { title: "VIP4K", value: "vip4k" }, { title: "VXN", value: "vxn" }, { title: "XEmpire", value: "xempire" }, { title: "ZeroTolerance", value: "zerotolerance" }] },
-        { name: "sort", title: "排序", type: "enumeration", value: "date", enumOptions: [{ title: "最新发布", value: "date" }, { title: "最多播放", value: "view" }, { title: "最多点赞", value: "like" }, { title: "标题", value: "title" }, { title: "最多评论", value: "comment" }] },
         { name: "page", title: "页码", type: "page" },
       ],
     },
@@ -65,8 +63,8 @@ WidgetMetadata = {
       functionName: "loadList",
       cacheDuration: 120,
       params: [
-        { name: "tag", title: "标签（点选热门或直接输入 tag 英文名）", type: "input", value: "anal", placeholders: [{ title: "Anal", value: "anal" }, { title: "Babe", value: "babe" }, { title: "Big Ass", value: "big-ass" }, { title: "Big Dick", value: "big-dick" }, { title: "Big Tits", value: "big-tits" }, { title: "Black Hair", value: "black-hair" }, { title: "Blonde", value: "blonde" }, { title: "Blowjob", value: "blowjob" }, { title: "Brunette", value: "brunette" }, { title: "Bubble Butt", value: "bubble-butt" }, { title: "Cowgirl", value: "cowgirl" }, { title: "Creampie", value: "creampie" }, { title: "Cumshot", value: "cumshot" }, { title: "Deep Throat", value: "deep-throat" }, { title: "DoggyStyle", value: "doggystyle" }, { title: "European", value: "european" }, { title: "Face Fuck", value: "face-fuck" }, { title: "Facial", value: "facial" }, { title: "Fake Tits", value: "fake-tits" }, { title: "Family Taboo", value: "family-taboo" }, { title: "Fingering", value: "fingering" }, { title: "Handjob", value: "handjob" }, { title: "Hardcore", value: "hardcore" }, { title: "High Heels", value: "high-heels" }, { title: "Indoors", value: "indoors" }, { title: "Interracial", value: "interracial" }, { title: "Kissing", value: "kissing" }, { title: "Latina", value: "latina" }, { title: "Lingerie", value: "lingerie" }, { title: "Masturbating", value: "masturbating" }, { title: "MILF", value: "milf" }, { title: "Missionary", value: "missionary" }, { title: "Natural Tits", value: "natural-tits" }, { title: "Orgasm", value: "orgasm" }, { title: "Piercing", value: "piercing" }, { title: "POV", value: "pov" }, { title: "Pussy Licking", value: "pussy-licking" }, { title: "Reverse Cowgirl", value: "reverse-cowgirl" }, { title: "Shaved", value: "shaved" }, { title: "Small Tits", value: "small-tits" }, { title: "Tattoo", value: "tattoo" }, { title: "Teen", value: "teen" }, { title: "Threesome", value: "threesome" }, { title: "Tits", value: "tits" }, { title: "Trimmed", value: "trimmed" }, { title: "4K Quality", value: "4k-quality" }] },
-        { name: "sort", title: "排序", type: "enumeration", value: "date", enumOptions: [{ title: "最新发布", value: "date" }, { title: "最多播放", value: "view" }, { title: "最多点赞", value: "like" }, { title: "标题", value: "title" }, { title: "最多评论", value: "comment" }] },
+        { name: "tag", title: "标签", type: "enumeration", value: "anal", enumOptions: [{ title: "Anal", value: "anal" }, { title: "Babe", value: "babe" }, { title: "Big Ass", value: "big-ass" }, { title: "Big Dick", value: "big-dick" }, { title: "Big Tits", value: "big-tits" }, { title: "Black Hair", value: "black-hair" }, { title: "Blonde", value: "blonde" }, { title: "Blowjob", value: "blowjob" }, { title: "Brunette", value: "brunette" }, { title: "Bubble Butt", value: "bubble-butt" }, { title: "Cowgirl", value: "cowgirl" }, { title: "Creampie", value: "creampie" }, { title: "Cumshot", value: "cumshot" }, { title: "Deep Throat", value: "deep-throat" }, { title: "DoggyStyle", value: "doggystyle" }, { title: "European", value: "european" }, { title: "Face Fuck", value: "face-fuck" }, { title: "Facial", value: "facial" }, { title: "Fake Tits", value: "fake-tits" }, { title: "Family Taboo", value: "family-taboo" }, { title: "Fingering", value: "fingering" }, { title: "Handjob", value: "handjob" }, { title: "Hardcore", value: "hardcore" }, { title: "High Heels", value: "high-heels" }, { title: "Indoors", value: "indoors" }, { title: "Interracial", value: "interracial" }, { title: "Kissing", value: "kissing" }, { title: "Latina", value: "latina" }, { title: "Lingerie", value: "lingerie" }, { title: "Masturbating", value: "masturbating" }, { title: "MILF", value: "milf" }, { title: "Missionary", value: "missionary" }, { title: "Natural Tits", value: "natural-tits" }, { title: "Orgasm", value: "orgasm" }, { title: "Piercing", value: "piercing" }, { title: "POV", value: "pov" }, { title: "Pussy Licking", value: "pussy-licking" }, { title: "Reverse Cowgirl", value: "reverse-cowgirl" }, { title: "Shaved", value: "shaved" }, { title: "Small Tits", value: "small-tits" }, { title: "Tattoo", value: "tattoo" }, { title: "Teen", value: "teen" }, { title: "Threesome", value: "threesome" }, { title: "Tits", value: "tits" }, { title: "Trimmed", value: "trimmed" }, { title: "4K Quality", value: "4k-quality" }, { title: "自定义", value: "custom" }] },
+        { name: "customTag", title: "自定义标签（输入 tag 英文名）", type: "input", value: "", belongTo: { paramName: "tag", value: ["custom"] } },
         { name: "page", title: "页码", type: "page" },
       ],
     },
@@ -77,7 +75,6 @@ WidgetMetadata = {
       cacheDuration: 120,
       params: [
         { name: "actor", title: "演员名（如 abella danger）", type: "input", value: "" },
-        { name: "sort", title: "排序", type: "enumeration", value: "date", enumOptions: [{ title: "最新发布", value: "date" }, { title: "最多播放", value: "view" }, { title: "最多点赞", value: "like" }, { title: "标题", value: "title" }, { title: "最多评论", value: "comment" }] },
         { name: "page", title: "页码", type: "page" },
       ],
     },
@@ -263,9 +260,13 @@ async function loadList(params) {
     if (studioSlug === "vr") path = "/vr/";
     else if (studioSlug) path = "/studio/" + studioSlug + "/";
   }
-  // 热门标签：单个 input 参数，placeholders 是固定热门标签（点选填入），也可直接输任意 tag 英文名；旧版存量设置里 tag="custom" 时忽略、不拼 /tag/custom/
+  // 热门标签：枚举 46 个热门 + “自定义”选项；选“自定义”时用 customTag 输入框的值；customTag 为空时不拼 /tag/custom/，回落首页
   var rawTag = "";
-  if (params.tag && String(params.tag).trim() && String(params.tag) !== "custom") rawTag = String(params.tag);
+  if (params.tag && String(params.tag).trim()) {
+    if (String(params.tag).trim() === "custom") {
+      if (params.customTag && String(params.customTag).trim()) rawTag = String(params.customTag);
+    } else rawTag = String(params.tag);
+  }
   if (rawTag) {
     var slug = rawTag.toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "");
     if (slug) path = "/tag/" + slug + "/";

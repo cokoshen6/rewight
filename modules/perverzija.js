@@ -6,7 +6,7 @@ WidgetMetadata = {
   title: "Perverzija Tube",
   description: "tube.perverzija.com 列表、片商、标签、搜索与 XtremeStream 播放源",
   author: "Coko",
-  version: "1.0.6",
+  version: "1.0.7",
   requiredVersion: "0.0.1",
   site: "https://tube.perverzija.com",
   detailCacheDuration: 30,
@@ -34,7 +34,6 @@ WidgetMetadata = {
       cacheDuration: 120,
       params: [
         { name: "category", title: "分类", type: "enumeration", value: "latest", enumOptions: [{ title: "最新", value: "latest" }, { title: "最多播放", value: "popular" }, { title: "最多点赞", value: "liked" }, { title: "精选场景", value: "featured" }] },
-        { name: "sort", title: "排序", type: "enumeration", value: "auto", enumOptions: [{ title: "跟随分类", value: "auto" }, { title: "最新发布", value: "date" }, { title: "最多播放", value: "view" }, { title: "最多点赞", value: "like" }, { title: "标题", value: "title" }, { title: "最多评论", value: "comment" }] },
         { name: "page", title: "页码", type: "page" },
       ],
     },

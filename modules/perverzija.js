@@ -6,7 +6,7 @@ WidgetMetadata = {
   title: "Perverzija Tube",
   description: "tube.perverzija.com 列表、片商、标签、搜索与 XtremeStream 播放源",
   author: "Coko",
-  version: "1.0.3",
+  version: "1.0.4",
   requiredVersion: "0.0.1",
   site: "https://tube.perverzija.com",
   detailCacheDuration: 30,
@@ -28,121 +28,23 @@ WidgetMetadata = {
       params: [],
     },
     {
-      id: "latest",
-      title: "最新",
+      id: "browse",
+      title: "视频",
       functionName: "loadList",
       cacheDuration: 120,
       params: [
-        { name: "path", title: "分类", type: "constant", value: "/" },
+        { name: "category", title: "分类", type: "enumeration", value: "latest", enumOptions: [{ title: "最新", value: "latest" }, { title: "最多播放", value: "popular" }, { title: "最多点赞", value: "liked" }, { title: "精选场景", value: "featured" }, { title: "完整影片", value: "fullmovie" }, { title: "VR", value: "vr" }] },
+        { name: "sort", title: "排序", type: "enumeration", value: "auto", enumOptions: [{ title: "跟随分类", value: "auto" }, { title: "最新发布", value: "date" }, { title: "最多播放", value: "view" }, { title: "最多点赞", value: "like" }, { title: "标题", value: "title" }, { title: "最多评论", value: "comment" }] },
         { name: "page", title: "页码", type: "page" },
       ],
     },
     {
-      id: "popular",
-      title: "最多播放",
+      id: "studio",
+      title: "片商",
       functionName: "loadList",
       cacheDuration: 120,
       params: [
-        { name: "path", title: "分类", type: "constant", value: "/" },
-        { name: "sort", title: "排序", type: "enumeration", value: "view", enumOptions: [{ title: "最新发布", value: "date" }, { title: "最多播放", value: "view" }, { title: "最多点赞", value: "like" }, { title: "标题", value: "title" }, { title: "最多评论", value: "comment" }] },
-        { name: "page", title: "页码", type: "page" },
-      ],
-    },
-    {
-      id: "like",
-      title: "最多点赞",
-      functionName: "loadList",
-      cacheDuration: 120,
-      params: [
-        { name: "path", title: "分类", type: "constant", value: "/" },
-        { name: "sort", title: "排序", type: "enumeration", value: "like", enumOptions: [{ title: "最新发布", value: "date" }, { title: "最多播放", value: "view" }, { title: "最多点赞", value: "like" }, { title: "标题", value: "title" }, { title: "最多评论", value: "comment" }] },
-        { name: "page", title: "页码", type: "page" },
-      ],
-    },
-    {
-      id: "featured",
-      title: "精选场景",
-      functionName: "loadList",
-      cacheDuration: 120,
-      params: [
-        { name: "path", title: "分类", type: "constant", value: "/featured-scenes/" },
-        { name: "sort", title: "排序", type: "enumeration", value: "date", enumOptions: [{ title: "最新发布", value: "date" }, { title: "最多播放", value: "view" }, { title: "最多点赞", value: "like" }, { title: "标题", value: "title" }, { title: "最多评论", value: "comment" }] },
-        { name: "page", title: "页码", type: "page" },
-      ],
-    },
-    {
-      id: "fullmovie",
-      title: "完整影片",
-      functionName: "loadList",
-      cacheDuration: 120,
-      params: [
-        { name: "path", title: "分类", type: "constant", value: "/full-movie/" },
-        { name: "sort", title: "排序", type: "enumeration", value: "date", enumOptions: [{ title: "最新发布", value: "date" }, { title: "最多播放", value: "view" }, { title: "最多点赞", value: "like" }, { title: "标题", value: "title" }, { title: "最多评论", value: "comment" }] },
-        { name: "page", title: "页码", type: "page" },
-      ],
-    },
-    {
-      id: "vr",
-      title: "VR",
-      functionName: "loadList",
-      cacheDuration: 120,
-      params: [
-        { name: "path", title: "分类", type: "constant", value: "/vr/" },
-        { name: "sort", title: "排序", type: "enumeration", value: "date", enumOptions: [{ title: "最新发布", value: "date" }, { title: "最多播放", value: "view" }, { title: "最多点赞", value: "like" }, { title: "标题", value: "title" }, { title: "最多评论", value: "comment" }] },
-        { name: "page", title: "页码", type: "page" },
-      ],
-    },
-    {
-      id: "brazzers",
-      title: "Brazzers",
-      functionName: "loadList",
-      cacheDuration: 120,
-      params: [
-        { name: "path", title: "分类", type: "constant", value: "/studio/brazzers/" },
-        { name: "sort", title: "排序", type: "enumeration", value: "date", enumOptions: [{ title: "最新发布", value: "date" }, { title: "最多播放", value: "view" }, { title: "最多点赞", value: "like" }, { title: "标题", value: "title" }, { title: "最多评论", value: "comment" }] },
-        { name: "page", title: "页码", type: "page" },
-      ],
-    },
-    {
-      id: "realitykings",
-      title: "RealityKings",
-      functionName: "loadList",
-      cacheDuration: 120,
-      params: [
-        { name: "path", title: "分类", type: "constant", value: "/studio/realitykings/" },
-        { name: "sort", title: "排序", type: "enumeration", value: "date", enumOptions: [{ title: "最新发布", value: "date" }, { title: "最多播放", value: "view" }, { title: "最多点赞", value: "like" }, { title: "标题", value: "title" }, { title: "最多评论", value: "comment" }] },
-        { name: "page", title: "页码", type: "page" },
-      ],
-    },
-    {
-      id: "bangbros",
-      title: "BangBros",
-      functionName: "loadList",
-      cacheDuration: 120,
-      params: [
-        { name: "path", title: "分类", type: "constant", value: "/studio/bangbros/" },
-        { name: "sort", title: "排序", type: "enumeration", value: "date", enumOptions: [{ title: "最新发布", value: "date" }, { title: "最多播放", value: "view" }, { title: "最多点赞", value: "like" }, { title: "标题", value: "title" }, { title: "最多评论", value: "comment" }] },
-        { name: "page", title: "页码", type: "page" },
-      ],
-    },
-    {
-      id: "teamskeet",
-      title: "TeamSkeet",
-      functionName: "loadList",
-      cacheDuration: 120,
-      params: [
-        { name: "path", title: "分类", type: "constant", value: "/studio/teamskeet/" },
-        { name: "sort", title: "排序", type: "enumeration", value: "date", enumOptions: [{ title: "最新发布", value: "date" }, { title: "最多播放", value: "view" }, { title: "最多点赞", value: "like" }, { title: "标题", value: "title" }, { title: "最多评论", value: "comment" }] },
-        { name: "page", title: "页码", type: "page" },
-      ],
-    },
-    {
-      id: "naughtyamerica",
-      title: "NaughtyAmerica",
-      functionName: "loadList",
-      cacheDuration: 120,
-      params: [
-        { name: "path", title: "分类", type: "constant", value: "/studio/naughtyamerica/" },
+        { name: "studio", title: "片商", type: "enumeration", value: "brazzers", enumOptions: [{ title: "AdultTime", value: "adulttime" }, { title: "ARXNetwork", value: "arxnetwork" }, { title: "BabesNetwork", value: "babesnetwork" }, { title: "BangBros", value: "bangbros" }, { title: "BellesaFilms", value: "bellesafilms" }, { title: "Brazzers", value: "brazzers" }, { title: "CzechAV", value: "czechav" }, { title: "DigitalPlayground", value: "digitalplayground" }, { title: "Dogfart", value: "dogfart" }, { title: "DorcelClub", value: "dorcelclub" }, { title: "EvilAngel", value: "evilangel" }, { title: "FakeHub", value: "fakehub" }, { title: "FapHouse", value: "faphouse" }, { title: "FemdomEmpire", value: "femdomempire" }, { title: "FittingRoom", value: "fittingroom" }, { title: "Hentaied", value: "hentaied" }, { title: "Kink", value: "kink" }, { title: "LethalHardcore", value: "lethalhardcore" }, { title: "LetsDoeIt", value: "letsdoeit" }, { title: "ManyVids", value: "manyvids" }, { title: "MetArtNetwork", value: "metartnetwork" }, { title: "MissaX", value: "missax" }, { title: "Mofos", value: "mofos" }, { title: "Mylf", value: "mylf" }, { title: "NaughtyAmerica", value: "naughtyamerica" }, { title: "NewSensations", value: "newsensations" }, { title: "Nubiles", value: "nubiles" }, { title: "OnlyFans", value: "onlyfans" }, { title: "PornPros", value: "pornpros" }, { title: "PornstarPlatinum", value: "pornstarplatinum" }, { title: "PornWorld", value: "pornworld" }, { title: "Private", value: "private" }, { title: "RealityKings", value: "realitykings" }, { title: "ScoreGroup", value: "scoregroup" }, { title: "TeamSkeet", value: "teamskeet" }, { title: "VIP4K", value: "vip4k" }, { title: "VXN", value: "vxn" }, { title: "XEmpire", value: "xempire" }, { title: "ZeroTolerance", value: "zerotolerance" }] },
         { name: "sort", title: "排序", type: "enumeration", value: "date", enumOptions: [{ title: "最新发布", value: "date" }, { title: "最多播放", value: "view" }, { title: "最多点赞", value: "like" }, { title: "标题", value: "title" }, { title: "最多评论", value: "comment" }] },
         { name: "page", title: "页码", type: "page" },
       ],
@@ -170,6 +72,7 @@ WidgetMetadata = {
       ],
     },
   ],
+
 };
 
 var SITE = "https://tube.perverzija.com";
@@ -322,15 +225,35 @@ function pvToItems(cards) {
   });
 }
 
+// 浏览分类：最新/最多播放/最多点赞/精选场景/完整影片/VR 并进一个模块，各带默认排序
+var PV_BROWSE = {
+  latest: { path: "/", sort: "date" },
+  popular: { path: "/", sort: "view" },
+  liked: { path: "/", sort: "like" },
+  featured: { path: "/featured-scenes/", sort: "date" },
+  fullmovie: { path: "/full-movie/", sort: "date" },
+  vr: { path: "/vr/", sort: "date" },
+};
+
 async function loadList(params) {
   params = params || {};
+  var sort = params.sort;
+  // 浏览分类缺省跟随分类的排序；排序显式选了才覆盖；无分类时默认 date
+  var browseCat = params.category && PV_BROWSE[params.category] ? PV_BROWSE[params.category] : null;
+  if (!sort || sort === "auto") sort = browseCat ? browseCat.sort : "date";
   // 详情页点演员 / 标签后，App 带着 genreId / peopleId 回到列表模块
   var tax = params.genreId || params.peopleId || "";
   if (tax) {
     var tk = pvTaxonomyKind(tax);
-    if (tk) return loadTaxonomyList(tk.path, params.page, params.sort);
+    if (tk) return loadTaxonomyList(tk.path, params.page, sort);
   }
   var path = params.path || "/";
+  if (browseCat) path = browseCat.path;
+  // 片商：39 个顶级片商并进一个模块
+  if (params.studio && String(params.studio).trim()) {
+    var studioSlug = String(params.studio).trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "");
+    if (studioSlug) path = "/studio/" + studioSlug + "/";
+  }
   // 标签：单个 input 参数，placeholders 是固定热门标签（点选填入），也可直接输任意 tag 英文名；旧版存量设置里 tag="custom" 时忽略、不拼 /tag/custom/
   var rawTag = "";
   if (params.tag && String(params.tag).trim() && String(params.tag) !== "custom") rawTag = String(params.tag);
@@ -338,10 +261,10 @@ async function loadList(params) {
     var slug = rawTag.toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "");
     if (slug) path = "/tag/" + slug + "/";
   }
-  var url = pvListUrl(path, params.page, params.sort);
+  var url = pvListUrl(path, params.page, sort);
   var cards = pvParseCards(await pvGet(url, SITE + "/"));
   if (!cards.length) {
-    var u2 = pvListUrl("/", params.page, params.sort);
+    var u2 = pvListUrl("/", params.page, sort);
     if (u2 !== url) cards = pvParseCards(await pvGet(u2, SITE + "/"));
   }
   return pvToItems(cards);

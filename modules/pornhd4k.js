@@ -1,12 +1,9 @@
-// PornHD 4K（pornhd4k.net）：列表 / 工作室 / 标签 / 搜索 / 详情 / 播放。
-// 播放链：详情页 var movie.id -> get_sources（md5 签名 + token cookie）取签名 HLS，取档位最大的一路。
-// 本机取源，不再走 Worker；playerType system 直接起播。
 WidgetMetadata = {
   id: "pornhd4k",
   title: "PornHD 4K",
-  description: "pornhd4k.net 列表、工作室、标签、搜索与 HLS 播放源（本机取源、直连平台播放，不再经 Worker 代理）",
+  description: "pornhd4k.net 列表、工作室、标签、搜索与 HLS 播放源",
   author: "Coko",
-  version: "1.1.1",
+  version: "1.1.2",
   requiredVersion: "0.0.1",
   site: "https://pornhd4k.net",
   detailCacheDuration: 30,
@@ -66,11 +63,9 @@ WidgetMetadata = {
 var SITE = "https://pornhd4k.net";
 var UA_IPHONE = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
 var UA_DESKTOP = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
-// get_sources 签名盐与 token cookie 名种子，均取自站内 fixx.js（全站通用，非单片）。
 var PH_SALT = "98126avrbi6m49vd7shxkn985";
 var PH_TOKEN_SEED = "n1sqcua67bcq9826avrbi6m49vd7shxkn985mhodk06twz87wwxtp3dqiicks2dfyud213k6ygiomq01s94e4tr9v0k887bkyud213k6ygiomq01s94e4tr9v0k887bkqocxzw39esdyfhvtkpzq9n4e7at4kc6k8sxom08bl4dukp16h09oplu7zov4m5f8";
 
-// 手写 MD5（与 pornhd4k-proxy 同款，纯 JS，不依赖桥接层 crypto）。
 function phMd5(str) {
   function phUtf8(s) {
     var enc = encodeURIComponent(s);
@@ -144,7 +139,6 @@ function phToken() {
 }
 
 function phEpisodeId(html) {
-  // 详情页是 var movie = { id: "..." } 对象字面量，不是 var movie.id = "..."；另有两路 input 兜底。
   var m = html.match(/var movie\s*=\s*\{\s*id:\s*"([^"]+)"/);
   if (m) return m[1];
   m = html.match(/id="uuid"[^>]*value="([^"]+)"/);
@@ -153,7 +147,6 @@ function phEpisodeId(html) {
   return m ? m[1] : "";
 }
 
-// 本机请求桥：Widget.http.request + base64Data，原始字节本地解码。
 var PH_B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 function phB64Decode(b64) {
   var s = String(b64 || "").replace(/[\t\n\f\r ]/g, "");
@@ -177,15 +170,13 @@ function phB64Decode(b64) {
 }
 function phBytesToText(bytes) {
   if (typeof TextDecoder !== "undefined") {
-    try { return new TextDecoder().decode(bytes); } catch (e) { /* fall through */ }
+    try { return new TextDecoder().decode(bytes); } catch (e) {}
   }
-  // JavaScriptCore 无 TextDecoder 时的兜底：按 UTF-8 百分号解码。
   var s = "";
   for (var i = 0; i < bytes.length; i++) s += "%" + bytes[i].toString(16).padStart(2, "0");
   try { return decodeURIComponent(s); } catch (e) { return ""; }
 }
 async function phFetchText(url, headers) {
-  // 优先走 request + base64Data；桥接层没有 request 时回落到 http.get。
   try {
     if (Widget.http && typeof Widget.http.request === "function") {
       var resp = await Widget.http.request({ url: url, method: "GET", headers: headers || {}, base64Data: true, timeout: 25 });
@@ -195,13 +186,12 @@ async function phFetchText(url, headers) {
       if (data) return String(data);
       return "";
     }
-  } catch (e) { /* 回落 */ }
+  } catch (e) {}
   try {
     var r = await Widget.http.get(url, { headers: headers || {} });
     return (r && r.data) || "";
   } catch (e) { return ""; }
 }
-
 
 function phAbs(u) {
   if (!u) return "";
@@ -264,13 +254,11 @@ function phTaxPath(tax) {
 
 async function loadList(params) {
   params = params || {};
-  // 详情页点演员 / 标签后，App 带着 genreId / peopleId 回到列表模块
   var tax = params.genreId || params.peopleId || "";
   var path = "";
   if (tax) path = phTaxPath(tax);
   if (!path && params.studio) path = "/studio/" + String(params.studio).toLowerCase() + "/";
   if (!path) {
-    // 标签：单个 input 参数，placeholders 是固定热门标签（点选填入），也可直接输任意 tag 英文名
     var raw = String(params.tag || "").trim();
     var slug = raw.toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "");
     if (slug) path = "/tag/" + slug + "/";
@@ -307,7 +295,6 @@ function phUnesc(s) {
 }
 
 async function loadDetail(link) {
-  // App 传的是 link 字符串（其余模块皆如此）；兼容对象形式以防万一。
   var url = (typeof link === "string") ? link : ((link && (link.url || link.link || link.id)) || "");
   if (!url || url.indexOf(SITE) !== 0 || url.indexOf("/movies/") === -1) return null;
   var html = (await phGet(url, SITE + "/")).data || "";
@@ -343,14 +330,9 @@ async function loadDetail(link) {
   return item;
 }
 
-
-
-
-
 async function loadResource(params) {
   params = params || {};
   var url = params.url || params.link || params.id || "";
-  // 来源隔离：只认本站详情页，外站链接与 TMDB id 一律不出源且零请求。
   if (!url || url.indexOf(SITE + "/movies/") !== 0) return [];
   var html = await phFetchText(url, { "User-Agent": UA_IPHONE, Referer: SITE + "/", "Accept-Encoding": "identity" });
   if (!html) return [];

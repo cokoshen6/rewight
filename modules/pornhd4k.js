@@ -3,12 +3,29 @@
 // 再 GET ajax/get_sources/<剧集 id>/<md5(剧集 id + 随机 token + 盐)>?count=1&mobile=true，
 // 须同时带 session cookie 与 token cookie，返回 JWPlayer playlist，sources 里是带签名的 HLS。
 // 站内只有一档（实测两部片均为 720p），取档位数字最大的一路。
+// v1.0.7：不再走 pornhd4k-proxy Worker——模块本机做完取源全流程，直接返回
+// 站内签名 m3u8，Rex 直连平台拉流、边解密（剥 PNG 包装）边播。
+// v1.0.7 手机实测不出资源：Widget.http.get 送不出 Cookie 请求头、且站内
+// 响应可能被桥接层 zstd 解压坏掉。v1.0.8 按 hongguo-local 的写法改：
+// 请求改走 Widget.http.request + base64Data（原始字节本地解码），取到
+// m3u8 后本机生成清单（分段全部写成绝对地址），以 data: URL 返回。
+// v1.0.8 手机实测能出资源、能播，但进播放页要手动点一次播放才开始加载
+// ——data: 清单播放器不自动起播。v1.0.9：取源仍走 request 桥（Cookie
+// 问题已修好），但直接返回站内签名 m3u8（相对分段由播放器按清单地址正
+// 常解析），不再生成 data: 清单。
+// v1.0.9 手机实测还是要手动点。根因已定罪：ffmpeg HLS 解复用器的
+// allowed_segment_extensions 白名单拒收 `.ts.png` 与无后缀分段——
+// ffprobe 复现，直接 m3u8 与 Worker 清单都报 not in allowed_segment_
+// extensions（Worker 清单里裸相对段 playlistN.ts.png 也没被重写，一样
+// 不过）。手动点后能播，是 App 切到了能播的播放器。v1.1.0：
+// playerType 改 "system"，让系统播放器（无后缀白名单、按内容嗅探）直
+// 接起播，Rex 在网络层剥 PNG 包装后给它干净 TS。
 WidgetMetadata = {
   id: "pornhd4k",
   title: "PornHD 4K",
-  description: "pornhd4k.net 列表、工作室、标签、搜索与 HLS 播放源（播放经 pornhd4k-proxy Worker 剥掉分段 PNG 包装后供流）",
+  description: "pornhd4k.net 列表、工作室、标签、搜索与 HLS 播放源（本机取源、直连平台播放，不再经 Worker 代理）",
   author: "Coko",
-  version: "1.0.6",
+  version: "1.1.0",
   requiredVersion: "0.0.1",
   site: "https://pornhd4k.net",
   detailCacheDuration: 30,
@@ -69,6 +86,142 @@ var SITE = "https://pornhd4k.net";
 var UA_IPHONE = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
 var UA_DESKTOP = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 // get_sources 签名盐与 token cookie 名种子，均取自站内 fixx.js（全站通用，非单片）。
+var PH_SALT = "98126avrbi6m49vd7shxkn985";
+var PH_TOKEN_SEED = "n1sqcua67bcq9826avrbi6m49vd7shxkn985mhodk06twz87wwxtp3dqiicks2dfyud213k6ygiomq01s94e4tr9v0k887bkyud213k6ygiomq01s94e4tr9v0k887bkqocxzw39esdyfhvtkpzq9n4e7at4kc6k8sxom08bl4dukp16h09oplu7zov4m5f8";
+
+// 手写 MD5（与 pornhd4k-proxy 同款，纯 JS，不依赖桥接层 crypto）。
+function phMd5(str) {
+  function phUtf8(s) {
+    var enc = encodeURIComponent(s);
+    var out = "";
+    for (var i = 0; i < enc.length; i++) {
+      var ch = enc.charAt(i);
+      if (ch === "%") { out += String.fromCharCode(parseInt(enc.substr(i + 1, 2), 16)); i += 2; }
+      else out += ch;
+    }
+    return out;
+  }
+  function rl(n, c) { return (n << c) | (n >>> (32 - c)); }
+  function add(x, y) {
+    var l = (x & 0xffff) + (y & 0xffff);
+    var m = (x >> 16) + (y >> 16) + (l >> 16);
+    return (m << 16) | (l & 0xffff);
+  }
+  function f(q, a, b, x, s, t) { return add(rl(add(add(a, q), add(x, t)), s), b); }
+  function g(q, a, b, x, s, t) { return add(rl(add(add(a, q), add(x, t)), s), b); }
+  function h(q, a, b, x, s, t) { return add(rl(add(add(a, q), add(x, t)), s), b); }
+  function i(q, a, b, x, s, t) { return add(rl(add(add(a, q), add(x, t)), s), b); }
+  function ff(a, b, c, d, x, s, t) { return f((b & c) | (~b & d), a, b, x, s, t); }
+  function gg(a, b, c, d, x, s, t) { return g((b & d) | (c & ~d), a, b, x, s, t); }
+  function hh(a, b, c, d, x, s, t) { return h(b ^ c ^ d, a, b, x, s, t); }
+  function ii(a, b, c, d, x, s, t) { return i(c ^ (b | ~d), a, b, x, s, t); }
+  function binl(s) {
+    var a = [];
+    var m = (1 << 8) - 1;
+    for (var k = 0; k < s.length * 8; k += 8) a[k >> 5] |= (s.charCodeAt(k / 8) & m) << (k % 32);
+    return a;
+  }
+  function hex(n) {
+    var s = "";
+    for (var j = 0; j < 4; j++) s += ("0" + ((n >>> (j * 8)) & 0xff).toString(16)).slice(-2);
+    return s;
+  }
+  var utf = phUtf8(str);
+  var x = binl(utf);
+  var a = 1732584193, b = -271733879, c = -1732584194, d = 271733878;
+  var bl = utf.length * 8;
+  x[bl >> 5] |= 0x80 << (bl % 32);
+  x[(((bl + 64) >>> 9) << 4) + 14] = bl;
+  for (var k = 0; k < x.length; k += 16) {
+    var oa = a, ob = b, oc = c, od = d;
+    a = ff(a, b, c, d, x[k], 7, -680876936); d = ff(d, a, b, c, x[k + 1], 12, -389564586); c = ff(c, d, a, b, x[k + 2], 17, 606105819); b = ff(b, c, d, a, x[k + 3], 22, -1044525330);
+    a = ff(a, b, c, d, x[k + 4], 7, -176418897); d = ff(d, a, b, c, x[k + 5], 12, 1200080426); c = ff(c, d, a, b, x[k + 6], 17, -1473231341); b = ff(b, c, d, a, x[k + 7], 22, -45705983);
+    a = ff(a, b, c, d, x[k + 8], 7, 1770035416); d = ff(d, a, b, c, x[k + 9], 12, -1958414417); c = ff(c, d, a, b, x[k + 10], 17, -42063); b = ff(b, c, d, a, x[k + 11], 22, -1990404162);
+    a = ff(a, b, c, d, x[k + 12], 7, 1804603682); d = ff(d, a, b, c, x[k + 13], 12, -40341101); c = ff(c, d, a, b, x[k + 14], 17, -1502002290); b = ff(b, c, d, a, x[k + 15], 22, 1236535329);
+    a = gg(a, b, c, d, x[k + 1], 5, -165796510); d = gg(d, a, b, c, x[k + 6], 9, -1069501632); c = gg(c, d, a, b, x[k + 11], 14, 643717713); b = gg(b, c, d, a, x[k], 20, -373897302);
+    a = gg(a, b, c, d, x[k + 5], 5, -701558691); d = gg(d, a, b, c, x[k + 10], 9, 38016083); c = gg(c, d, a, b, x[k + 15], 14, -660478335); b = gg(b, c, d, a, x[k + 4], 20, -405537848);
+    a = gg(a, b, c, d, x[k + 9], 5, 568446438); d = gg(d, a, b, c, x[k + 14], 9, -1019803690); c = gg(c, d, a, b, x[k + 3], 14, -187363961); b = gg(b, c, d, a, x[k + 8], 20, 1163531501);
+    a = gg(a, b, c, d, x[k + 13], 5, -1444681467); d = gg(d, a, b, c, x[k + 2], 9, -51403784); c = gg(c, d, a, b, x[k + 7], 14, 1735328473); b = gg(b, c, d, a, x[k + 12], 20, -1926607734);
+    a = hh(a, b, c, d, x[k + 5], 4, -378558); d = hh(d, a, b, c, x[k + 8], 11, -2022574463); c = hh(c, d, a, b, x[k + 11], 16, 1839030562); b = hh(b, c, d, a, x[k + 14], 23, -35309556);
+    a = hh(a, b, c, d, x[k + 1], 4, -1530992060); d = hh(d, a, b, c, x[k + 4], 11, 1272893353); c = hh(c, d, a, b, x[k + 7], 16, -155497632); b = hh(b, c, d, a, x[k + 10], 23, -1094730640);
+    a = hh(a, b, c, d, x[k + 13], 4, 681279174); d = hh(d, a, b, c, x[k], 11, -358537222); c = hh(c, d, a, b, x[k + 3], 16, -722521979); b = hh(b, c, d, a, x[k + 6], 23, 76029189);
+    a = hh(a, b, c, d, x[k + 9], 4, -640364487); d = hh(d, a, b, c, x[k + 12], 11, -421815835); c = hh(c, d, a, b, x[k + 15], 16, 530742520); b = hh(b, c, d, a, x[k + 2], 23, -995338651);
+    a = ii(a, b, c, d, x[k], 6, -198630844); d = ii(d, a, b, c, x[k + 7], 10, 1126891415); c = ii(c, d, a, b, x[k + 14], 15, -1416354905); b = ii(b, c, d, a, x[k + 5], 21, -57434055);
+    a = ii(a, b, c, d, x[k + 12], 6, 1700485571); d = ii(d, a, b, c, x[k + 3], 10, -1894986606); c = ii(c, d, a, b, x[k + 10], 15, -1051523); b = ii(b, c, d, a, x[k + 1], 21, -2054922799);
+    a = ii(a, b, c, d, x[k + 8], 6, 1873313359); d = ii(d, a, b, c, x[k + 15], 10, -30611744); c = ii(c, d, a, b, x[k + 6], 15, -1560198380); b = ii(b, c, d, a, x[k + 13], 21, 1309151649);
+    a = ii(a, b, c, d, x[k + 4], 6, -145523070); d = ii(d, a, b, c, x[k + 11], 10, -1120210379); c = ii(c, d, a, b, x[k + 2], 15, 718787259); b = ii(b, c, d, a, x[k + 9], 21, -343485551);
+    a = add(a, oa); b = add(b, ob); c = add(c, oc); d = add(d, od);
+  }
+  return (hex(a) + hex(b) + hex(c) + hex(d)).toLowerCase();
+}
+
+function phToken() {
+  var chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+  var out = "";
+  for (var i = 0; i < 6; i++) out += chars[Math.floor(Math.random() * chars.length)];
+  return out;
+}
+
+function phEpisodeId(html) {
+  // 详情页是 var movie = { id: "..." } 对象字面量，不是 var movie.id = "..."；另有两路 input 兜底。
+  var m = html.match(/var movie\s*=\s*\{\s*id:\s*"([^"]+)"/);
+  if (m) return m[1];
+  m = html.match(/id="uuid"[^>]*value="([^"]+)"/);
+  if (m) return m[1];
+  m = html.match(/<input[^>]*value="([A-Z0-9]{10,})"[^>]*class="[0-9a-f-]{36}"/);
+  return m ? m[1] : "";
+}
+
+// ---- 本机请求桥（hongguo-local 写法）：Widget.http.request + base64Data ----
+// Widget.http.get 在 App 内送不出 Cookie 请求头、且响应可能被桥接层按 zstd
+// 解压坏掉；request + base64Data 拿回原始字节，模块自己解码，不依赖桥接层。
+var PH_B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+function phB64Decode(b64) {
+  var s = String(b64 || "").replace(/[\t\n\f\r ]/g, "");
+  var pad = 0;
+  if (s.slice(-2) === "==") pad = 2;
+  else if (s.slice(-1) === "=") pad = 1;
+  var end = s.length - pad;
+  var out = new Uint8Array(Math.floor(end * 3 / 4));
+  var at = 0;
+  for (var i = 0; i < end; i += 4) {
+    var a = PH_B64.indexOf(s.charAt(i));
+    var b = PH_B64.indexOf(s.charAt(i + 1));
+    var c = i + 2 < end ? PH_B64.indexOf(s.charAt(i + 2)) : 0;
+    var d = i + 3 < end ? PH_B64.indexOf(s.charAt(i + 3)) : 0;
+    if (a < 0 || b < 0 || c < 0 || d < 0) return new Uint8Array(0);
+    out[at++] = (a << 2) | (b >> 4);
+    if (at < out.length) out[at++] = (b << 4) | (c >> 2);
+    if (at < out.length) out[at++] = (c << 6) | d;
+  }
+  return out;
+}
+function phBytesToText(bytes) {
+  if (typeof TextDecoder !== "undefined") {
+    try { return new TextDecoder().decode(bytes); } catch (e) { /* fall through */ }
+  }
+  // JavaScriptCore 无 TextDecoder 时的兜底：按 UTF-8 百分号解码。
+  var s = "";
+  for (var i = 0; i < bytes.length; i++) s += "%" + bytes[i].toString(16).padStart(2, "0");
+  try { return decodeURIComponent(s); } catch (e) { return ""; }
+}
+async function phFetchText(url, headers) {
+  // 优先走 request + base64Data；桥接层没有 request 时回落到 http.get。
+  try {
+    if (Widget.http && typeof Widget.http.request === "function") {
+      var resp = await Widget.http.request({ url: url, method: "GET", headers: headers || {}, base64Data: true, timeout: 25 });
+      var data = resp && resp.data;
+      if (typeof data === "string") return phBytesToText(phB64Decode(data));
+      if (data instanceof Uint8Array) return phBytesToText(data);
+      if (data) return String(data);
+      return "";
+    }
+  } catch (e) { /* 回落 */ }
+  try {
+    var r = await Widget.http.get(url, { headers: headers || {} });
+    return (r && r.data) || "";
+  } catch (e) { return ""; }
+}
 
 
 function phAbs(u) {
@@ -219,8 +372,42 @@ async function loadResource(params) {
   params = params || {};
   var url = params.url || params.link || params.id || "";
   // 来源隔离：只认本站详情页，外站链接与 TMDB id 一律不出源且零请求。
-  // 取源与剥 PNG 包装都在 Worker（pornhd4k.100923.xyz）里做，模块只返回代理播放列表地址。
   if (!url || url.indexOf(SITE + "/movies/") !== 0) return [];
-  var playUrl = "https://pornhd4k.100923.xyz/playlist.m3u8?url=" + encodeURIComponent(url);
-  return [{ url: playUrl, description: "720p · PornHD", customHeaders: { "User-Agent": UA_DESKTOP, Referer: url }, playerType: "app" }];
+  // v1.1.0：本机做完取源全流程，不再走 pornhd4k-proxy Worker。
+  // ① 取详情页拿剧集 id；② 随机 token + md5 签名调 get_sources；③ 取档位
+  // 数字最大的一路签名 m3u8 直接返回，playerType "system" 让系统播放器
+  // 直接起播，Rex 直连平台拉流、边解密（剥 PNG 包装）边播。两次请求都
+  // 走 phFetchText（request + base64Data，原始字节本地解码），绕开
+  // Widget.http.get 送不出 Cookie 请求头、响应被 zstd 解压坏掉的问题。
+  var html = await phFetchText(url, { "User-Agent": UA_IPHONE, Referer: SITE + "/", "Accept-Encoding": "identity" });
+  if (!html) return [];
+  var ep = phEpisodeId(html);
+  if (!ep) return [];
+  var token = phToken();
+  var sign = phMd5(ep + token + PH_SALT);
+  var cookieName = PH_TOKEN_SEED.substring(13, 37) + ep + PH_TOKEN_SEED.substring(40, 64);
+  var gsUrl = SITE + "/ajax/get_sources/" + ep + "/" + sign + "?count=1&mobile=true";
+  var gsText = await phFetchText(gsUrl, {
+    "User-Agent": UA_IPHONE,
+    Referer: url,
+    "X-Requested-With": "XMLHttpRequest",
+    "Accept-Encoding": "identity",
+    Cookie: cookieName + "=" + token,
+  });
+  if (!gsText) return [];
+  var data = null;
+  try { data = JSON.parse(gsText); } catch (e) { return []; }
+  var sources = (data && data.playlist && data.playlist[0] && data.playlist[0].sources) || [];
+  if (!sources.length) return [];
+  var best = null, bestQ = -1;
+  for (var i = 0; i < sources.length; i++) {
+    var f = sources[i].file || "";
+    if (!f) continue;
+    var qm = String(sources[i].label || "").match(/(\d+)/);
+    var q = qm ? parseInt(qm[1], 10) : 0;
+    if (q >= bestQ) { bestQ = q; best = f; }
+  }
+  if (!best) return [];
+  var label = (bestQ > 0 ? bestQ + "p" : "720p") + " · PornHD";
+  return [{ url: best, description: label, customHeaders: { "User-Agent": UA_DESKTOP, Referer: url }, playerType: "system" }];
 }

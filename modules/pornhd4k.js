@@ -1,31 +1,12 @@
 // PornHD 4K（pornhd4k.net）：列表 / 工作室 / 标签 / 搜索 / 详情 / 播放。
-// 播放链：详情页 var movie.id（剧集 id）-> 先 GET 详情页拿 ASP.NET_SessionId，
-// 再 GET ajax/get_sources/<剧集 id>/<md5(剧集 id + 随机 token + 盐)>?count=1&mobile=true，
-// 须同时带 session cookie 与 token cookie，返回 JWPlayer playlist，sources 里是带签名的 HLS。
-// 站内只有一档（实测两部片均为 720p），取档位数字最大的一路。
-// v1.0.7：不再走 pornhd4k-proxy Worker——模块本机做完取源全流程，直接返回
-// 站内签名 m3u8，Rex 直连平台拉流、边解密（剥 PNG 包装）边播。
-// v1.0.7 手机实测不出资源：Widget.http.get 送不出 Cookie 请求头、且站内
-// 响应可能被桥接层 zstd 解压坏掉。v1.0.8 按 hongguo-local 的写法改：
-// 请求改走 Widget.http.request + base64Data（原始字节本地解码），取到
-// m3u8 后本机生成清单（分段全部写成绝对地址），以 data: URL 返回。
-// v1.0.8 手机实测能出资源、能播，但进播放页要手动点一次播放才开始加载
-// ——data: 清单播放器不自动起播。v1.0.9：取源仍走 request 桥（Cookie
-// 问题已修好），但直接返回站内签名 m3u8（相对分段由播放器按清单地址正
-// 常解析），不再生成 data: 清单。
-// v1.0.9 手机实测还是要手动点。根因已定罪：ffmpeg HLS 解复用器的
-// allowed_segment_extensions 白名单拒收 `.ts.png` 与无后缀分段——
-// ffprobe 复现，直接 m3u8 与 Worker 清单都报 not in allowed_segment_
-// extensions（Worker 清单里裸相对段 playlistN.ts.png 也没被重写，一样
-// 不过）。手动点后能播，是 App 切到了能播的播放器。v1.1.0：
-// playerType 改 "system"，让系统播放器（无后缀白名单、按内容嗅探）直
-// 接起播，Rex 在网络层剥 PNG 包装后给它干净 TS。
+// 播放链：详情页 var movie.id -> get_sources（md5 签名 + token cookie）取签名 HLS，取档位最大的一路。
+// 本机取源，不再走 Worker；playerType system 直接起播。
 WidgetMetadata = {
   id: "pornhd4k",
   title: "PornHD 4K",
   description: "pornhd4k.net 列表、工作室、标签、搜索与 HLS 播放源（本机取源、直连平台播放，不再经 Worker 代理）",
   author: "Coko",
-  version: "1.1.0",
+  version: "1.1.1",
   requiredVersion: "0.0.1",
   site: "https://pornhd4k.net",
   detailCacheDuration: 30,
@@ -172,9 +153,7 @@ function phEpisodeId(html) {
   return m ? m[1] : "";
 }
 
-// ---- 本机请求桥（hongguo-local 写法）：Widget.http.request + base64Data ----
-// Widget.http.get 在 App 内送不出 Cookie 请求头、且响应可能被桥接层按 zstd
-// 解压坏掉；request + base64Data 拿回原始字节，模块自己解码，不依赖桥接层。
+// 本机请求桥：Widget.http.request + base64Data，原始字节本地解码。
 var PH_B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 function phB64Decode(b64) {
   var s = String(b64 || "").replace(/[\t\n\f\r ]/g, "");
@@ -373,12 +352,6 @@ async function loadResource(params) {
   var url = params.url || params.link || params.id || "";
   // 来源隔离：只认本站详情页，外站链接与 TMDB id 一律不出源且零请求。
   if (!url || url.indexOf(SITE + "/movies/") !== 0) return [];
-  // v1.1.0：本机做完取源全流程，不再走 pornhd4k-proxy Worker。
-  // ① 取详情页拿剧集 id；② 随机 token + md5 签名调 get_sources；③ 取档位
-  // 数字最大的一路签名 m3u8 直接返回，playerType "system" 让系统播放器
-  // 直接起播，Rex 直连平台拉流、边解密（剥 PNG 包装）边播。两次请求都
-  // 走 phFetchText（request + base64Data，原始字节本地解码），绕开
-  // Widget.http.get 送不出 Cookie 请求头、响应被 zstd 解压坏掉的问题。
   var html = await phFetchText(url, { "User-Agent": UA_IPHONE, Referer: SITE + "/", "Accept-Encoding": "identity" });
   if (!html) return [];
   var ep = phEpisodeId(html);

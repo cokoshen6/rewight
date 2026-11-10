@@ -1,4 +1,4 @@
-var WidgetMetadata = {"id":"juhe.baidu","title":"聚合百度版","version":"1.1.8","requiredVersion":"0.0.1","description":"纯百度聚合（花卷/虎斑/多多）：读取百度网盘分享并返回原画直链，不转存；只使用本模块百度 Cookie；旧版收藏/历史链接需重新添加。","author":"夏恩","site":"https://github.com/InchStudio/ForwardWidgets","detailCacheDuration":3600,"credentialSource":"local","globalParams":[{"name":"baiduCookie","title":"百度 Cookie","type":"input","value":""},{"name":"resourceCategory","title":"资源标签","type":"enumeration","value":"none","enumOptions":[{"title":"不标注","value":"none"},{"title":"8K标记(旧)","value":"8k"},{"title":"4K","value":"4k"},{"title":"1080P","value":"1080p"},{"title":"其他","value":"other"}]},{"name":"host_huajuan","title":"花卷站点地址","type":"input","value":"https://www.hjzhencai.top"},{"name":"host_huban","title":"虎斑站点地址","type":"input","value":"http://43.248.128.118:16969"},{"name":"host_duoduo","title":"多多站点地址","type":"input","value":"https://tv.214521.xyz"}],"modules":[{"id":"loadResource","title":"聚合百度[盘]","description":"按当前影片详情并发搜索各源并返回百度网盘播放源","functionName":"loadResource","type":"stream","cacheDuration":0,"params":[]},{"id":"clearRexCatalogCache","title":"刷新网盘目录缓存","functionName":"clearRexCatalogCache","cacheDuration":0,"params":[]}],"search":{"title":"搜索聚合百度","functionName":"search","params":[{"name":"keyword","title":"关键词","type":"input","value":""},{"name":"page","title":"页码","type":"page","value":"1"}]}};
+var WidgetMetadata = {"id":"juhe.baidu","title":"聚合百度版","version":"1.1.9","requiredVersion":"0.0.1","description":"纯百度聚合（花卷/虎斑/多多）：读取百度网盘分享并返回原画直链，不转存；只使用本模块百度 Cookie；旧版收藏/历史链接需重新添加。","author":"夏恩","site":"https://github.com/InchStudio/ForwardWidgets","detailCacheDuration":3600,"credentialSource":"local","globalParams":[{"name":"baiduCookie","title":"百度 Cookie","type":"input","value":""},{"name":"resourceCategory","title":"资源标签","type":"enumeration","value":"none","enumOptions":[{"title":"不标注","value":"none"},{"title":"8K标记(旧)","value":"8k"},{"title":"4K","value":"4k"},{"title":"1080P","value":"1080p"},{"title":"其他","value":"other"}]},{"name":"host_huajuan","title":"花卷站点地址","type":"input","value":"https://www.hjzhencai.top"},{"name":"host_huban","title":"虎斑站点地址","type":"input","value":"http://43.248.128.118:16969"},{"name":"host_duoduo","title":"多多站点地址","type":"input","value":"https://tv.214521.xyz"}],"modules":[{"id":"loadResource","title":"聚合百度[盘]","description":"按当前影片详情并发搜索各源并返回百度网盘播放源","functionName":"loadResource","type":"stream","cacheDuration":0,"params":[]},{"id":"clearRexCatalogCache","title":"刷新网盘目录缓存","functionName":"clearRexCatalogCache","cacheDuration":0,"params":[]}],"search":{"title":"搜索聚合百度","functionName":"search","params":[{"name":"keyword","title":"关键词","type":"input","value":""},{"name":"page","title":"页码","type":"page","value":"1"}]}};
 var DriveEngine = (function(){var WidgetMetadata;
 WidgetMetadata = {"id":"juhe.baidu.rex","title":"聚合百度版","version":"2.2.4","requiredVersion":"0.0.1","description":"全盘影视搜索，支持夸克、百度、UC、115、123、移动、天翼、迅雷网盘及外挂字幕。","author":"balge","site":"https://quanpan.xyz","detailCacheDuration":1800,"globalParams":[{"name":"site","title":"站点地址（留空使用全盘搜索）","type":"input","value":"https://quanpan.xyz"},{"name":"quarkCookie","title":"垮 Cookie","type":"input"},{"name":"baiduCookie","title":"佰 Cookie","type":"input"},{"name":"cookie115","title":"伍 Cookie","type":"input"},{"name":"xunleiAuth","title":"迅雷访问令牌","type":"input","value":"","placeholders":[{"title":"填写 access_token 或 Authorization；自动识别 Web/App；迅雷三项全部留空时使用通用配置","value":""}]},{"name":"xunleiRefreshToken","title":"迅雷刷新令牌","type":"input","value":"","placeholders":[{"title":"填写 refresh_token，用于自动续期；可留空；迅雷三项全部留空时使用通用配置","value":""}]},{"name":"xunleiDeviceId","title":"迅雷设备号","type":"input","value":"","placeholders":[{"title":"填写 device_id；留空优先从令牌读取，否则使用默认设备号；迅雷三项全部留空时使用通用配置","value":""}]},{"name":"guangyaAuth","title":"光鸭访问令牌","type":"input","value":"","placeholders":[{"title":"填写 accessToken；光鸭三项全部留空时使用通用配置","value":""}]},{"name":"guangyaRefreshToken","title":"光鸭刷新令牌","type":"input","value":"","placeholders":[{"title":"填写 refreshToken，用于自动续期；可留空；光鸭三项全部留空时使用通用配置","value":""}]},{"name":"guangyaDeviceId","title":"光鸭设备号","type":"input","value":"","placeholders":[{"title":"填写 deviceId；留空使用默认设备号；光鸭三项全部留空时使用通用配置","value":""}]},{"name":"multiSource","title":"聚合搜索","type":"enumeration","value":"enabled","enumOptions":[{"title":"启用","value":"enabled"},{"title":"禁用","value":"disabled"}]}],"modules":[{"id":"searchResources","title":"搜索网盘资源","functionName":"search","cacheDuration":0,"params":[{"name":"keyword","title":"关键词","type":"input"}]},{"id":"refreshCatalog","title":"刷新目录缓存","functionName":"clearRexCatalogCache","cacheDuration":0,"params":[]},{"id":"loadResource","title":"加载资源","functionName":"loadResource","type":"stream","cacheDuration":0,"params":[]}],"search":{"title":"全盘搜索","functionName":"search","params":[{"name":"keyword","title":"关键词","type":"input"},{"name":"page","title":"页码","type":"page"}]}};
 
@@ -154,7 +154,6 @@ function playHeaders() {
   return { "User-Agent": UA, "Cookie": CURRENT_COOKIE };
 }
 
-// Explicit drive expiry is terminal; password/auth ambiguity remains retryable.
 function qpAssertShareResponse(url,json,status){
  if(!/^https:\/\/(?:drive(?:-[a-z]+)?\.quark\.cn|pc-api\.uc\.cn|pan\.baidu\.com|(?:webapi|proapi)\.115\.com|(?:www\.)?123pan\.(?:com|cn))\//i.test(String(url)))return;
  if(!/\/(?:share\/|file\/download|app\/share\/)/.test(url)||!json||typeof json!=='object')return;
@@ -163,7 +162,6 @@ function qpAssertShareResponse(url,json,status){
  if(!failed||/提取码|提取碼|密码|密碼|验证码|驗證碼|password|passcode|captcha|token|登录|登陆|login|或|or /i.test(message))return;
  if(/(?:分享|共享|链接|連結)[^。\n]{0,20}(?:过期|失效|取消|删除|不存在)|share(?:d)?(?: link)?[^.\n]{0,30}(?:expired|cancelled|canceled|deleted|not found)/i.test(message))throw cpError('SHARE_EXPIRED');
 }
-// Protocol source: quanpan.xyz/api.min.js (2026-10-20). Search tokens never leave this origin.
 const QP_PROVIDERS=["quark","baidu","uc","115","123","yidong","tianyi","xunlei"];
 const qpTokens=new Map();
 function qpError(status,kind){
@@ -179,7 +177,6 @@ async function qpResponse(work){
   throw error;
  }
 }
-// Rex's JavaScriptCore context has no browser URL/URLSearchParams globals.
 function qpParseUrl(value){
  const match=/^(https?):\/\/([a-z0-9.-]+)(?::([0-9]{1,5}))?(\/[^?#\\]*)?(?:\?([^#]*))?(?:#(.*))?$/i.exec(String(value));
  if(!match||!match[2].split(".").every(label=>/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i.test(label)))return null;
@@ -288,12 +285,8 @@ function qpCheckedShare(share,site,keyword){
  const queueKey=JSON.stringify([site,keyword||""]);let queue=qpCheckQueues.get(queueKey);
  if(!queue){
   queue=[];qpCheckQueues.set(queueKey,queue);
-  // Combine ready callers in this microtask; no timer, waiting window or result cutoff.
   Promise.resolve().then(()=>{
    qpCheckQueues.delete(queueKey);
-   // The checker does not always echo the separate password field. Keep
-   // conflicting passwords for one share in separate requests, so identity
-   // matching cannot borrow the status of a different extraction code.
    const waiting=queue.slice();
    while(waiting.length){
     const batch=[],identities=new Set();
@@ -341,7 +334,6 @@ async function search(params={},siteOverride){
   try{if(typeof params.cpSiteSearch==='function')return await params.cpSiteSearch(params);return parseQuanpanResults(await qpSearchData(site,keyword,params.signal),keyword,site);}
   catch(error){qpCheck(params.signal);if(typeof params.cpSiteSearch==='function')throw error;if(/^QUANPAN_/.test(error?.code)||["ABORTED","ACCOUNT_CHANGED","OPERATION_TIMEOUT"].includes(error?.code))throw error;throw qpError(0,"网络请求");}
  };
- // A caller-specific cancellation must not reject another caller joined to the same cached flight.
  const rows=params.signal?await load():await rexCached((typeof params.cpSiteSearch==="function"?"site-search-v2:":"search:")+site+":"+keyword+(typeof params.cpSiteSearch==="function"?":"+baiduSha1(JSON.stringify([params.cpSiteIdentity,params.tmdbId||params.tmdbID||"",cpRequestedYear(params),params.type,params.season,cpRelevanceTitles(params)])):""),45000,load,rows=>rows.length>0);
  qpCheck(params.signal);return rows;
 }
@@ -355,7 +347,6 @@ async function loadDetail(link) {
   return await buildDetailItem(info);
 }
 
-// 不同网盘独立请求；同一网盘按顺序处理，避免共享状态和 Cookie 串用。
 async function runProviderTasks(items, work) {
   const groups = new Map();
   for (const item of items) {
@@ -505,8 +496,6 @@ async function getStoken(shareId, passcode) {
 }
 
 function qpFileBytes(value){const bytes=Number(value);return Number.isFinite(bytes)&&bytes>0?bytes:0;}
-// Walk independent folders concurrently; pages within a folder remain ordered.
-// Drain every in-flight read before propagating failure to the next operation.
 async function getVideosFromShareLink(shareLink, passcode, scope) {
   const match = String(shareLink || "").match(/\/s\/([a-zA-Z0-9]+)/);
   const shareId = match ? match[1] : "";
@@ -516,9 +505,7 @@ async function getVideosFromShareLink(shareLink, passcode, scope) {
   return await getShareDetail(shareId, stoken,undefined,scope);
 }
 
-// ==================== 夸克网盘缓存文件夹管理 ====================
 
-// 检查缓存文件夹是否存在，返回 fid
 async function checkFolderExists(folderName) {
   const url = "https://drive-pc.quark.cn/1/clouddrive/file/sort?pr=ucpro&fr=pc&uc_param_str=&pdir_fid=0&_page=1&_size=50&_fetch_total=1&_fetch_sub_dirs=0&_sort=file_type:asc,updated_at:desc&fetch_all_file=1&fetch_risk_file_name=1";
   const json = await httpJson("GET", url, null, quarkHeaders());
@@ -527,7 +514,6 @@ async function checkFolderExists(folderName) {
   return folder ? folder.fid : "";
 }
 
-// 删除文件/文件夹列表
 async function deleteFiles(filelist) {
   if (!Array.isArray(filelist) || filelist.length === 0) return false;
   const url = "https://drive-pc.quark.cn/1/clouddrive/file/delete?pr=ucpro&fr=pc&uc_param_str=";
@@ -545,14 +531,11 @@ async function deleteFiles(filelist) {
   }
 }
 
-// 复用缓存文件夹，避免生成多条夸克线路时删除前一条资源的文件。
 async function createFolder(folderName, pdirFid = "0") {
-  // 检查是否已存在
   const existingFid = await checkFolderExists(folderName);
   if (existingFid) {
     return existingFid;
   }
-  // 创建新文件夹
   const url = "https://drive-pc.quark.cn/1/clouddrive/file?pr=ucpro&fr=pc&uc_param_str=";
   try {
     const json = await httpJson("POST", url, {
@@ -574,7 +557,6 @@ async function createFolder(folderName, pdirFid = "0") {
   }
 }
 
-// 转存分享文件到缓存文件夹
 async function saveShareFile(videoInfo) {
   const toFid=await createFolder(CACHE_FOLDER);
   if(!toFid || toFid === "0")return "";
@@ -598,7 +580,6 @@ async function saveShareFile(videoInfo) {
     if(!successful(json))return "";
     const immediate=savedFid(json);if(immediate)return immediate;
     const taskId=json.data&&json.data.task_id;if(!taskId)return "";
-    // 与猫源一致，异步转存任务最多查询6次，成功后再调用file/v2/play转码。
     for(let retry=0;retry<6;retry++){
       const task=await httpJson("GET",base+"task?"+query+"&task_id="+encodeURIComponent(String(taskId))+"&retry_index="+retry,null,quarkHeaders());
       if(!successful(task))return "";
@@ -609,7 +590,6 @@ async function saveShareFile(videoInfo) {
   }catch(e){throw e;}
 }
 
-// 获取播放 URL
 async function getPlayUrl(myFid) {
   const url = "https://drive-pc.quark.cn/1/clouddrive/file/v2/play?pr=ucpro&fr=pc&uc_param_str=";
   const json = await httpJson("POST", url, { fid: myFid, resolutions: "normal,low,high,super,2k,4k" }, quarkHeaders());
@@ -624,7 +604,6 @@ function formatVideoName(fileName, size) {
   return String(fileName).trim() + sizeText;
 }
 
-// ==================== 多网盘线路 ====================
 function playbackLineName(provider) {
   return { quark: "夸克", baidu: "百度", uc: "UC", "115":"115", "123":"123" }[provider] || "网盘";
 }
@@ -673,7 +652,6 @@ async function ucApi(path, data) {
     error.code=json && json.code; error.status=json && json.status;
     throw error;
   }
-  // Some UC responses put catalog totals outside data. Preserve them for all page readers.
   if(path.startsWith("share/sharepage/detail?")&&json.data&&json.metadata)return Object.assign({},json.data,{metadata:json.metadata});
   return json.data;
 }
@@ -706,11 +684,9 @@ async function getUcResource(info) {
       v=detail.list.find(file=>String(file.fid)===String(v.fid));
       if(!v) throw new Error("优分享文件已失效");
       item=await download(v);
-      // Renew the raw index's selected file as well, so subsequent loads do not repeat this refresh.
       if(item?.download_url&&info.videoInfo)Object.assign(info.videoInfo,v);
     }
     if(!item || !/^https?:\/\//i.test(item.download_url || "")) throw new Error("优免登下载地址为空或格式无效");
-    // 完整保留参考实现：Referer 为原始下载地址加一个反斜杠，不解码、不规范化。
     const headers={"User-Agent":UC_UA,Referer:item.download_url+"\\","Accept-Encoding":"identity"};
     const resource={name:"优",description:"原画",url:item.download_url,customHeaders:headers,headers:Object.assign({},headers)};
 
@@ -720,19 +696,16 @@ async function getUcResource(info) {
   }
 }
 
-// Each Baidu workflow owns its share cookie and signature; no global read queue.
 async function serialBaidu(work){return await work();}
 function baiduHeaders(share, randsk) {
   let cookie = normalizeCookie(safeStorageGet("juhe.baidu.baidu.cookie"));
   if (!cookie) throw new Error("请先在插件设置填写佰 Cookie");
-  // BDCLND 属于单个分享，用户粘贴的 Cookie 中可能包含其他分享的值。
   cookie = cookie.split(";").map(p => p.trim()).filter(p => p && !/^BDCLND\s*=/i.test(p)).join("; ");
   if (randsk) cookie += "; BDCLND=" + randsk;
   return { "User-Agent": BAIDU_WEB_UA, Cookie: cookie, Referer: share.url || "https://pan.baidu.com/share/init?surl=" + encodeURIComponent(baiduShortId(share.shareId)) };
 }
 function baiduShortId(shareId) { return shareId.charAt(0) === "1" ? shareId.slice(1) : shareId; }
 async function baiduVerifyCore(share) {
-  // 空提取码也请求验证，以获取本分享的 sekey；只携带账号基础 Cookie。
   const res = await cpHttpPost("https://pan.baidu.com/share/verify?" + toQuery({ surl: baiduShortId(share.shareId), pwd: share.passcode || "" }),
     toQuery({ pwd: share.passcode || "", vcode: "", vcode_str: "" }),
     { timeout: 8000, headers: Object.assign(baiduHeaders(share), { "Content-Type": "application/x-www-form-urlencoded" }) });
@@ -804,7 +777,6 @@ async function getBaiduResource(info) {
     const uid = accountUid || "default_uid";
     const devuid = "73CED981D0F186D12BC18CAE1684FFD5|VSRCQTF6W";
     const requestDlink = async () => {
-      // verify 的 randsk 可能已经转义；toQuery 统一编码一次，避免 %2B 变成 %252B。
       let sekey = randsk;
       try { sekey = decodeURIComponent(randsk); } catch (_) {}
       const time = String(Date.now());
@@ -824,7 +796,6 @@ async function getBaiduResource(info) {
     if(json&&Number(json.errno)===-9)cpReadInvalidate("baidu",v.shareId,v.passcode,"verify");
     const items = json && (Array.isArray(json.list) ? json.list : Array.isArray(json.info) ? json.info : []) || [];
     const fileId = file => file && (file.fs_id || file.fsid || file.fid);
-    // 单文件接口有时只返回 dlink；返回明确 fid 时必须匹配，不能误播其他集。
     const item = items.find(file => String(fileId(file)) === String(v.fid)) ||
       (items.length === 1 && !fileId(items[0]) ? items[0] : null);
 
@@ -833,10 +804,7 @@ async function getBaiduResource(info) {
       if (json && Number.isFinite(Number(json.errno))) error.code = Number(json.errno);
       throw error;
     }
-    // 对齐 baidu.js 的原画播放头：签名直链仅携带 UA/Referer，账号 Cookie 只用于取链。
     const playbackHeaders = {"User-Agent":BAIDU_PLAY_UA, Referer:"https://pan.baidu.com/"};
-    // iOS 遇到未转义的 | 会重新编码整条 URL，使签名中的 %2F/%3D 变成 %252F/%253D。
-    // 只转义 devuid 的分隔符，保留百度已经编码的签名和其他查询参数。
     const playbackUrl = item.dlink.replace(/\|/g, "%7C");
 
     return [{name:"佰", description:"原画", url:playbackUrl, customHeaders:playbackHeaders, headers:playbackHeaders}];
@@ -846,7 +814,6 @@ async function getBaiduResource(info) {
   }
 }
 
-// 用明确的季/集编号匹配跨网盘版本；无法识别编号时只合并同名文件。
 function episodeIdentity(fileName) {
   const name = String(fileName || "").replace(/\.[a-z0-9]{2,5}$/i, "");
   const seasonMatch = name.match(/s(\d{1,2})[ ._-]*e(\d{1,3})(?!\d)/i);
@@ -877,7 +844,6 @@ function groupEpisodeLines(items, tid) {
   }));
 }
 
-// Website fuzzy search owns discovery; no external metadata or alias search requests.
 function qpCleanQuery(value){
  let title=String(value||"").replace(/[\u200b-\u200f\u202a-\u202e\ufeff]/g,"").trim();
  for(let i=0;i<2;i++)title=title.replace(/\s*[（(]\s*(?:19|20)\d{2}\s*[）)]\s*$/,"").replace(/\s*(?:第\s*[一二三四五六七八九十百\d]+\s*季|season\s*\d+|\bS\d{1,2})\s*$/i,"").trim();
@@ -903,8 +869,6 @@ async function qpDiscoverCandidates(params,onCandidate,options={}){
     const candidate=Object.assign({},info,{shares:[share],cpB7MatchTitles:titles});bucket.push(candidate);buckets.set(key,bucket);candidates.push(candidate);
    }
   }
-  // Access codes describe the same share regardless of the card's title.
-  // Complete unambiguous codes before starting either batch's catalog reads.
   for(const candidate of candidates.slice(start)){
    const share=candidate.shares[0],codes=passwords.get(share.provider+':'+share.shareId);
    if(!share.passcode&&codes?.size===1)candidate.shares=[Object.assign({},share,{passcode:[...codes][0]})];
@@ -918,7 +882,6 @@ async function qpDiscoverCandidates(params,onCandidate,options={}){
  await cpB7SearchMatches(rows,Object.assign({},params,{alternativeTitles:cpRelevanceTitles(params).concat(options.titles||[])}),readBatch);qpCheck(params.signal);
  return candidates;
 }
-// Both adapters share relevance predicates; Quanpan retains one selected file per candidate.
 function qpSelectVideo(files,params){
  if(params.type==="movie"){
   let largest=null;const titles=cpRelevanceTitles(params);
@@ -935,8 +898,6 @@ async function findEpisodeResource(params,linkInfo,onSource){
  if(params.refresh)cpCoverageClear();
  const indexKey=qpSeriesIndexKey(params,linkInfo),index=qpSeriesIndexRead(indexKey),generation=rexCacheGeneration;
  let failure=null,hadError=false,matched=0,unmatchedRows=[],coverageRows=index.cpQuotaRows,coverageMode=false;
- // Reuse already resolved site-share identities before calling a site's
- // credential endpoint again. The index key includes the website account.
  if(typeof params.cpSiteRead==='function'){
   const nativeRead=params.cpSiteRead;
   params=Object.assign({},params,{cpSiteRead:async(row,query)=>{
@@ -974,7 +935,6 @@ async function findEpisodeResource(params,linkInfo,onSource){
     const video=await cpB7SelectVideo(catalog.list||[],cpFileCatalogParams(Object.assign({},candidateParams,{cpFileContextTitle:descriptor.title}),catalog.list||[]),descriptor.cpB7MatchTitles);cpCheck(profile);if(!video)return;matched++;
     const source={action:"play",provider:checked.provider,lineName:providerName(checked.provider)+"#"+ordinal,channelUsername:"",channelDisplayName:"",
      qpCandidateOrder:order,packageSizeScope:catalog.cpTargetDirectory&&!catalog.cpTargetDirectory.completeShare?'directory':'share',packageSizeBytes:Number(catalog.packageSizeBytes||0),videoInfo:video,title:formatVideoName(video.file_name,video.size),qpFreshCatalog:(catalog.cpTargetDirectory?catalog!==cached:!cached)&&qpOperation?.catalogReads?.has(qpShareCatalogKey(checked))===true};
-    // Catalogs overlap; playback work on the same drive retains its serialized owner.
     const resolutionKey=['quark','uc','baidu','115','tianyi','yidong'].includes(checked.provider)?shareKey:checked.provider;
     const resolution=(resolveChains.get(resolutionKey)||Promise.resolve()).then(async()=>{
      cpCheck(profile);const outcome=onSource?await onSource(source):true;
@@ -1039,7 +999,6 @@ async function findEpisodeResource(params,linkInfo,onSource){
  return sources.length?{action:"play",sources}:null;
 }
 
-// 对齐荐片返回的资源结构：各网盘独立 id/name/type，播放头保留。
 function formatPlaybackResource(resource, source, params) {
   const provider = source.provider || "quark";
   const video = source.videoInfo || {};
@@ -1126,7 +1085,6 @@ function p115Base64Decode(text){
     bytes.push((n>>>16)&255);if(clean[i+2]!=="=")bytes.push((n>>>8)&255);if(clean[i+3]!=="=")bytes.push(n&255);}return new Uint8Array(bytes);
 }
 
-// 115 RSA/XOR 算法移植自用户指定猫源 util/115.js；移除 Node Buffer/TextEncoder 依赖。
 const p115G_kts = new Uint8Array([
   0xf0, 0xe5, 0x69, 0xae, 0xbf, 0xdc, 0xbf, 0x8a,
   0x1a, 0x45, 0xe8, 0xbe, 0x7d, 0xa6, 0x73, 0xb8,
@@ -1259,14 +1217,11 @@ function p115Decrypt(cipherData) {
 }
 
 
-// 搜索结果标题包含年份、清晰度、更新状态等；仅用于匹配，不修改展示原文。
 function normalizeQuanpanTitle(value) {
   let title=String(value||"").trim();
   title=title.replace(/^(?:名称|片名)\s*[:：]\s*/,"");
-  // 有明确年份时，只取年份之前的片名，兼容 (2026)、（2026）及独立年份。
   title=title.replace(/\s*[（(]\s*(?:19|20)\d{2}\s*[）)][\s\S]*$/,"");
   title=title.replace(/\s+(?:19|20)\d{2}(?=\s|$)[\s\S]*$/,"");
-  // 无年份时，删除明确的资源状态；保留片名本身中的数字和括号。
   title=title.replace(/\s*(?:更新至|更至|更新到|全\s*\d+\s*[集期]|完结|已完结)[\s\S]*$/,"");
   title=title.replace(/\s+(?:4K|8K|1080[Pp]|2160[Pp]|720[Pp]|HDR|杜比|蓝光)(?=\s|$)[\s\S]*$/i,"");
   title=title.replace(/\s*\[[^\]]*\]\s*$/,"");
@@ -1353,7 +1308,6 @@ async function getPan123Resource(info) {
   if(!video.downloadUrl){const fresh=await getPan123Videos({shareId:video.shareId,passcode:video.passcode},video.parentId!=null?video:null);video=fresh.list.find(item=>String(item.fid)===String(video.fid));}
   const raw=pan123RawUrl(video&&video.downloadUrl);if(!/^https?:\/\//i.test(raw))throw new Error("123分享未提供免登录地址");
   let url=raw;const visited=new Set();
-  // 与猫源相同：小范围读取用于跟随跳转，失败时仍返回原始免登地址，不走登录接口。
   try{
     for(let i=0;i<5;i++){
       cpCheck(profile);if(visited.has(url))throw new Error("123 redirect cycle");visited.add(url);
@@ -1382,7 +1336,6 @@ function tgSourceIdentity(source) {
   return JSON.stringify([tgChannelIdentity(source),source.provider||"quark",String(video.shareId||""),String(video.fid||video.file_name||"")]);
 }
 
-// 夸克在API响应中轮换__puus；播放地址必须使用更新后的登录Cookie。
 function syncQuarkPlaybackCookie(url,response) {
   if(!/^https:\/\/drive(?:-[a-z]+)?\.quark\.cn\//i.test(String(url||"")))return;
   const headers=response&&response.headers||{};
@@ -1398,7 +1351,6 @@ function syncQuarkPlaybackCookie(url,response) {
 }
 
 WidgetMetadata.globalParams=WidgetMetadata.globalParams.concat([{"name": "credentialSource", "title": "网盘账号来源", "type": "enumeration", "value": "shared", "enumOptions": [{"title": "默认共用（本模块非空 Cookie 优先）", "value": "shared"}, {"title": "仅本模块", "value": "local"}]}, {"name": "subtitles", "title": "同版本外挂字幕", "type": "enumeration", "value": "auto", "enumOptions": [{"title": "自动（最多 3 条）", "value": "auto"}, {"title": "关闭", "value": "off"}]}]);
-// Visible wording follows the earlier secondary-development edition; parameter identities stay native.
 WidgetMetadata.globalParams.forEach(function(param){
  const titles={"quarkCookie": "夸克 Cookie（非空优先，留空继承共用）", "baiduCookie": "百度 Cookie（非空优先，留空继承共用）", "cookie115": "115 Cookie（非空优先，留空继承共用）", "woniuCookie": "蜗牛站点 Cookie", "channels": "TG 频道用户名（逗号分隔）", "resultCount": "每个频道搜索结果数", "showPictures": "显示搜索封面"};
  if(titles[param.name])param.title=titles[param.name];
@@ -1407,7 +1359,6 @@ WidgetMetadata.globalParams.forEach(function(param){
  if(["quarkCookie","baiduCookie","cookie115"].includes(param.name))(param.placeholders||[]).forEach(function(item){item.title=item.title.replace(/垮/g,"夸克").replace(/佰/g,"百度").replace(/伍/g,"115");});
 });
 
-// 原版内增强：完整代码保留在本模块。未替换原版搜索、目录和整剧缓存实现。
 const CP_PREFIX="enhanced:"+WidgetMetadata.id+":";
 const CP_COOKIE_ROOT=STORAGE_COOKIE_KEY.replace(/quark\.cookie$/,""),CP_FIELDS=["quarkCookie","baiduCookie","cookie115","xunleiAuth","guangyaAuth","tianyiCookie"];
 const cpNativeBind=bindForwardParams,cpNativeFormat=formatPlaybackResource,cpNativeResolve=resolvePlaySource;
@@ -1439,19 +1390,15 @@ bindForwardParams=function(params={}){
  const session=cpRead("session:"+profile),quark=session&&session.cookie||accounts[0];
  cpProfile=profile;
  const result=cpNativeBind(Object.assign({},params,{quarkCookie:quark,baiduCookie:accounts[1],cookie115:accounts[2]}));
- // 登录配置身份保持稳定；__puus轮换只更新会话，不使原版整剧缓存失效。
  safeStorageSet(STORAGE_COOKIE_KEY.replace(/cookie$/,"configHash"),baiduSha1(normalizeCookie(accounts[0])));return result;
 };
 
-// Shared switches apply independently of the module's credential source.
 function cpDriveEnabled(provider){
  const fields={quark:"driveQuarkEnabled",baidu:"driveBaiduEnabled",uc:"driveUcEnabled","115":"drive115Enabled","123":"drive123Enabled",xunlei:"driveXunleiEnabled",guangya:"driveGuangyaEnabled",yidong:"driveYidongEnabled",tianyi:"driveTianyiEnabled"};
  const value=cpShared()[fields[provider]];
  return ["xunlei","guangya","yidong","tianyi"].includes(provider)?value==="enabled":value!=="disabled";
 }
 function cpSize(value){const n=Number(value);return n>0?(n>=1073741824?(n/1073741824).toFixed(2)+" GB":(n/1048576).toFixed(1)+" MB"):"";}
-// Filename hints describe labels supplied by the publisher, never a probed
-// stream or a list of real cpMedia_audio tracks. Contradictory cpMedia_scalar labels are unknown.
 const cpMedia_boundary = pattern => new RegExp(`(?:^|[^\\p{L}\\p{N}])(?:${pattern})(?=$|[^\\p{L}\\p{N}])`, 'iu');
 const cpMedia_video = [ ['H.264', 'h[ ._-]?264|x264|avc'], ['H.265', 'h[ ._-]?265|x265|hevc'], ['AV1','av1'], ['VP9','vp9'] ];
 const cpMedia_range = [['SDR','sdr'], ['HDR10+', 'hdr10\\+'], ['HDR10','hdr10(?!\\+)'], ['Dolby Vision','dolby[ ._-]?vision|dovi|dv']];
@@ -1459,8 +1406,6 @@ const cpMedia_audio = [['AAC','aac'], ['AC3','(?<!e[ ._-])ac[ ._-]?3'], ['EAC3',
 const cpMedia_depths = [[8,'8[ ._-]?bit'], [10,'10[ ._-]?bit'], [12,'12[ ._-]?bit']];
 const cpMedia_channels = [['7.1.4','7\\.1\\.4'], ['5.1.2','5\\.1\\.2'], ['2.0','2\\.0|2[ ._-]?ch'], ['5.1','5\\.1|6[ ._-]?ch'], ['7.1','7\\.1|8[ ._-]?ch'], ['1.0','1\\.0|mono|1[ ._-]?ch']].map(([value, pattern]) => [value, `(?<!\\d\\.)(?:${pattern})(?!\\.\\d)`]);
 const cpMedia_languages = [['zh','国语|国語|普通话|普通話|mandarin|zh|zho|chi'], ['en','英语|英語|英文|english|eng|en'], ['yue','粤语|粵語|cantonese|yue'], ['ja','日语|日語|日文|japanese|jpn|ja'], ['ko','韩语|韓語|korean|kor|ko'], ['fr','法语|法語|french|fra|fre'], ['de','德语|德語|german|deu|ger'], ['es','西班牙语|spanish|spa']];
-// Release names commonly attach a depth or channel count to a codec token.
-// Split only known complete combinations, never arbitrary numeric suffixes.
 function cpMedia_releaseText(value) {
   return value.replace(/(^|[^\p{L}\p{N}])(hevc|avc|h[ ._-]?26[45]|x26[45])(?=(?:8|10|12)[ ._-]?bit(?:$|[^\p{L}\p{N}]))/giu, '$1$2 ')
     .replace(/(^|[^\p{L}\p{N}])(ddp|dd\+|aac|e[ ._-]?ac[ ._-]?3|ac[ ._-]?3|true[ ._-]?hd|dts[ ._-]?hd|dts)(?=(?:2\.0|5\.1|7\.1)(?:$|[^\p{L}\p{N}]))/giu, '$1$2 ');
@@ -1479,8 +1424,6 @@ function cpMediaInfo(filename) {
 }
 function cpResolutionInfo(value) {
   const found = new Set(), aliases = { '8k':'4320p', '4k':'2160p', uhd:'2160p', '2k':'1440p' };
-  // Underscores and Chinese titles commonly touch resolution labels. Require
-  // ASCII token boundaries so 18K and 8Kbps cannot become resolution hints.
   const pattern = /(?:^|[^a-z0-9])((?:4320|2160|1440|1080|720|576|540|480|360)[pi]|[248]k|uhd|\d{3,5}\s*[x×]\s*(?:4320|2160|1440|1080|720|576|540|480|360))(?=$|[^a-z0-9])/gi;
   for (const match of String(value || '').matchAll(pattern)) {
     const label = match[1].toLowerCase();
@@ -1489,12 +1432,9 @@ function cpResolutionInfo(value) {
   return {present:found.size>0, value:found.size===1?[...found][0]:null};
 }
 function cpOriginResolution(resource, video) {
-  // These are original video dimensions. video_max_resolution is a service's
-  // transcode ceiling and must never describe the original file.
   const w = Number(video.video_width), h = Number(video.video_height);
   if (Number.isSafeInteger(w) && Number.isSafeInteger(h) && w > 0 && h > 0 && w <= 32768 && h <= 32768) {
     const wide=Math.max(w,h), short=Math.min(w,h);
-    // Use both axes for cropped widescreen releases and rotated videos.
     for (const [height,width] of [[4320,7680],[2160,3840],[1440,2560],[1080,1920],[720,1280],[576,1024],[540,960],[480,854],[360,640]]) {
       if (wide>=width || short>=height) return height+'p';
     }
@@ -1506,8 +1446,6 @@ function cpOriginResolution(resource, video) {
   return null;
 }
 function cpMedia(name,resolution=cpResolutionInfo(name).value){const info=cpMediaInfo(name),labels=[resolution,info.videoCodec,info.dynamicRange,info.bitDepth?info.bitDepth+"bit":null,info.audioCodec,info.audioChannels,info.atmos?"Atmos":null,info.languageHints.length?"语言标签: "+info.languageHints.join("/"):null].filter(Boolean);return labels;}
-// Quanpan discovers shares in JSON. Slots belong to native catalog requests,
-// never the lifetime of a recursive share or a whole provider.
 const qpCatalogWaiting=[],qpCatalogRunning=new Map();let qpCatalogActive=0;
 function qpPumpCatalog(){
  for(let i=0;i<qpCatalogWaiting.length&&qpCatalogActive<4;){
@@ -1544,7 +1482,6 @@ async function qpCatalogPages(provider,read,size,key,readSchedulesRequests=false
   if(!value||!Array.isArray(value.items))throw cpError('UPSTREAM_ERROR');
   const total=value.total==null?null:Number(value.total);
   if(total!==null&&(!Number.isFinite(total)||total<0))throw cpError('UPSTREAM_ERROR');
-  // UC may filter rows after pagination: 98 visible items can consume 100 slots.
   const count=value.count==null?value.items.length:Number(value.count);
   if(!Number.isInteger(count)||count<value.items.length)throw cpError('UPSTREAM_ERROR');
   if(parallelTotal!==null&&(total!==parallelTotal||count!==Math.min(size,parallelTotal-(page-1)*size)))throw cpError('UPSTREAM_ERROR');
@@ -1558,17 +1495,11 @@ async function qpCatalogPages(provider,read,size,key,readSchedulesRequests=false
   if(String(value.next)==='-1'){if(total!==null&&(consumed??seen.size)<total)throw cpError('UPSTREAM_ERROR');break;}
   if(total===null&&value.next==null&&count<size)break;
   next=value.next??0;
-  // Only these providers expose independent fixed-size numbered pages. Short
-  // first pages retain the serial path because their page geometry is unknown.
   if(page===1&&(provider==='quark'||provider==='uc')&&value.next==null&&Number.isInteger(total)&&total>size&&count===size){parallelTotal=total;lastPage=Math.ceil(total/size);}
   if(parallelTotal!==null)while(pending.size<2&&scheduled<lastPage){scheduled++;pending.set(scheduled,request(scheduled,0));}
  }}catch(error){pageFailure=pageFailure||error;throw error;}finally{await Promise.all(pending.values());}
  return rows;
 }
-// Discover folders after each validated page so later parent pages do not idle
-// the existing second worker. Keep full-catalog completion before flattening.
-// Folder completion can be out of order. Flatten the recorded tree in original
-// breadth-first order only after every started read has settled.
 async function qpCatalogTree(root,read,child,onItem){
  const nodes=new Map(),queue=[];let active=0,failure;
  return await new Promise((resolve,reject)=>{
@@ -1666,8 +1597,6 @@ async function getPan123Videos(share,target){
  },100,item=>item.FileId,false,emit,cpTargetToken),item=>!target&&folder(item)?item.FileId:undefined);
  return qpCatalogResult(entries,item=>item.FileId,folder,item=>Number(item.Category)===2&&(!target||String(item.FileId)===String(target.fid)),(item,parent)=>({fid:String(item.FileId),parentId:parent,file_name:item.FileName,size:Number(item.Size||0),shareId:share.shareId,passcode:share.passcode||'',downloadUrl:item.DownloadUrl||''}));
 }
-// Display classification is independent of account overrides and playback quality.
-// An explicit empty value restores the original resolution detection path.
 function cpResourceCategory(){
  const value=cpShared().resourceCategory;
  return ["8k","4k","1080p","other", ""].includes(value)?value:"";
@@ -1706,10 +1635,7 @@ episodeIdentity=function(name){
  if(!m||Number(m[1])<1)return original;const s=/第\s*(\d+)\s*季|\bS(\d+)\b/i.exec(stem),season=s?Number(s[1]||s[2]):1;
  return {key:"s"+season+"e"+Number(m[1]),season,episode:Number(m[1])};
 };
-// Shared pure relevance rules; provider I/O and discovery policies stay in their adapters.
 function cpMovieHostYear(value){return /[（(]\s*((?:19|20)\d{2})\s*[）)]\s*$/.exec(value||'');}
-// Rex forwards airDate rather than year. Keep all supplied year evidence in
-// agreement, and only strip an unbracketed year when it is that release year.
 function cpRequestedYear(params){
  const year=v=>/^(?:19|20)\d{2}$/.test(String(v??""))?Number(v):null;
  const embedded=cpMovieHostYear(params.seriesName||params.title||""),values=[year(params.year),year(params.releaseYear),params.type==="movie"?year(String(params.airDate||"").slice(0,4)):null,embedded?Number(embedded[1]):null].filter(v=>v!==null);
@@ -1732,7 +1658,6 @@ function cpMovieVideoMatches(video,params,titles=cpRelevanceTitles(params)){retu
 function cpRelevanceTitles(params){
  return [...new Set([params.seriesName||params.title||params.name||params.keyword,params.originalName,params.originalTitle,params.original_name,params.original_title,...(Array.isArray(params.alternativeTitles)?params.alternativeTitles:[]),...(Array.isArray(params.aliases)?params.aliases:[])].filter(v=>typeof v==="string"&&v.trim()).map(v=>v.trim()))];
 }
-// Remove known title words before interpreting labels such as "Trailer" or "Sample".
 function cpWithoutKnownTitles(value,titles){
  let text=String(value||"");
  const names=[...new Set(titles.filter(Boolean).map(t=>cpMovieName(t).name))].sort((a,b)=>b.length-a.length);
@@ -1756,7 +1681,6 @@ function cpSearchMetadataLabel(value){
 function cpRelevanceSearchName(value){
  let text=String(value||"").replace(/^[🎬🎥📺]\s*/u,"").replace(/^(?:名称|片名)\s*[:：]\s*/,"").replace(/[\u200b-\u200f\u202a-\u202e\ufeff]/g,"").trim();
  text=text.replace(/^[\[【](?:电影|剧集|电视剧|动漫|短剧)[·・](?:光鸭|迅雷|移动|天翼|夸克|百度|UC|115|123)[\]】]\s*/i,'');
- // Only recognized metadata labels are removable; bracketed sequel names stay meaningful.
  let previous;
  do{previous=text;text=text.replace(/\s*[\[【（(]([^\]】）)]+)[\]】）)]\s*$/, (whole,label)=>cpSearchMetadataLabel(label)?"":whole).trim();}while(text!==previous);
  text=text.replace(/\s*(?:更新至|更至|更新到|全\s*\d+\s*[集期]|完结|已完结)[\s\S]*$/,"");
@@ -1780,16 +1704,12 @@ function cpSearchTitleMatches(value,params){
  const clean=cpRelevanceSearchName(value);
  if(params.type==="movie")return titles.some(title=>cpMovieCandidate(clean,Object.assign({},params,{seriesName:title,title,year:requested.year||params.year})));
  const season=cpExplicitSeason(clean);if(season!==null&&season!==Number(params.season||1))return false;
- // Season and year suffixes may be in either order. Conflict checks above
- // remain authoritative; normalize only the already-validated trailing season.
  const name=clean.replace(/\s*(?:第\s*[一二三四五六七八九十百\d]+\s*季|Season[ ._-]*\d+|(?:^|[ ._-])S\d{1,2})\s*$/i,'');
  let candidate=cpMovieName(name,requested.year);
  if(requested.year&&candidate.year&&requested.year!==candidate.year)return false;
  const key=value=>cpTitleKey(value).replace(/s\d{1,2}$/i,"");
  const matches=name=>titles.some(title=>key(name)===key(cpRelevanceSearchName(title)));
  if(matches(candidate.name))return true;
- // TV hosts need not supply a release year. Strip a bare result year only
- // when the remaining name matches; titles such as 1984 retain their identity.
  const suffix=/^(.*?)[ ._-]+((?:19|20)\d{2})$/.exec(candidate.name);
  return !!suffix&&(!requested.year||Number(suffix[2])===requested.year)&&matches(suffix[1]);
 }
@@ -1802,7 +1722,6 @@ function cpNativeRequest(method,url,data){
  }
  return {method,url,data};
 }
-// Reuse successful Baidu preparation briefly across modules; signed playback URLs stay fresh.
 const CP_BAIDU_READ_NAMESPACE="catpaw.drive-read.v1";
 function cpIoReuseEnabled(){return !/(?:^|\.)(?:tgsou|tg-channels)$/.test(WidgetMetadata.id);}
 function cpBaiduCacheState(){
@@ -1826,7 +1745,6 @@ function cpBaiduCached(key,ttl){
 }
 function cpBaiduRemember(key,value,ttl){if(cpIoReuseEnabled()){const now=Date.now();cpBaiduCacheSet(key,{at:now,until:now+ttl,value});}}
 function cpBaiduInvalidateAccount(){if(cpIoReuseEnabled())cpBaiduCacheSet("epoch:"+(cpActiveProfile||cpProfile),String(Date.now())+":"+String(Math.random()));}
-// Only a serialized public loadResource owns this response cache.
 let cpBaiduUidScope=null;
 function cpBaiduUidKey(method,url,headers){
  if(!cpBaiduUidScope||method!=="GET"||!/^https:\/\/mbd\.baidu\.com\/userx\/v1\/info\/get(?:\?|$)/.test(url))return null;
@@ -1916,7 +1834,6 @@ async function cpWaitTransfer(key,profile){
   if(!state||state.state==='failed')return null;
   if(state.state==='preparing'&&(!Number.isFinite(state.until)||state.until<=Date.now())){cpWrite(key,{state:'failed'});return null;}
   if(state.state==='known')return cpResumeTransfer(key,state.taskId,profile);
-  // 在本次等待期间，POST 已提交但尚未回执时继续等；独立新请求仍拒绝盲目重发。
   if(typeof setTimeout!=='function')throw cpError('TRANSFER_UNCERTAIN');
   await new Promise(resolve=>setTimeout(resolve,200));
  }throw cpError('TRANSFER_UNCERTAIN');
@@ -1928,7 +1845,6 @@ saveShareFile=async function(video){
  if(saved?.state==='preparing'){const fid=await cpWaitTransfer(key,profile);if(fid)return fid;saved=cpRead(key);}
  if(saved?.state==='succeeded')return saved.fid;
  if(saved?.state==='uncertain')throw cpError('TRANSFER_UNCERTAIN');
- // 先登记正在准备，再进入原版建目录流程，其他模块等待回执。
  if(saved?.state!=='known'){cpWrite(key,{state:'preparing',owner:cpTransferOwner,until:Date.now()+60000});cpOwnedTransfers.add(key);}
  const task=(async()=>{
   try{
@@ -2018,7 +1934,6 @@ async function cpSubtitles(info,profile,deferredIssues){
   }catch(e){cpCheck(profile);if(e&&["AUTH_FAILED","RATE_LIMITED","TRANSFER_UNCERTAIN"].includes(e.code)){cpCandidateIssue(provider,e.code,false,deferredIssues);break;}}}return result;
  }catch(e){cpCheck(profile);return [];}
 }
-// Keep the native detail cover fields without installing title verification or alias lookups.
 let cpLastDetail=null;
 const qpDetailEntry=buildDetailItem;
 buildDetailItem=async function(info,...args){
@@ -2029,7 +1944,6 @@ buildDetailItem=async function(info,...args){
  }
  cpLastDetail=detail;return detail;
 };
-// Read preparation belongs to one serialized public resource operation, never storage.
 let cpReadOperation=null;
 function cpReadKey(provider,shareId,passcode,label){
  const profile=cpActiveProfile||cpProfile;cpCheck(profile);
@@ -2037,7 +1951,6 @@ function cpReadKey(provider,shareId,passcode,label){
 }
 function cpTrackRead(task,operation=cpReadOperation){
  if(operation&&operation.pending){operation.pending.add(task);task.then(()=>operation.pending.delete(task),()=>operation.pending.delete(task));}
- // Attach a rejection observer even when a caller abandons preparation on an error.
  task.catch(()=>{});return task;
 }
 async function cpWithReadOperation(work){
@@ -2056,7 +1969,6 @@ function cpReadReuse(provider,shareId,passcode,label,work,valid=value=>!!value){
  return pending.then(value=>{cpCheck(profile);return value;});
 }
 function cpReadInvalidate(provider,shareId,passcode,label){if(provider==="baidu"&&label==="verify"&&cpIoReuseEnabled())cpBaiduCacheSet(cpBaiduCacheKey("verify",[String(shareId||""),String(passcode||"")]),null);if(cpReadOperation)cpReadOperation.delete(cpReadKey(provider,shareId,passcode,label));}
-// A slot encloses just the native URL getter. Subtitle work obtains its own slot afterwards.
 const cpReadWaiting=[],cpReadRunning=new Map();let cpReadActive=0;
 function cpPumpRead(){
  for(let index=0;index<cpReadWaiting.length&&cpReadActive<4;){
@@ -2084,7 +1996,6 @@ const cpSessionUcResource=getUcResource,cpSessionBaiduResource=getBaiduResource,
 getUcResource=function(info){return cpScheduleRead("uc",()=>cpSessionUcResource(info));};
 getBaiduResource=function(info){return cpScheduleRead("baidu",()=>cpSessionBaiduResource(info));};
 get115Resource=function(info){return cpScheduleRead("115",()=>cpSession115Resource(info));};
-// A known file may refresh only its known parent. Read all parent pages but never recurse.
 async function cpRefreshShareFile(provider,video){
  const parent=video.pdir_fid;
  if(!video.shareId||!video.fid||parent==null)throw cpError("FILE_NOT_FOUND");
@@ -2131,7 +2042,6 @@ async function cpQuarkPlayback(info,profile){
  return [];
 }
 
-// The shared presenter predates named 123 lines; keep this new module's five-provider labels explicit.
 const qpFormatResource=formatPlaybackResource;
 formatPlaybackResource=function(resource,source,params){
  const result=qpFormatResource(resource,source,params);
@@ -2141,8 +2051,6 @@ formatPlaybackResource=function(resource,source,params){
  return result;
 };
 
-// Transfer mutations remain serialized, including subtitle saves and retries.
-// Once a saved fid is available, read-only origin/transcode requests can overlap.
 const qpSaveShareFile=saveShareFile;let qpMutationQueue=Promise.resolve();
 saveShareFile=function(video){
  const profile=cpActiveProfile||cpProfile;
@@ -2150,7 +2058,6 @@ saveShareFile=function(video){
  qpMutationQueue=task.catch(()=>{});return task;
 };
 
-// Reuse the Quanpan page reader for a known parent, including short pages without totals.
 cpRefreshShareFile=async function(provider,video){
  const parent=video.pdir_fid;
  if(!video.shareId||!video.fid||parent==null)throw cpError("FILE_NOT_FOUND");
@@ -2165,7 +2072,6 @@ cpRefreshShareFile=async function(provider,video){
  const selected=list.find(item=>String(item.fid)===String(video.fid));
  if(!selected)throw cpError("FILE_NOT_FOUND");return Object.assign({},video,selected);
 };
-// Same policy as the existing film modules: cache file indexes, never playback URLs.
 const QP_INDEX_PREFIX="juhe.baidu.selected-index.",QP_INDEX_KEYS=QP_INDEX_PREFIX+"keys";
 function qpSeriesIndexKey(params,linkInfo){
  const title=[params.seriesName,params.title,params.name,params.keyword,params.originalName,params.originalTitle,params.original_name,params.original_title].map(qpCleanQuery).find(Boolean)||"";
@@ -2188,7 +2094,6 @@ function qpSeriesIndexWrite(key,value,generation){
  if(!value.candidates.length||!Object.keys(value.entries).length){safeStorageSet(key,"");return;}
  const entries=rexClone(value.entries);
  for(const entry of Object.values(entries))cpTargetStripUrls(entry.catalog);
- // Cache hits (including missing episodes) cannot postpone seeing future updates forever.
  const expires=Math.min(Number(value.expires)||Infinity,Date.now()+86400000);
  safeStorageSet(key,JSON.stringify({schemaVersion:4,expires,candidates:value.candidates,entries,cpMediaSchema:1,cpQuotaRows:value.cpQuotaRows}));
  let keys=[];try{keys=JSON.parse(safeStorageGet(QP_INDEX_KEYS)||"[]");}catch(_){}
@@ -2200,7 +2105,6 @@ function qpClearSeriesIndexes(){
  let keys=[];try{keys=JSON.parse(safeStorageGet(QP_INDEX_KEYS)||"[]");}catch(_){}
  keys.forEach(key=>safeStorageSet(key,""));safeStorageSet(QP_INDEX_KEYS,"[]");
 }
-// One serialized resource owner covers matching, native reads and all cleanup.
 let qpOperation=null,qpOperationQueue=Promise.resolve();
 function qpCheckOwner(owner){
  if(!owner)return;
@@ -2229,8 +2133,6 @@ loadResource=function(params={}){
  });
  qpOperationQueue=task.catch(()=>{});return task;
 };
-// Shared new-drive protocols. Local crypto and wire shapes adapted from the supplied reference.
-// No catalog writes, previews, deletion, Node APIs, or remotely loaded code.
 function cpNPUtf8Encode(text) {
   const encoded = encodeURIComponent(text),
     bytes = [];
@@ -2653,7 +2555,6 @@ function cpNPReadAuth(provider) {
  auth.accessToken=String(auth.accessToken||auth.access_token||auth.auth||auth.authorization||headers.Authorization||headers.authorization||'').replace(/^Bearer\s+/i,'').trim();
  auth.refreshToken=String(auth.refreshToken||auth.refresh_token||'').trim();auth.deviceId=String(auth.deviceId||auth.device_id||'').trim();
  if(!auth.accessToken&&!auth.refreshToken)throw cpError('AUTH_FAILED');
- // A website Cookie is not a bearer token. There is no Cookie bootstrap path.
  if(provider==='xunlei'&&auth.accessToken&&!/^[A-Za-z0-9._~+/-]+=*$/.test(auth.accessToken))throw cpError('AUTH_FAILED');
  return auth;
 }
@@ -2706,19 +2607,12 @@ function cpParseNewPanLinks(text) {
  }
  return list;
 }
-// Refresh tokens can be single-use. Commit the response inside the physical
-// request work, before the host pool's operation-profile postguard can reject it.
-// This exception only preserves the same provider's session; no resource escapes
-// the individual waiter's cancellation/account guard.
 function cpNPIdentityGuard(provider,identity){if(cpNewPanIdentity(provider)!==identity)throw cpError('ACCOUNT_CHANGED');}
 async function cpNPRefreshRequest(provider,profile,url,body,headers,previous,identity,update){
  cpNPGuard(provider,profile);
  const work=async()=>{
   cpNPGuard(provider,profile);
   let response;
-  // A consumed one-use refresh must retain its successful rotation for the same
-  // configured drive, even if this owner expires. Use the bounded raw transport;
-  // the pool and individual waiter still fence every resource continuation.
   try{const options={timeout:15000,headers:Object.assign({'User-Agent':UA,'Content-Type':'application/json'},headers||{})};response=await (typeof cpResourceRequest==='function'?cpResourceRequest('post',url,JSON.stringify(body),options):Widget.http.post(url,JSON.stringify(body),options));}
   catch(error){cpNPIdentityGuard(provider,identity);if(['ACCOUNT_CHANGED','ABORTED','OPERATION_TIMEOUT'].includes(error?.code))throw error;const status=Number(error&&(error.status||error.statusCode||error.response?.status));throw cpNPFailure(status,undefined,error&&error.message);}
   cpNPIdentityGuard(provider,identity);
@@ -2732,8 +2626,6 @@ async function cpNPRefreshRequest(provider,profile,url,body,headers,previous,ide
  };
  return typeof cpQueueCatalogRead==='function'?cpQueueCatalogRead(provider,work):work();
 }
-// Share only refresh work for the same configured drive identity. Every waiter
-// keeps its own operation profile and must pass its own cancellation/account guard.
 const cpNPRefreshes=new Map();
 async function cpNPRefreshAuth(provider,profile,work,restarted=false){
  cpNPGuard(provider,profile);const identity=cpNewPanIdentity(provider),key=provider+':'+identity;
@@ -2742,8 +2634,6 @@ async function cpNPRefreshAuth(provider,profile,work,restarted=false){
   const previous=cpNewPanAuthValue(provider);job={profile};
   job.promise=Promise.resolve().then(()=>work(identity)).catch(error=>{
    cpNPIdentityGuard(provider,identity);
-   // A different module may have rotated the one-use refresh token first.
-   // Reuse only an actually changed, valid session under the captured config.
    if(['AUTH_FAILED','ACCOUNT_CHANGED','ABORTED','OPERATION_TIMEOUT'].includes(error?.code)&&cpNewPanAuthValue(provider)!==previous){const winner=cpNPReadAuth(provider);if(!cpNPPanTokenExpired(winner))return winner;}
    throw error;
   }).finally(()=>{if(cpNPRefreshes.get(key)===job)cpNPRefreshes.delete(key);});
@@ -2752,8 +2642,6 @@ async function cpNPRefreshAuth(provider,profile,work,restarted=false){
  try {await job.promise;}
  catch(error){
   cpNPGuard(provider,profile);
-  // A newer operation may share config but have a new overall profile. A stale
-  // owner's account guard must not poison this valid operation's refresh.
   if(!restarted&&error?.code==='ACCOUNT_CHANGED'&&job.profile!==profile&&cpNewPanIdentity(provider)===identity)return cpNPRefreshAuth(provider,profile,work,true);
   throw error;
  }
@@ -2780,7 +2668,6 @@ async function cpNPXunleiApi(method,path,body,share,profile,retry=true,beforeDis
  const action=share?'/drive/v1/share':path.startsWith('drive/v1/files')?'drive/v1/files':path.split('?')[0];const headers=await cpNPXunleiCaptcha(method+':'+action,auth,share,profile,readToken);if(!share)headers.Authorization='Bearer '+auth.accessToken;
  try{
   const data=await cpNPJson('xunlei',profile,method,'https://api-pan.xunlei.com/'+path,body,headers,beforeDispatch,readToken);
-  // Share failures can arrive as HTTP 200 with an empty files array.
   if(share&&data.share_status&&data.share_status!=='OK'){
    if(['DELETED','EXPIRED','CANCELLED','CANCELED','NOT_FOUND'].includes(data.share_status))throw cpError('SHARE_EXPIRED');
    const error=cpError('UPSTREAM_ERROR');
@@ -2817,8 +2704,6 @@ async function cpNPGuangyaPages(parentId,token,own,profile,onPage,readToken,scop
   if(!own&&onPage)onPage(items);
   const total=data.total==null?null:Number(data.total);
   if(total!==null&&(!Number.isFinite(total)||total<0))throw cpError('UPSTREAM_ERROR');
-  // The API can return a numeric cursor even on its final page. Count distinct
-  // IDs before stopping, and preserve cursor types in subsequent request bodies.
   const explicit=own?'':data.nextCursor||data.next_cursor||data.cursor||'';
   if(total!==null&&seen.size>=total)break;
   const next=explicit||(total!==null&&total>seen.size?seen.size:'');
@@ -2859,14 +2744,12 @@ async function cpNPTransferResolve(provider,video,profile){const {fid}=await cpC
  for(const usage of ['PLAY','CONSUME','']){const query={space:'','with[0]':'public_share_tag'};if(usage)query.usage=usage;const file=await cpNPXunleiApi('GET','drive/v1/files/'+encodeURIComponent(fid)+'?'+cpNPQuery(query),null,false,profile);const url=cpNPXunleiOriginalUrl(file);if(url)return cpNPResource(provider,url,{'User-Agent':'Dalvik/2.1.0 (Linux; U; Android 12; M2004J7AC Build/SP1A.210812.016)'});}
  throw cpError('QUALITY_UNAVAILABLE');
 }
-// Anonymous share playback: preview first, signed download only with a verified path.
 async function cpNPYidongResolve(video,profile){
  let path=String(video.path||'').trim(),content={};
  try{
   const data=await cpNPYidongRequest('getContentInfoFromOutLink',{getContentInfoFromOutLinkReq:{contentId:video.fid,linkID:video.shareId,account:''},commonAccountInfo:{account:'',accountType:1}},true,false,profile);
   content=data.contentInfo||{};
  }catch(error){
-  // Cancellation, changed accounts, disabled drives and rate limits must stop here.
   cpNPGuard('yidong',profile);
   if(!path||error.code!=='UPSTREAM_ERROR')throw error;
  }
@@ -2887,8 +2770,6 @@ async function cpNPYidongResolve(video,profile){
 }
 async function cpNewPanCatalog(share){const provider=share&&share.provider;if(!['xunlei','guangya','yidong','tianyi'].includes(provider))throw cpError('UPSTREAM_ERROR');const profile=cpNewPanAssert(provider);cpNPGuard(provider,profile);if(!share.shareId)throw cpError('SHARE_EXPIRED');const result=await (provider==='xunlei'?cpNPXunleiCatalog(share,profile):provider==='guangya'?cpNPGuangyaCatalog(share,profile):provider==='tianyi'?cpNPTianyiCatalog(share,profile):cpNPYidongCatalog(share,profile));cpNPGuard(provider,profile);return result;}
 async function cpNewPanResolve(info){const provider=info&&info.provider;if(!['xunlei','guangya','yidong','tianyi'].includes(provider))throw cpError('UPSTREAM_ERROR');const profile=cpNewPanAssert(provider),video=info.videoInfo||{};cpNPGuard(provider,profile);if(!video.shareId||!video.fid||!['yidong','tianyi'].includes(provider)&&!video.file_name)throw cpError('FILE_NOT_FOUND');const read=async()=>{cpNPGuard(provider,profile);const result=await (provider==='yidong'?cpNPYidongResolve(video,profile):provider==='tianyi'?cpNPTianyiResolve(video,profile):cpNPTransferResolve(provider,video,profile));cpNPGuard(provider,profile);return result;};return ['tianyi','yidong'].includes(provider)?read():cpNPSerial(provider+':'+cpNewPanIdentity(provider),read);}
-// Tianyi ordinary shares: anonymous catalog reads, then Cookie -> sessionKey
-// -> signed accessToken -> signed original download URL. No transfer or login.
 const cpNPTIANYI_SHARE_API = 'https://cloud.189.cn/api/open/share/';
 const cpNPTIANYI_SESSION_URL = 'https://m.cloud.189.cn/v2/getUserBriefInfo.action';
 const cpNPTIANYI_TOKEN_URL = 'https://api.cloud.189.cn/open/oauth2/getAccessTokenBySsKey.action';
@@ -3013,8 +2894,6 @@ async function cpNPTianyiResolve(video, profile) {
   const shareId=video.tianyiShareId?cpNPTianyiShareId(video.tianyiShareId):(await cpNPTianyiShareInfo(video,profile)).shareId;
   const cookie=String(cpNewPanAuthValue('tianyi')||'').trim();
   if (!cookie) throw cpError('AUTH_FAILED');
-  // Only the current serialized resource operation owns this token. It never
-  // reaches storage or another module; downloads retain their per-file signature.
   const identity=cpNPMd5(cookie),prepare=()=>cpNPTianyiPrepareAuth(profile,cookie);
   const accessToken=await (typeof cpReadReuse==='function'?
     cpReadReuse('tianyi',identity,'','play-auth',prepare):prepare());
@@ -3033,8 +2912,6 @@ async function cpNPTianyiResolve(video, profile) {
   }
   const url=(response.data||response).fileDownloadUrl;
   if (typeof url!=='string' || !/^https?:\/\/[^\s]+$/i.test(url)) throw cpError('QUALITY_UNAVAILABLE');
-  // Widget GET can follow redirects and read the entire video. Give the signed
-  // first hop to the player, with only the upstream's public client headers.
   const resources=cpNPResource('tianyi',url,cpNPTianyiClientHeaders());
   resources[0].name='天翼云盘';
   resources[0].playVia='client';
@@ -3056,8 +2933,6 @@ function cpNewPanAuthValue(provider){const configured=cpNewPanConfig(provider);r
 function cpNewPanSaveAuth(provider,raw,previous,identity){
  cpCheck(cpActiveProfile||cpProfile);return cpNewPanCommitSession(provider,raw,previous,identity===undefined?cpNewPanIdentity(provider):identity);
 }
-// Refreshing a one-use token is a session side effect. Keep its successful
-// rotation for the same drive even when the initiating operation was cancelled.
 function cpNewPanCommitSession(provider,raw,previous,identity){
  if(!cpIsNewPan(provider)||typeof raw!=='string'||!raw.trim()||/[\x00-\x1f\x7f]/.test(raw))throw cpError('AUTH_FAILED');
  if(!cpNewPanConfig(provider)||identity!==cpNewPanIdentity(provider))throw cpError('ACCOUNT_CHANGED');
@@ -3131,7 +3006,6 @@ resolvePlaySource=async function(info,deferredIssues){
  if(!cpCandidateNewProviderEnabled(info.provider))return [];
  const profile=cpNewPanAssert(info.provider),result=await cpNewPanResolve(info);cpCheck(profile);cpNewPanAssert(info.provider);return result;
 };
-// Discovery support is separate from the upstream search API's cloud_types.
 if(typeof qpShare==='function'){
  const native=qpShare;qpShare=function(entry){
   const old=native(entry);if(old||!entry||typeof entry.url!=='string'||/\s/.test(entry.url))return old;
@@ -3145,9 +3019,6 @@ if(typeof qpShare==='function'){
   return parse(Object.assign({},data,{results:[...(data.results||[]),...extra]}),keyword,site);
  };
 }
-// The outermost entry includes queueing, discovery and direct preparation in one budget.
-// Keep its owner until logical work has drained; raw HTTP may outlive the host timeout,
-// but a response must pass the captured owner before any native parser sees it.
 let cpResourceOwner=null,cpResourceQueue=Promise.resolve();
 const cpResourceParams=new WeakMap();
 function cpResourceForwardParams(params,extra){
@@ -3177,7 +3048,6 @@ function cpResourceRequest(method,url,data,options,beforeDispatch){
  const owner=cpResourceOwner;cpResourceCheck(owner);
  const bounded=owner?Object.assign({},options,{timeout:Math.max(1,Math.min(Number(options?.timeout)||8000,owner.deadline-Date.now()))}):options;
  if(beforeDispatch)beforeDispatch();
- // Rex helpers discard timeout; request forwards it in seconds to the native bridge.
  return owner&&typeof Widget.http.request==='function'?Widget.http.request(Object.assign({zlibMode:false,decodable:true,base64Data:false},bounded,{url,method:method.toUpperCase(),timeout:bounded.timeout/1000},method==='post'?{data}:{})):method==='get'?Widget.http.get(url,bounded):Widget.http.post(url,data,bounded);
 }
 function cpResourceHttp(method,url,data,options,beforeDispatch){
@@ -3186,14 +3056,11 @@ function cpResourceHttp(method,url,data,options,beforeDispatch){
 }
 function cpResourceAwait(owner,task){
  if(!owner)return task;
- // Race before parsing. The losing raw promise remains observed by Promise.race.
  return Promise.race([task,owner.expired]).then(response=>{cpResourceCheck(owner);return response;},error=>{cpResourceCheck(owner);throw error;});
 }
 function cpHttpGet(url,options,beforeDispatch){return cpResourceHttp('get',url,null,options,beforeDispatch);}
 function cpHttpPost(url,data,options,beforeDispatch){return cpResourceHttp('post',url,data,options,beforeDispatch);}
 function cpTmdbGet(path,options){
- // Some native TMDB bridges discard timeout; without host timers this await
- // cannot be independently interrupted. Always fence its late continuation.
  const owner=cpResourceOwner;cpResourceCheck(owner);
  const bounded=owner?Object.assign({},options,{timeout:Math.max(0.001,(owner.deadline-Date.now())/1000)}):options;
  return cpResourceAwait(owner,Widget.tmdb.get(path,bounded));
@@ -3228,16 +3095,12 @@ loadResource=function(params={}){
  }):work;
  return result.then(cpSortDisplayedResources).finally(()=>{if(timer!==undefined&&typeof clearTimeout==='function')clearTimeout(timer);});
 };
-// Public details share native global scopes. Queue them outside an automatic
-// owner; internal buildDetailItem discovery and direct preparation still overlap.
 const cpBudgetDetail=loadDetail;
 loadDetail=function(link,...args){
  const execute=()=>cpBudgetDetail.call(this,link,...args),work=cpResourceQueue.then(execute,execute);
  cpResourceQueue=work.catch(()=>{});return work;
 };
 
-// Rex uses a flat parameter list. Keep supported drive controls contiguous and
-// preserve the relative order of the remaining site/search preferences.
 const CP_CONFIG_DRIVES=["credentialSource","driveQuarkEnabled","quarkCookie","quarkQuality","driveBaiduEnabled","baiduCookie","drive115Enabled","cookie115","driveUcEnabled","drive123Enabled","driveGuangyaEnabled","guangyaAuth","guangyaRefreshToken","guangyaDeviceId","driveYidongEnabled","driveTianyiEnabled","tianyiCookie","driveXunleiEnabled","xunleiAuth","xunleiRefreshToken","xunleiDeviceId","quality"];
 const CP_CONFIG_CREDENTIALS={quarkCookie:["夸克 Cookie","填写夸克网页登录 Cookie"],baiduCookie:["百度 Cookie","填写百度网页登录 Cookie"],cookie115:["115 Cookie","填写 115 网页登录 Cookie"],guangyaAuth:["光鸭访问令牌","填写 accessToken"],guangyaRefreshToken:["光鸭刷新令牌","填写 refreshToken，用于自动续期；可留空"],guangyaDeviceId:["光鸭设备号","填写 deviceId；留空使用默认设备号"],tianyiCookie:["天翼 Cookie","含 JSESSIONID、COOKIE_LOGIN_USER 的 Cookie"],xunleiAuth:["迅雷访问令牌","填写 access_token 或 Authorization；自动识别 Web/App"],xunleiRefreshToken:["迅雷刷新令牌","填写 refresh_token，用于自动续期；可留空"],xunleiDeviceId:["迅雷设备号","填写 device_id；留空优先从令牌读取，否则使用默认设备号"]};
 for(const provider of ["guangya","xunlei"]){
@@ -3267,7 +3130,6 @@ WidgetMetadata.globalParams.sort((a,b)=>{
  return (left<0?Infinity:left)-(right<0?Infinity:right);
 });
 
-// B3 only: successful-path preparation, preserving final selection and order.
 function cpBetaSourceKey(source){const v=source.videoInfo||{};return JSON.stringify([source.provider||'quark',v.shareId,v.passcode||'',String(v.fid)]);}
 function cpBetaPrepareMovies(descriptor,files,operation){
  if(!files.length)return;
@@ -3308,7 +3170,6 @@ async function cpBetaRunSources(items,work){
  if(failure)throw failure;
 }
 
-// Directory lookup/creation and transfer acknowledgement remain one mutation owner.
 const cpBetaSaveNative=saveShareFile;let cpBetaMutationQueue=Promise.resolve();
 saveShareFile=function(video){
  const profile=cpActiveProfile||cpProfile;
@@ -3320,7 +3181,6 @@ cpOrigin=function(fid){return cpScheduleRead('quark',()=>cpBetaOriginNative(fid)
 const cpBetaPlayUrlNative=getPlayUrl;
 getPlayUrl=function(fid){return cpScheduleRead('quark',()=>cpBetaPlayUrlNative(fid));};
 
-// Only confirmed root preparation is reused, within the current operation.
 const cpBetaEnsureFolderNative=cpNPEnsureFolder;
 cpNPEnsureFolder=function(provider,name,parentId,profile){
  if(name!==CACHE_FOLDER||parentId!=='')return cpBetaEnsureFolderNative(provider,name,parentId,profile);
@@ -3328,10 +3188,6 @@ cpNPEnsureFolder=function(provider,name,parentId,profile){
   ()=>cpBetaEnsureFolderNative(provider,name,parentId,profile),fid=>typeof fid==='string'&&!!fid&&!['0','undefined','null'].includes(fid));
 };
 
-// Native URL getters keep the existing global four / provider two request slots.
-// Memoize exact file reads only for this operation, including repeated subtitles.
-// One native recovery flow per exact read, including empty/error outcomes.
-// This map dies with the operation; no failure enters persistent caches.
 function cpBetaReadOutcome(provider,shareId,passcode,label,work){
  const operation=cpReadOperation,profile=cpActiveProfile||cpProfile;cpCheck(profile);
  if(!operation)return Promise.resolve().then(work).then(value=>{cpCheck(profile);return value;});
@@ -3368,15 +3224,11 @@ cpSubtitles=async function(info,profile,deferredIssues){
    cpCheck(profile);if(['AUTH_FAILED','RATE_LIMITED','TRANSFER_UNCERTAIN'].includes(error?.code)){stop=true;cpCandidateIssue(provider,error.code,false,issues[index]);}
   }
  }};
- // Start after the video's getter has claimed its native slot.
  await Promise.all([worker(),worker()]);
  for(const list of issues)if(deferredIssues)deferredIssues.push(...list);else cpApplyCandidateIssues(list);
  return rows.filter(Boolean);
 };
 
-// Short successful URL reuse is separate from the 24-hour raw directory index.
-// Stage until the complete public result accepts the resource; never commit late
-// successes from expired shares, cancelled owners or failed final selection.
 const CP_BETA_PLAY_TTL=30000;
 let cpBetaPlayGeneration=0;
 function cpBetaPlayKey(info){
@@ -3435,7 +3287,6 @@ if(typeof clearHuajuanCache==='function'){
  const native=clearHuajuanCache;clearHuajuanCache=async function(...args){cpBetaClearPlayback();return await native(...args);};
 }
 
-// B6: only read-only speculation; final native selection remains authoritative.
 function cpB6Unused(){const error=new Error('Unused read preparation');error.code='BETA_READ_UNUSED';return error;}
 function cpB6Token(){
  let close;const token={cancelled:false,used:false,closed:new Promise(resolve=>{close=resolve;})};
@@ -3451,7 +3302,6 @@ cpHttpGet=function(url,options,beforeDispatch){
  const token=options?.cpB6Token;if(!token)return cpB6HttpGetNative(url,options,beforeDispatch);
  if(token.cancelled)return Promise.reject(cpB6Unused());
  const clean=Object.assign({},options);delete clean.cpB6Token;
- // Stop before HTML decoding, parsing, page caching or candidate admission.
  return cpB6Await(token,cpB6HttpGetNative(url,clean,beforeDispatch));
 };
 
@@ -3474,8 +3324,6 @@ async function cpB6ReadCatalog(params,share,work){
   const matches=params.type==='movie'?cpMovieVideoMatches(file,params,cpRelevanceTitles(params)):cpEpisodeVideoMatches(file,params,cpRelevanceTitles(params));
   if(!matches||seen.has(String(file.fid)))return;
   if(quanpan){
-   // A later page can contain a larger movie or an earlier BFS episode.
-   // Only the first matching root episode is already the final selection.
    if(params.type==='movie'){
     if(share.provider==='tianyi'){
      seen.add('auth');const profile=cpActiveProfile||cpProfile,cookie=String(cpNewPanAuthValue('tianyi')||'').trim();
@@ -3488,7 +3336,6 @@ async function cpB6ReadCatalog(params,share,work){
   seen.add(String(file.fid));
   const info={provider:share.provider,videoInfo:Object.assign({},file,{passcode:file.passcode||share.passcode||''}),qpFreshCatalog:true};
   if(rolling){rolling.offer(info);return;}
-  // Do not resolve subtitles until the complete directory has been observed.
   const task=Promise.resolve().then(()=>{
    cpCheck(cpActiveProfile||cpProfile);if(cpBlockedProviders.has(share.provider)||!cpDriveEnabled(share.provider))return [];
    return share.provider==='uc'?getUcResource(info):share.provider==='baidu'?getBaiduResource(info):share.provider==='115'?get115Resource(info):cpNewPanResolve(info);
@@ -3512,7 +3359,6 @@ if(typeof panMonitorSites==='function'){
   const input=params&&typeof params==='object'?params:{};
   const configured=Object.prototype.hasOwnProperty.call(input,'site')?String(input.site||''):String(safeStorageGet(STORAGE_SITE_KEY+'.manual')||'');
   let previous;try{previous=JSON.parse(safeStorageGet(STORAGE_SITE_KEY+'.resolved')||'null');}catch(_){}
-  // Manual domains, healthy resolved caches and non-search entries stay native.
   if(configured||!probe||previous?.expires>Date.now())return await serialPrepare(params,probe);
   if(Object.prototype.hasOwnProperty.call(input,'site'))safeStorageSet(STORAGE_SITE_KEY+'.manual','');
   if(panMonitorPending)return await panMonitorPending;
@@ -3527,8 +3373,6 @@ if(typeof panMonitorSites==='function'){
      try{ok=await probe(site);}catch(error){if(['ABORTED','ACCOUNT_CHANGED','OPERATION_TIMEOUT','AUTH_FAILED','RATE_LIMITED'].includes(error?.code))throw error;}
      cpCheck(profile);if(ok)return site;
      if(finished)return null;
-     // An empty search is not a dead domain: retain native home validation so
-     // later alias searches can still use a healthy site.
      const response=await cpHttpGet(site+'/',{timeout:8000,headers:{'User-Agent':UA}});
      cpCheck(profile);return /(?:\/vod\/detail\/|\/voddetail\/|module-item-pic)/i.test(panDecodePage(response.data))?site:null;
     }
@@ -3555,11 +3399,8 @@ if(typeof panMonitorSites==='function'){
  };
 }
 
-// B7: no alternate-name site searches. Trusted names stay inside matching.
 async function cpB7TrustedTitles(params){
  if(typeof cpTrustedTitles==='function')return await cpTrustedTitles(params);
- // Quanpan already has one-query discovery. Supplement only a known TMDB ID,
- // through the Rex bridge, using the same verified identity/cache as the peers.
  const id=String(params.tmdbId||params.tmdbID||''),type=params.type==='movie'?'movie':'tv',season=Number(params.season||1);
  const name=params.seriesName||params.title||params.name||'',requested=cpRequestedYear(params),profile=cpActiveProfile||cpProfile;
  if(!/^\d+$/.test(id)||!Widget.tmdb?.get||requested.conflict)return [];
@@ -3599,13 +3440,10 @@ const cpB7SearchTitleNative=cpSearchTitleMatches;
 cpSearchTitleMatches=function(value,params){
  if(cpB7SearchTitleNative(value,params))return true;
  if(params.type==='movie')return false;
- // A fully recognized quality/update suffix may touch a bracketed year.
- // Keep that year, title, sequel and season for the native identity predicate.
  const match=/^(.+?[（(]\s*(?:19|20)\d{2}\s*[）)])[ ._-]*(?:[248]K|\d{3,4}P)[ ._-]*(?:高码(?:率)?)?[ ._-]*(?:(?:更新(?:至|到)?|全)\s*\d+\s*[集话]|已完结|完结)?$/i.exec(String(value||'').trim());
  return !!match&&cpB7SearchTitleNative(match[1],params);
 };
 
-// Private token handling for anonymous Yidong POST catalog reads only.
 const cpB8HttpPostNative=cpHttpPost;
 cpHttpPost=function(url,data,options,beforeDispatch){
  const token=options?.cpB6Token;if(!token)return cpB8HttpPostNative(url,data,options,beforeDispatch);
@@ -3614,7 +3452,6 @@ cpHttpPost=function(url,data,options,beforeDispatch){
  return cpB6Await(token,cpB8HttpPostNative(url,data,clean,beforeDispatch));
 };
 
-// B8: independent folder work overlaps; final native breadth-first order is stable.
 async function cpB8Walk(provider,root,read,child,onFile,profile,max=1001,readToken){
  const check=()=>{if(readToken?.cancelled)throw cpB6Unused();cpNPGuard(provider,profile);};
  const nodes=new Map(),queue=[];let active=0,failure;
@@ -3661,7 +3498,6 @@ cpNPXunleiCatalog=async function(share,profile){
    const data=await cpNPXunleiApi('GET','drive/v1/share'+(folder.id?'/detail':'')+'?'+cpNPQuery(query),null,true,profile,true,undefined,cpTargetToken);
    token=data.pass_code_token||token;const items=cpNPRows(data,'files');cpNPSeenPage(items,seen,x=>x.id);
    const rows=items.map(item=>Object.assign({},item,{cpB8ShareToken:token}));
-   // Root pagination establishes the share token before any child consumes it.
    if(folder.id)emit(rows);else rootItems.push(...rows);
    const next=String(data.next_page_token||data.nextPageToken||data.page_token||'');
    if(!next)break;if(!items.length||pages.has(next)||next===pageToken)throw cpError('UPSTREAM_ERROR');pages.add(next);pageToken=next;
@@ -3723,8 +3559,6 @@ cpNPTianyiCatalog=async function(share,profile){
  cpNPGuard('tianyi',profile);return cpB8Files(rows,build,x=>x.id);
 };
 
-// Share tokens are reusable only after verification in this operation. Raw
-// 24-hour catalog entries (including video.passCodeToken) cannot seed this map.
 function cpBetaShareTokenKey(provider,share){return cpReadKey(provider,share.shareId,share.passcode,'beta-share-token');}
 function cpBetaRememberShareToken(provider,share,token,profile){
  cpNPGuard(provider,profile);if(token&&cpReadOperation)cpReadOperation.set(cpBetaShareTokenKey(provider,share),Promise.resolve(token));
@@ -3738,8 +3572,6 @@ function cpBetaXunleiShareToken(video,profile){
 const cpBetaGuangyaShareTokenNative=cpNPGuangyaShareToken;
 cpNPGuangyaShareToken=function(share,profile){return cpReadReuse('guangya',share.shareId,share.passcode,'beta-share-token',()=>cpBetaGuangyaShareTokenNative(share,profile));};
 
-// Auth is independent of share contents. Unused speculation is cancellable and
-// never enters the operation's mandatory pending set or persistent storage.
 const cpB8PrepareAuthNative=cpNPTianyiPrepareAuth;
 function cpB8StartTianyiAuth(){
  const operation=cpReadOperation,profile=cpActiveProfile||cpProfile;
@@ -3757,7 +3589,6 @@ cpNPTianyiPrepareAuth=function(profile,cookie){
   entry.used=true;
   if(!entry.demanded)entry.demanded=entry.task.catch(error=>{
    cpNPGuard('tianyi',profile);if(error?.code!=='UPSTREAM_ERROR')throw error;
-   // One recovery for a transient prewarm error; terminal auth stays terminal.
    return cpBetaReadOutcome('tianyi',cpNPMd5(cookie),'','auth-demand',()=>cpB8PrepareAuthNative(profile,cookie));
   });
   return entry.demanded;
@@ -3767,8 +3598,6 @@ cpNPTianyiPrepareAuth=function(profile,cookie){
 const cpB8ReadCatalogNative=cpB6ReadCatalog;
 cpB6ReadCatalog=function(params,share,work){if(share.provider==='tianyi')cpB8StartTianyiAuth();return cpB8ReadCatalogNative(params,share,work);};
 
-// Only providers with token-aware anonymous catalog requests may speculate.
-// No streamed file getter runs until validity and access attributes are approved.
 async function cpB8CheckedCatalog(share,cached,site,keyword,params,titles=[]){
  const profile=cpActiveProfile||cpProfile;
  if(cached)cached=cpTargetCached(cached,params,titles);
@@ -3795,15 +3624,10 @@ async function cpB8CheckedCatalog(share,cached,site,keyword,params,titles=[]){
 }
 
 function cpB8DiscardCatalog(key){
- // Capture the native cache key before starting I/O, so account changes cannot
- // make cleanup erase another profile's catalog instead of this preparation.
  if(typeof huajuanInvalidateCache==='function')huajuanInvalidateCache(key);
  if(typeof rexMemoryCache!=='undefined'){const hash=baiduSha1(key);rexMemoryCache.delete(hash);safeStorageSet(CP_COOKIE_ROOT+'catalog.'+hash,'');}
 }
 
-// B10: account UID is independent of share verification and catalog contents.
-// Stage only within the current operation; native demand owns validation/cache
-// admission and error observation. Unused preparation never delays completion.
 function cpB10BaiduUidUrl(){return 'https://mbd.baidu.com/userx/v1/info/get?'+toQuery({
  appname:'baiduboxapp',fields:'        ["bg_image","member","uid","avatar", "avatar_member"]',
  client:'',clientfrom:'',lang:'zh-cn',tpl:'',ttt:''
@@ -3835,8 +3659,6 @@ cpReadBaiduIdentity=function(scope,key,request,profile){
    if(!outcome.error)return outcome.value;
    const error=outcome.error,status=Number(error?.status);
    if(status===401||status===429||['AUTH_FAILED','RATE_LIMITED','ABORTED','ACCOUNT_CHANGED','OPERATION_TIMEOUT','BETA_READ_UNUSED'].includes(error?.code))throw error;
-   // A single foreground recovery for a transient speculative failure, shared
-   // by all files/subtitles. No failure enters persistent identity caches.
    return request();
   });
   return entry.demanded;
@@ -3844,13 +3666,10 @@ cpReadBaiduIdentity=function(scope,key,request,profile){
 };
 const cpB10ReadCatalogNative=cpB6ReadCatalog;
 cpB6ReadCatalog=function(params,share,work){if(share.provider==='baidu')cpB10StartBaiduUid(share);return cpB10ReadCatalogNative(params,share,work);};
-// Known-file/manual paths can overlap UID with share verification as well.
 const cpB10BaiduResourceNative=getBaiduResource;
 getBaiduResource=function(info){const v=info.videoInfo||{};if(v.shareid&&v.uk&&v.fid)cpB10StartBaiduUid(v);return cpB10BaiduResourceNative(info);};
 
 const CP_B11_QUARK_FOLDER_URL="https://drive-pc.quark.cn/1/clouddrive/file/sort?pr=ucpro&fr=pc&uc_param_str=&pdir_fid=0&_page=1&_size=50&_fetch_total=1&_fetch_sub_dirs=0&_sort=file_type:asc,updated_at:desc&fetch_all_file=1&fetch_risk_file_name=1";
-// B11: stage the raw read-only response. Only native foreground lookup may
-// decode it, sync response cookies, observe errors, or create a missing folder.
 function cpB11StartQuarkFolder(){
  const operation=cpReadOperation,profile=cpActiveProfile||cpProfile;
  if(!operation||operation.betaQuarkFolder||!cpDriveEnabled('quark')||cpBlockedProviders.has('quark')||!ensureCookie())return;
@@ -3870,15 +3689,12 @@ cpHttpGet=function(url,options,beforeDispatch){
   cpCheck(entry.profile);
   if(!outcome.error)return outcome.value;
   if(['AUTH_FAILED','RATE_LIMITED','ABORTED','ACCOUNT_CHANGED','OPERATION_TIMEOUT','BETA_READ_UNUSED'].includes(outcome.error?.code))throw outcome.error;
-  // Only one native foreground recovery of a failed speculative transport.
   entry.recovered=true;
   return cpB11HttpGetNative(url,options,beforeDispatch);
  }).then(response=>{
   cpCheck(entry.profile);
   const status=Number(response.status||response.statusCode||0);
   if(status===401||status===429){const error=cpError(status===401?'AUTH_FAILED':'RATE_LIMITED');error.status=status;throw error;}
-  // A staged response may precede a newer foreground cookie rotation. Preserve
-  // that newer session instead of replaying the older response's Set-Cookie.
   if(!entry.recovered&&entry.cookieAtDispatch!==undefined&&ensureCookie()!==entry.cookieAtDispatch){
    const headers={};for(const key of Object.keys(response.headers||{}))if(key.toLowerCase()!=='set-cookie')headers[key]=response.headers[key];
    return Object.assign({},response,{headers});
@@ -3898,8 +3714,6 @@ checkFolderExists=function(name){
 const cpB11ReadCatalogNative=cpB6ReadCatalog;
 cpB6ReadCatalog=function(params,share,work){if(share.provider==='quark')cpB11StartQuarkFolder();return cpB11ReadCatalogNative(params,share,work);};
 
-// Refill two local-certain read-only preparations while the catalog is open.
-// Native URL getter limits and outcome memoization remain authoritative.
 function cpB11Rolling(provider,operation){
  const profile=cpActiveProfile||cpProfile,waiting=[];let active=0,closed=false,failed=false;
  const pump=()=>{
@@ -3916,7 +3730,6 @@ function cpB11Rolling(provider,operation){
  return {offer(info){if(closed||failed)return;waiting.push(info);pump();},close(){closed=true;waiting.length=0;}};
 }
 
-// B12: local card filtering, plus at most one clean-miss alternate query.
 function cpB12IdentityRecord(params){
  const requested=cpRequestedYear(params);if(requested.conflict)return null;
  const signature=typeof cpTrustedTitleSignature==='function'?cpTrustedTitleSignature(params):JSON.stringify([4,String(params.tmdbId||params.tmdbID||''),params.type==='movie'?'movie':'tv',Number(params.season||1),params.seriesName||params.title||params.name||'',requested.year,params.imdbId||'']);
@@ -3933,8 +3746,6 @@ function cpB12CanSearch(){
  return ['quark','baidu','uc','115','123','xunlei','guangya','yidong','tianyi'].some(p=>enabled(p)&&!cpBlockedProviders.has(p));
 }
 function cpB12DiscoveryFailed(){if(cpResourceOwner)cpResourceOwner.betaB12DiscoveryFailed=true;}
-// Failure results are shared only within this owner, never persisted as a miss.
-// A catalog lookup followed by fallback must not repeat a failed metadata call.
 const cpB12HasTrustedNative=typeof cpTrustedTitles==='function';
 const cpB12TrustedNative=cpB12HasTrustedNative?cpTrustedTitles:cpB7TrustedTitles;
 function cpB12Trusted(params){
@@ -3950,8 +3761,6 @@ function cpB12Alternate(params,titles){
  if(cpRequestedYear(params).conflict)return '';
  const clean=typeof cpCandidateSearchTitle==='function'?cpCandidateSearchTitle:qpCleanQuery;
  const primary=clean(params.seriesName||params.title||params.name||params.keyword||'');
- // Validated native records put the original immediately after the main name.
- // Host-supplied original names take precedence over regional translations.
  const ordered=[params.originalName,params.originalTitle,params.original_name,params.original_title,cpB12IdentityRecord(params)?.originalTitle,...titles];
  return ordered.filter(t=>typeof t==='string'&&t.trim()&&t.length<=200&&!/[\x00-\x1f\x7f]/.test(t)).map(clean).find(t=>t&&!cpTitlesEqual(t,primary))||'';
 }
@@ -3968,7 +3777,6 @@ cpSearchTitleMatches=function(value,params){
  const requested=cpRequestedYear(params);if(requested.conflict)return false;
  const raw=String(value||''),titles=cpRelevanceTitles(params),evidence=cpWithoutKnownTitles(raw,titles);
  if(requested.year&&[...evidence.matchAll(/(?:^|[^a-z0-9])((?:19|20)\d{2})(?=$|[^a-z0-9])/gi)].some(m=>Number(m[1])!==requested.year))return false;
- // Check every season marker, including bilingual cards with contradictory ones.
  const seasons=raw.match(/第\s*[一二三四五六七八九十百\d]+\s*季|(?:^|[^a-z0-9])Season[ ._-]*\d+(?=$|[^a-z0-9])|S\d{1,2}[ ._-]*E\d+|(?:^|[^a-z0-9])S\d{1,2}(?=$|[^a-z0-9])/gi)||[];
  if(params.type==='movie'&&seasons.length||seasons.some(s=>cpExplicitSeason(s)!==Number(params.season||1)))return false;
  if(cpB12SearchTitleNative(value,params))return true;
@@ -3981,8 +3789,6 @@ cpSearchTitleMatches=function(value,params){
   if(!words.length)continue;
   const match=new RegExp('(^|[ \\t])('+words.join('[ ._-]+')+')(?=$|[^a-z0-9])','i').exec(text);if(!match||match.index===0)continue;
   const prefix=text.slice(0,match.index).replace(/第\s*[一二三四五六七八九十百\d]+\s*季/g,'').replace(/[（(]\s*(?:19|20)\d{2}\s*[）)]/g,'').trim();
-  // A Chinese title followed by an exact trusted original is a bilingual card.
-  // Extra editions, sequels and arbitrary suffixes remain meaningful evidence.
   if(!/^[\u3400-\u9fff·\s]{1,40}$/.test(prefix)||/真人|剧场|特[别典]|番外|预告|花絮|续[作集篇]|第.*[部篇]|前传|后传|外传/.test(prefix))continue;
   const original=text.slice(match.index+match[1].length);
   if(cpB12SearchTitleNative(original,params))return true;
@@ -4000,8 +3806,6 @@ function cpB14VerifiedSiteIdentity(params){
  return {year:2026,titles:['校园之外','Off Campus','校園戀曲']};
 }
 
-// A target catalog covers one complete directory, never the complete share.
-// Scope travels with the share; concurrent shares cannot overwrite one another.
 function cpTargetScope(params,titles=[],probe=false){
  const episode=Number(params?.episode),season=Number(params?.season||1);
  if(params?.type==='movie'||!Number.isInteger(episode)||episode<1||episode>=1000||!Number.isInteger(season)||season<1)return null;
@@ -4019,16 +3823,12 @@ function cpTargetCached(catalog,params,titles){
   return selected?Object.assign({},catalog,selected):null;
  }
  if(coverage.key===scope.key)return catalog;
- // A partial share can cross episodes only when every earlier visited
- // directory was empty and this complete directory already contains the hit.
  return coverage.reusable===true&&coverage.reuseKey===JSON.stringify([scope.params.season,scope.titles])&&Array.isArray(catalog.list)&&catalog.list.some(file=>cpEpisodeVideoMatches(file,scope.params,scope.titles))?catalog:null;
 }
 function cpTargetCacheMatches(catalog,params,titles){return !!cpTargetCached(catalog,params,titles);}
 function cpTargetFilter(scope,accept){return scope?{...scope,accept,cpTargetObservation:scope.cpTargetObservation||(scope.cpTargetObservation={})}:null;}
 function cpTargetFolderSeason(item){
  const name=item.file_name||item.server_filename||item.n||item.FileName||item.name||item.fileName||item.caName||item.catalogName||item.coName||'';
- // Normalize only whitespace between a season label and its number. Keep the
- // native season parser's number boundaries and Chinese/episode-pack support.
  return cpExplicitSeason(String(name).replace(/((?:^|[^a-z0-9])(?:season|s))\s+(?=\d)/gi,'$1'));
 }
 function cpTargetHit(scope,item,path){
@@ -4038,8 +3838,6 @@ function cpTargetHit(scope,item,path){
  return (scope.accept?scope.accept(item):isVideoFile(video))&&cpEpisodeVideoMatches(video,scope.params,scope.titles);
 }
 function cpTargetItemId(item){return String(item.fid||item.fs_id||item.fsid||item.FileId||item.fileId||item.coID||item.id||item.resId||item.path||'');}
-// Native readers own pagination and validation. Jobs may read concurrently;
-// only the ordered, complete prefix can affect selection or cached evidence.
 async function cpTargetCollect(scope,root,read,child,onItem,check=()=>{},max=Infinity,path=()=>undefined,includeFolders=false){
  const queue=[root],seen=new Set(),result=[],jobs=new Map(),priorities=new Map(),groups=[];result.directories=[];let current,lookahead,stopped=false;
  const folder=scope.folder||((item,node)=>{const next=child(item,node);return next!==undefined&&next!==null;});
@@ -4050,7 +3848,6 @@ async function cpTargetCollect(scope,root,read,child,onItem,check=()=>{},max=Inf
   if(observation&&!scope.cpCoverageProbe)observation.preparing={path:cpCoverageNormalize(path(node)||scope.cpCoveragePaths.get(cpCoverageNodeKey(node))||'')};
   try{onItem(item,node);}finally{if(observation)observation.preparing=previous;}
  };
- // Bounded coverage probes reserve every directory/page for logical work.
  const canPrefetch=()=>!scope.cpCoverageProbe&&jobs.size<max;
  const start=(node,priority=0)=>{
   const id=key(node);if(jobs.has(id))return jobs.get(id);
@@ -4066,7 +3863,6 @@ async function cpTargetCollect(scope,root,read,child,onItem,check=()=>{},max=Inf
  };
  const preview=(job,rows)=>{
   if(lookahead||stopped||!canPrefetch()||job.items.some(item=>!folder(item,job.node)&&cpTargetHit(scope,item,path(job.node))))return;
-  // Before parent pagination completes, never speculate into another season.
   const candidates=rows.filter(item=>folder(item,job.node)&&cpTargetFolderSeason(item)===scope.params.season);
   if(candidates.length){const next=child(candidates[0],job.node);lookahead=start(next,1);}
  };
@@ -4082,15 +3878,11 @@ async function cpTargetCollect(scope,root,read,child,onItem,check=()=>{},max=Inf
   const items=current.items,emitted=current.emitted;
   const files=[],folders=[];
   for(const item of items){if(folder(item,node))folders.push(item);else files.push(item);}
-  // Multiple meaningful work branches cannot lend an unknown folder the
-  // resource card's identity. Season/quality/role folders carry no work name.
   if(typeof cpFileCatalogParams==='function'&&folders.length>1){
    const labels=folders.map(item=>({parentPath:item.file_name||item.server_filename||item.n||item.FileName||item.name||item.fileName||item.caName||item.catalogName||item.coName||''}));
    if(cpFileCatalogParams(scope.params,labels).cpFileContextAmbiguous){scope.params.cpFileContextAmbiguous=true;if(scope.cpTargetObservation)scope.cpTargetObservation.ambiguous=true;}
   }
   for(const item of folders){const season=cpTargetFolderSeason(item);if(season)scope.cpCoverageSeasons.add(season);}
-  // Existing read-only file preparation may overlap later pages. A catalog
-  // hit is committed only after every page has completed successfully.
   for(const item of files)scope.cpCoverageParents.set(cpCoverageItemKey(item),path(node)||scope.cpCoveragePaths.get(cpCoverageNodeKey(node))||'');
   if(!emitted&&onItem)for(const item of files)emitFile(item,node);
   const hit=files.some(item=>cpTargetHit(scope,item,cpCoveragePath(scope,node,path(node))));
@@ -4102,8 +3894,6 @@ async function cpTargetCollect(scope,root,read,child,onItem,check=()=>{},max=Inf
    result.push(...rows);result.directories.push(...folders);return result;
   }
   result.push(...rows);result.directories.push(...folders);
-  // A directory name is a scheduling hint, never evidence of a file hit.
-  // Stable sorting keeps all fallback folders and equal-priority versions.
   folders.sort((a,b)=>Number(cpTargetFolderSeason(b)===scope.params.season)-Number(cpTargetFolderSeason(a)===scope.params.season));
   queue.push(...folders.filter(item=>!scope.cpCoverageProbe||cpTargetFolderSeason(item)===null||cpTargetFolderSeason(item)===scope.params.season).map(item=>{const next=cpCoverageChild(scope,node,item,child(item,node),path(node));priorities.set(key(next),Number(cpTargetFolderSeason(item)===scope.params.season));return next;}));
  }
@@ -4156,8 +3946,6 @@ function cpTargetRead(params,share,titles=[],refresh=false){
  return cpB6ReadCatalog(cpColdMatchParams(params,titles),input,()=>typeof cpReadRawCatalog==='function'?cpReadRawCatalog(input,refresh):rexShareCatalog(input));
 }
 
-// Keep native routing (and its refresh/invalidation contract) as the public
-// catalog seam. Scoped reads can reuse a proven complete native snapshot.
 if(typeof rexShareCatalog==='function'){
  const native=rexShareCatalog;rexShareCatalog=function(share,...args){return share.cpTargetDirectory?(cpTargetWholeCache(share)||cpTargetRaw(share)):native(share,...args);};
 }
@@ -4189,15 +3977,11 @@ function cpTargetCandidateIndex(key){
  cpWrite(previous,legacy);return legacy;
 }
 
-// Only persisted clones pass here. Fresh 123 URLs remain available for the
-// current operation, while every stored directory must refresh signed URLs.
 function cpTargetStripUrls(catalog){
  for(const video of catalog.list||[])delete video.downloadUrl;
  for(const directory of catalog.cpTargetDirectory?.directories||[])for(const video of directory.list||[])delete video.downloadUrl;
 }
 
-// Cross-season cards are a bounded last resort. The original request identity
-// and native file predicates remain authoritative throughout catalog/playback.
 function cpCoverageParams(params){
  const verified=cpB14VerifiedSiteIdentity(params);
  return {...params,...(verified?{year:verified.year}:{}),alternativeTitles:[...new Set(cpB12LocalTitles(params).concat(verified?.titles||[]))]};
@@ -4303,8 +4087,6 @@ if(typeof clearRexCatalogCache==='function'){
  const native=clearRexCatalogCache;clearRexCatalogCache=async function(...args){cpCoverageClear();return await native(...args);};
 }
 
-// Reuse only within one synchronous continuation. Never memoize mutable
-// transfer/auth outcomes here; each network boundary checks fresh settings.
 let cpColdConfig=null;
 function cpColdResetConfig(){cpColdConfig=null;}
 function cpColdConfigValue(key,read){
@@ -4390,8 +4172,6 @@ getVideosFromShareLink=function(url,passcode,...args){
  return id?cpColdAccessCatalog('quark',id,passcode,()=>cpColdQuarkCatalogNative(url,passcode,...args)):cpColdQuarkCatalogNative(url,passcode,...args);
 };
 
-// Link checking and native access are independent reads. Stage raw bytes only;
-// the existing foreground decoder owns cookies, validation and cache admission.
 function cpColdStageKey(url,body,options){
  const headers=Object.entries(options?.headers||{}).map(([k,v])=>[k.toLowerCase(),v]).sort((a,b)=>a[0].localeCompare(b[0]));
  return JSON.stringify([url,body,headers]);
@@ -4449,8 +4229,6 @@ cpB8CheckedCatalog=async function(share,cached,site,keyword,params,titles=[]){
  finally{if(entry){entry.token.cancel();if(cpReadOperation?.coldAccessStages)for(const [key,value] of cpReadOperation.coldAccessStages)if(value===entry)cpReadOperation.coldAccessStages.delete(key);entry.task=null;}}
 };
 
-// These caches supplement the native protocol. Every cached value remains
-// tied to its original origin, profile, fixed lifetime and invalidation epoch.
 const CP_QP_FAST_AUTH_MAX=900000,CP_QP_FAST_CHECK_TTL=60000;
 let cpQpFastObserved='';
 function cpQpFastEpoch(){return cpRead('qp-fast-epoch')||'';}
@@ -4480,7 +4258,6 @@ function cpQpFastInvalidate(){
 const cpQpFastTokenNative=qpGetToken;
 qpGetToken=async function(site,force=false){
  const profile=cpQpFastProfile();cpCheck(profile);
- // Preserve native denial/rate-limit suppression even on a persisted hit.
  const denied=qpOperation?.tokenFailures?.get(site);if(denied)throw denied;
  if(force)cpQpFastInvalidate();
  const epoch=cpQpFastObserve(),key=cpQpFastKey('auth',site),cached=!force&&cpQpFastRecord('auth',key);
@@ -4496,8 +4273,6 @@ qpGetToken=async function(site,force=false){
  return token;
 };
 const cpQpFastCheckKeyNative=qpCheckKey,cpQpFastCheckedNative=qpCheckedShare;
-// Native pending checks and completed status memos use the same epoch/profile
-// fence, so their late cleanup can never erase a newer generation's pending key.
 qpCheckKey=function(share,site){return JSON.stringify([cpQpFastProfile(),cpQpFastEpoch(),cpQpFastCheckKeyNative(share,site)]);};
 qpCheckedShare=async function(share,site,keyword){
  const profile=cpQpFastProfile();cpCheck(profile);const epoch=cpQpFastObserve(),key=cpQpFastKey('check',cpQpFastCheckKeyNative(share,site)),cached=cpQpFastRecord('check',key);
@@ -4564,15 +4339,11 @@ function cpSiteCandidateParams(params,candidate){
 function cpNormalizeEpisodeLabel(name){
  let value=String(name||"").normalize("NFKC").replace(/[\u200b-\u200f\u202a-\u202e\ufeff]/g,"");
  const original=value;
- // Erase only understood presentation fields before a numeric label. Unknown
- // bracketed words may be another work's title and remain identity evidence.
  for(let i=0;i<8;i++){
   const prefix=/^\s*(?:\[([^\]]+)\]|【([^】]+)】|\(([^)]+)\))\s*/.exec(value);
   if(!prefix||typeof cpFileMetadata!=="function"||cpFileKey(cpFileMetadata(prefix[1]||prefix[2]||prefix[3])))break;
   value=value.slice(prefix[0].length);
  }
- // Removing a decoration must not turn an ambiguous numeric range/list into
- // the native parser's otherwise valid leading number.
  if(value!==original&&/^\s*\d/.test(value)){
   const numeric=cpFileMetadata(value.replace(/\.[a-z0-9]{2,5}$/i,""));
   if(!/^[\p{P}\p{S}\s]*\d{1,3}[\p{P}\p{S}\s]*$/u.test(numeric))return original;
@@ -4601,8 +4372,6 @@ qpSeriesIndexRead=function(key){
  return legacy.candidates.length?Object.assign({},legacy,{candidates:[]}):current;
 };
 
-// Search cards are discovery hints. Catalog and file predicates retain their
-// own season, episode and identity checks after this inexpensive admission step.
 function cpSearchResultKey(value){
  return String(value||'').replace(/[\s·:：._\-()[\]（）【】《》〈〉「」『』\u200b-\u200f\u202a-\u202e\ufeff]/g,'').toLowerCase();
 }
@@ -4616,34 +4385,25 @@ function cpSearchResultMatches(value,params){
  if(!key||!titles.some(title=>{const name=cpSearchResultKey(title);return name&&key.includes(name);}))return false;
  if(!requested.year)return true;
  let identity=null;
- // Numeric names such as 1984 are identity evidence, not release years.
  for(const title of titles){
   const name=cpSearchResultKey(title);if(!name)continue;
   const numeric=/^\d+$/.test(name);
-  // Use the same optional separators as containment, including a number
-  // joined to the host name but separated on the site (银翼杀手 2049).
   const pattern=Array.from(name,character=>character.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('[\\s·:：._\\-()[\\]（）【】《》〈〉「」『』\\u200b-\\u200f\\u202a-\\u202e\\ufeff]*');
   const match=new RegExp((numeric?'(^|[^0-9])':'')+pattern+(numeric?'(?![0-9])':''),'i').exec(raw);
   if(match&&(!identity||match.index<identity.index||match.index===identity.index&&match[0].length>identity[0].length))identity=match;
  }
- // Mask one actual name occurrence, preserving separate release-year labels.
  let evidence=identity?raw.slice(0,identity.index)+' '+raw.slice(identity.index+identity[0].length):raw;
- // Explicit pixel dimensions and scan labels cannot supply a release year.
  evidence=evidence.replace(/\d{3,5}\s*[x×*]\s*\d{3,5}|(?:^|[^0-9])\d{3,4}\s*[pi](?=$|[^a-z])/gi,' ');
  const years=Array.from(evidence.matchAll(/(?:^|[^0-9])([0-9]{4})(?![0-9])/g),match=>Number(match[1])).filter(year=>year>=1970);
  return !years.length||years.includes(requested.year);
 }
 
-// Pure catalog matching: normalize presentation, retain identity-bearing text,
-// and report why a file was selected. No provider calls or directory traversal.
 function cpFileText(value){return String(value||'').normalize('NFKC').replace(/[\u200b-\u200f\u202a-\u202e\ufeff]/g,'');}
 function cpFileKey(value){return cpFileText(value).replace(/[\p{P}\p{S}\s]/gu,'').toLowerCase();}
 function cpFileTitlePattern(title){
  return Array.from(cpFileKey(title),c=>c.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('[\\p{P}\\p{S}\\s]*');
 }
 function cpFileTechnicalLabel(value){
- // Read compact quality/audio labels as complete known fields. Unmarked
- // unknown suffixes may be another work, so never erase them as publishers.
  const cores=[String(value||'')];
  for(const core of cores){
   let key=cpFileKey(core),count=0,resolution=false;
@@ -4659,8 +4419,6 @@ function cpFileTechnicalLabel(value){
 function cpFileMetadata(value){
  if(cpFileTechnicalLabel(value))return ' ';
  return value
-  // Release groups follow a technical field, never a bare film name. Keep
-  // explicit sequel ordinals even when they occur after an encoding label.
   .replace(/((?:[xh][ ._-]*26[45]|hevc|avc|av1|aac(?:\d(?:\.\d)?)?))[ ._]*-([a-z][a-z0-9]{1,30})$/gi,(all,codec,group)=>/^(?:(?:part|vol|chapter)?(?:[ivx]+|\d+))$/i.test(group)?all:codec)
   .replace(/\d{3,5}\s*[x×*]\s*\d{3,5}|\b\d{3,4}\s*[pi]\b|\b[248]k\b/gi,' ')
   .replace(/\b(?:av3a|aac|ddp?|dts(?:[ ._-]*hd)?|truehd|eac3|ac3)(?:[ ._-]*(?:ma[ ._-]*)?\d(?:\.\d){0,2})?\b/gi,' ')
@@ -4672,9 +4430,7 @@ function cpFileMetadata(value){
 }
 function cpFileParentEvidence(value,titles){
  let evidence=cpFileTitleEvidence(value,titles);
- // Alphabetic catalog indexes precede Chinese titles; do not erase suffixes.
  if(evidence.matched&&/^[a-z]$/i.test(evidence.residual)&&/^[a-z][ ._-]+(?=\p{Script=Han})/iu.test(cpFileText(value)))evidence=cpFileTitleEvidence(cpFileText(value).replace(/^[a-z][ ._-]+/i,''),titles);
- // Folder roles must be whole labels; a movie called "Video" retains its name.
  if(!evidence.matched&&/^(?:视频|正片|资源|video|videos|media|mp4|mkv|movies|tv)$/i.test(cpFileKey(value)))evidence.residual='';
  return evidence;
 }
@@ -4694,10 +4450,8 @@ function cpFileTitleEvidence(value,titles){
  const names=[...new Set(titles.filter(t=>typeof t==='string'&&t.trim()).map(t=>cpMovieName(t).name))].sort((a,b)=>cpFileKey(b).length-cpFileKey(a).length);
  for(const title of names){
   const key=cpFileKey(title);if(!key)continue;
-  // Latin words and numeric film names cannot match inside another word/number.
   const {re,left}=cpFileTitleRegex(title),hit=re.exec(text);
   if(!hit)continue;
-  // A release-group prefix is presentation only when a real name follows it.
   if(!matched){const start=hit.index+(left?hit[1].length:0);text=text.slice(0,start).replace(/^[\s\p{S}]*(?:(?:\[[^\]]+\]|【[^】]+】)\s*)+/u,'')+text.slice(start);}
   text=text.replace(re,(_,boundary)=>left?(boundary||'')+' ':' ');matched=true;
  }
@@ -4707,13 +4461,9 @@ function cpFileTitleEvidence(value,titles){
   .replace(/S\d{1,2}[ ._-]*E\d+|(?:^|[^a-z0-9])(?:Season|S)[ ._-]*\d+(?=$|[^a-z0-9])|第\s*[一二三四五六七八九十百\d]+\s*季|第\s*\d+\s*[集话期]|(?:^|[^a-z0-9])(?:Episode|EP?)[ ._-]*\d+/gi,' '));
  return {matched,years,residual};
 }
-// A verified single-work resource can identify numeric episode files. Unknown
-// directory spelling is missing evidence, not evidence of another work.
 function cpFileResourceContext(params,titles){
  const value=params.cpFileContextTitle||'';
  if(!value||!cpSearchResultMatches(value,Object.assign({},params,{alternativeTitles:titles})))return false;
- // A single-work site card owns the identity. Explicit multi-work collections
- // still need a named branch; arbitrary catalog spelling is never a veto.
  return !/合集/.test(value)||!cpFileTitleEvidence(value,titles).residual;
 }
 function cpFileCatalogParams(params,files){
@@ -4761,18 +4511,14 @@ function cpFileMatchDecision(video,params,titles=cpRelevanceTitles(params)){
  if(evidence.fileSeason!==null&&evidence.parentSeason!==null&&evidence.fileSeason!==evidence.parentSeason)return result(false,'season-conflict');
  if(evidence.contextSeason!==null&&evidence.contextSeason!==season)return result(false,'season-conflict');
  if((evidence.fileSeason??evidence.parentSeason??evidence.contextSeason??1)!==season)return result(false,'season-conflict');
- // A combined episode file has no reliable start offset for the requested card.
  if(/(?:S\d+[ ._-]*E|\bE|第)\d+\s*[-~～]\s*(?:S\d+E|E)?\d+/i.test(name))return result(false,'ambiguous-episode-range');
  const markers=Array.from(name.matchAll(/S(\d{1,2})[ ._-]*E(\d+)|第\s*(\d+)\s*[集话期]|(?:^|[^a-z0-9])(?:Episode|EP?)[ ._-]*(\d+)/gi));
  if(markers.some(m=>m[1]&&Number(m[1])!==season))return result(false,'season-conflict');
  if(markers.some(m=>Number(m[2]||m[3]||m[4])!==episode))return result(false,'episode-conflict');
  const id=episodeIdentity(cpFileText(video?.file_name));evidence.episode=id.episode;
  if(id.episode!==episode)return result(false,'episode-conflict');
- // Empty titles are the existing cheap plausibility probe before alias lookup.
  if(!titles.length)return result(true,'episode-probe');
  if(verifiedResource)return result(true,'resource-title-and-episode');
- // Text after an explicit episode marker can be an episode subtitle. Identity
- // before that marker must still agree; a matching suffix cannot rescue it.
  const marker=/(?:S\d{1,2}[ ._-]*E\d+|第\s*\d+\s*[集话期]|(?:^|[ ._-])(?:Episode|EP?)[ ._-]*\d+|\s-\s*\d+)/i.exec(name);
  const prefix=marker?cpFileTitleEvidence(name.slice(0,marker.index),titles):file;
  if(prefix.residual&&(prefix.matched||!/^\d+$/.test(prefix.residual)))return result(false,prefix.matched?'identity-conflict':'unverified-file-title');
@@ -4788,8 +4534,6 @@ function cpFileMatchDecision(video,params,titles=cpRelevanceTitles(params)){
  return result(true,prefix.matched?'file-title-and-episode':'context-and-episode');
 }
 
-// Cleanup uses the existing account authentication and physical request pools.
-// The coordinator owns target selection and a provider/account lease throughout.
 const cpCleanupProtocolScopes = new Map();
 let cpCleanupProtocolNativeGuard = null, cpCleanupProtocolChecking = false;
 async function cpCleanupProtocolScope(provider, profile, work) {
@@ -4917,7 +4661,6 @@ async function cpCleanupProtocolInventory(provider,profile,options={}) {
   const files=children.filter(item=>!item.directory||selectedIds.has(item.fid)),queue=selected.map(item=>({id:item.fid,branch:item.fid}));
   let visited=0;
   while(queue.length) {
-    // The bound applies to traversed directories, never the unvisited fanout.
     if(++visited>1000) throw cpError('UPSTREAM_ERROR');
     const parent=queue.shift();
     for(const raw of await cpCleanupProtocolPages(provider,parent.id,profile)) {
@@ -4940,8 +4683,6 @@ async function cpCleanupProtocolPause(provider,profile) {
 }
 async function cpCleanupProtocolTask(provider,data,profile) {
   const taskId=data?.taskId || data?.task_id;
-  // Completion is always established separately by a fresh inventory/trash read.
-  // XL tasks need no assumed task API; bounded absence reads establish success.
   if(!taskId || provider === 'xunlei') return;
   for(let attempt=0;attempt<6;attempt++) {
     const state=provider === 'guangya' ? await cpNPGuangyaApi('/userres/v1/get_task_status',{taskId},true,profile,true,()=>cpCleanupGuard(provider,profile)) : (await cpCleanupQuarkRequest('GET','task',null,profile,{task_id:taskId,retry_index:attempt})).data;
@@ -4987,7 +4728,6 @@ function cpCleanupRemove(provider,ids,profile,beforeBatch,scope) {
     if(selected.some(id=>id === inventory.rootId || !byId.has(id))) throw cpError('UPSTREAM_ERROR');
     const wanted=new Set(selected);
     for(const file of inventory.files) if(wanted.has(file.parentId) && !wanted.has(file.fid)) throw cpError('UPSTREAM_ERROR');
-    // Keep batches bounded; no mutation is retried, even after transport loss.
     for(let offset=0;offset<selected.length;offset+=50) {
       const batch=selected.slice(offset,offset+50);
       await cpCleanupProtocolWrite(provider,profile,async claim=>{
@@ -4995,8 +4735,6 @@ function cpCleanupRemove(provider,ids,profile,beforeBatch,scope) {
         return provider === 'quark' ? (await cpCleanupQuarkRequest('POST','file/delete',{action_type:2,filelist:batch,exclude_fids:[]},profile,{},dispatch)).data : provider === 'xunlei' ? cpNPXunleiApi('POST','drive/v1/files:batchDelete',{ids:batch,space:''},false,profile,false,dispatch) : cpNPGuangyaApi('/userres/v1/file/delete_file',{fileIds:batch},true,profile,false,dispatch);
       },
         ()=>{
-          // A sampled subtree cannot establish global absence after a write.
-          // Reconcile every branch in later sweeps before releasing quarantine.
           if(scope?.partial)throw cpError('TRANSFER_UNCERTAIN');
           return cpCleanupProtocolVerify(provider,profile,()=>cpCleanupProtocolInventory(provider,profile,options),state=>state.rootId === inventory.rootId && !state.files.some(file=>batch.includes(file.fid)));
         });
@@ -5039,8 +4777,6 @@ function cpCleanupTrashEmpty(provider,profile,ids) {
   });
 }
 
-// Activity-triggered, account-scoped transfer expiry. No timers or credentials
-// leave Rex. Shared storage is required before any cleanup request is allowed.
 const CP_CLEANUP_NS='catpaw.drive-cleanup.v1',CP_CLEANUP_TTL=7200000,CP_CLEANUP_LEASE=90000;
 const cpCleanupContexts=new Map(),cpCleanupQueues=new Map();
 function cpCleanupSupported(provider){return ['quark','xunlei','guangya'].includes(provider);}
@@ -5097,7 +4833,6 @@ function cpCleanupClearPending(state){state.pendingRemove=null;state.pendingFile
 function cpCleanupPendingBlocked(state,inventory,ids){
  let scan=state.pendingReconcile;
  if(!scan)scan=state.pendingReconcile={rootId:state.rootId,remaining:inventory.presentBranches?.slice()||[],known:inventory.presentBranches?.slice()||[],found:[]};
- // Losing or replacing the cache root is not proof of deletion.
  if(!inventory.rootId||inventory.rootId!==scan.rootId)return true;
  const presentFiles=new Set(inventory.files.filter(item=>!item.directory).map(item=>String(item.fid)));
  if(!inventory.partial)return ids.some(id=>presentFiles.has(id));
@@ -5107,8 +4842,6 @@ function cpCleanupPendingBlocked(state,inventory,ids){
  for(const id of ids)if(presentFiles.has(id)&&!scan.found.includes(id))scan.found.push(id);
  if(scan.remaining.length)return true;
  if(scan.found.length){scan.remaining=[...present];scan.known=[...present];scan.found=[];return true;}
- // The full post-dispatch pass also settles records from the old inventory
- // schema, whose nested files had no saved branch metadata.
  for(const id of ids)delete state.files[id];
  return false;
 }
@@ -5119,14 +4852,11 @@ async function cpCleanupSweep(context,video){
  if(state.pendingRemove?.length&&!state.pendingFiles)state.pendingFiles=Object.fromEntries(state.pendingRemove.filter(id=>state.files[id]).map(id=>[id,state.files[id]]));
  const priorRoot=state.rootId;
  cpCleanupGuard(provider,profile);const inventory=await cpCleanupInventory(provider,profile,{cursor:state.scanCursor});cpCleanupGuard(provider,profile);
- // Inventory is authoritative. A lost delete reply is settled by absence here,
- // before another mutation. New legacy files always receive a full grace period.
  const previous=state.files,partial=inventory.partial===true&&state.rootId===inventory.rootId;
  state.files=partial?Object.assign({},previous):{};state.rootId=inventory.rootId||'';
  if(partial){
   const covered=new Set(inventory.branchIds),present=new Set(inventory.presentBranches);
   for(const [id,item] of Object.entries(state.files)){
-   // Older registered XL/GY transfers also use one direct per-video folder.
    if(!item.cpCleanupBranch&&item.source&&item.rootId===state.rootId&&item.parentId!==state.rootId)item.cpCleanupBranch=item.parentId;
    if(item.parentId===state.rootId||item.cpCleanupBranch&&(covered.has(item.cpCleanupBranch)||!present.has(item.cpCleanupBranch)))delete state.files[id];
   }
@@ -5155,8 +4885,6 @@ async function cpCleanupSweep(context,video){
  }
  if(expired.length){
   cpCleanupGuard(provider,profile);
-  // Invalidate transfer receipts and playback URLs before a potentially ambiguous
-  // delete. Surviving files are reused from this ledger, without a second save.
   cpCleanupInvalidate(state,key);
   try{await cpCleanupRemove(provider,expired.map(item=>item.fid),profile,ids=>{cpCleanupGuard(provider,profile);state.pendingRemove=ids.slice();state.pendingFiles=Object.fromEntries(ids.map(id=>[id,state.files[id]]));state.pendingReconcile={rootId:inventory.rootId,remaining:inventory.presentBranches?.slice()||[],known:inventory.presentBranches?.slice()||[],found:[]};cpCleanupSet('state:'+key,state);},inventory);}catch(error){if(error?.code!=='TRANSFER_UNCERTAIN'&&!error?.cleanupWriteUncertain){cpCleanupClearPending(state);cpCleanupSet('state:'+key,state);}throw error;}
   cpCleanupGuard(provider,profile);cpCleanupClearPending(state);
@@ -5168,8 +4896,6 @@ async function cpCleanupSweep(context,video){
   cpCleanupGuard(provider,profile);state.pendingTrash=false;state.trashDue=false;state.lastTrashAt=now;cpCleanupSet('state:'+key,state);
  }
 }
-// Contention is not an unknown transfer receipt. Wait within the owning
-// resource deadline and recheck account/cancellation before claiming the lease.
 async function cpCleanupAcquire(provider,key,profile){
  const deadline=cpResourceOwner?.deadline||Date.now()+10000;
  for(;;){
@@ -5220,12 +4946,8 @@ async function cpCleanupRun(provider,video,work){
  })();
  cpCleanupQueues.set(key,task);try{return await task;}finally{if(cpCleanupQueues.get(key)===task)cpCleanupQueues.delete(key);}
 }
-// Normal transfer guards also renew the lease. A stalled operation whose lease
-// was taken over may no longer dispatch its next transfer request.
 const cpCleanupCheckNative=cpCheck;
 cpCheck=function(profile){cpCleanupCheckNative(profile);for(const context of cpCleanupContexts.values())cpCleanupLease(context);};
-// Keep the native key for unresolved writes: an unrelated cleanup must never
-// erase uncertain/known/preparing receipts and replay an in-flight transfer.
 function cpCleanupReceiptProvider(key){if(!String(key).startsWith('transfer:'))return null;const part=String(key).split(':')[1];if(['xunlei','guangya'].includes(part))return part;if(typeof cpProfile!=='undefined'&&part===cpProfile)return 'quark';return null;}
 const cpCleanupReadNative=cpRead,cpCleanupWriteNative=cpWrite;
 cpRead=function(key){const value=cpCleanupReadNative(key),provider=cpCleanupReceiptProvider(key);if(provider&&value?.state==='succeeded'&&Number(value.cpCleanupGeneration||0)<cpCleanupGeneration(provider))return null;return value;};
@@ -5248,21 +4970,14 @@ saveShareFile=async function(video,...args){
 };
 const cpCleanupResolveNative=resolvePlaySource;
 resolvePlaySource=async function(info,...args){
- // Sweep/touch before cached playback; each actual save owns its own critical
- // section, which ends before URL retrieval, subtitles or a playback retry.
  await cpCleanupRun(info.provider||'quark',info.videoInfo||{},async()=>{});
  return cpCleanupResolveNative(info,...args);
 };
 
-// Success quotas belong to shares, not files or attempted catalogs. Keep the
-// native HTTP/source/transfer queues as the only concurrency owners.
 function cpSuccessQuota({counts,limit,blocked,check,stopped,onVacancy}){
  const states=new Map(),seen=new Set(),running=new Set();let closed=false,error=null,refillError=null;
  const state=provider=>{if(!states.has(provider))states.set(provider,{success:0,active:0,attempts:0,queue:[],refilling:false,discoveryDone:false});return states.get(provider);};
  const goal=()=>Math.max(1,Number(limit())||1);
- // One extra extraction attempt per provider, shared by all failed primary slots.
- // A different passcode is another real attempt; identical candidates are deduplicated.
- // Missing/legacy settings retain the default enabled behavior.
  const extra=cpShared()?.candidateFailureFallback==='disabled'?0:1;
  const budget=()=>goal()+extra;
  const sync=()=>{
@@ -5271,7 +4986,6 @@ function cpSuccessQuota({counts,limit,blocked,check,stopped,onVacancy}){
  const pump=()=>{
   sync();if(closed||error||stopped())return;
   try{check();}catch(e){error=e;return;}
-  // Empty providers enter native queues before providers filling later slots.
   const ordered=[...states].sort((a,b)=>a[1].success-b[1].success);
   for(const [provider,s] of ordered){
    while(!closed&&!stopped()&&!blocked(provider)&&s.queue.length&&s.success+s.active<goal()&&s.attempts<budget()){
@@ -5312,8 +5026,6 @@ function cpCandidateEpisodeVideo(video,params,titles){
  if(params.type==='movie'||!video)return video;
  const original=cpFileText(video.file_name),stem=original.replace(/\.[a-z0-9]{2,5}$/i,'');
  if(episodeIdentity(original).episode!=null)return video;
- // Bare trailing numbers are accepted only after removing a verified title.
- // Keep unrecognized text, independent numbers, years and bare resolutions.
  const evidence=cpFileTitleEvidence(stem,titles);
  if(!evidence.matched)return video;
  const named=titles.find(title=>cpFileTitleEvidence(stem,[title]).matched);
@@ -5325,8 +5037,6 @@ function cpCandidateEpisodeVideo(video,params,titles){
 
 function cpShareExtractionText($,el){
  const element=$(el),own=element.attr('data-clipboard-text')||element.attr('href')||'';
- // Include sibling code text for hidden URLs. Preserve every neighboring href
- // so the password reader can stop at the next link rather than borrow its code.
  const node=element.attr('href')?element.parent():element;
  const markup=String(node.html()||'').replace(/<a\b[^>]*\bhref\s*=\s*(["'])(.*?)\1[^>]*>/gi,(_,quote,href)=>' '+href+' ')
   .replace(/<\/(?:p|li|tr|section)>/gi,'\u0001').replace(/<br\s*\/?\s*>/gi,'\n');
@@ -5334,15 +5044,12 @@ function cpShareExtractionText($,el){
  return (own&&!text.includes(own)?own+' ':'')+text;
 }
 
-// Keep the established stored credential/session format. Only the form input
-// changes: a local set is composed as a whole, never from shared account parts.
 function cpGuangyaCredentialParams(params){
  if(!params||typeof params!=='object'||Array.isArray(params))return params;
  const fields=['guangyaRefreshToken','guangyaDeviceId'];
  if(!fields.some(key=>Object.prototype.hasOwnProperty.call(params,key)))return params;
  for(const key of ['guangyaAuth',...fields])if(Object.prototype.hasOwnProperty.call(params,key)&&(typeof params[key]!=='string'||/[\x00-\x1f\x7f]/.test(params[key])))throw new Error('光鸭凭证格式无效');
  const refresh=String(params.guangyaRefreshToken||'').trim(),device=String(params.guangyaDeviceId||'').trim();
- // Old JSON configurations still arrive under the existing access-token key.
  if(!refresh&&!device)return params;
  const raw=String(params.guangyaAuth||'').trim();let auth;
  try{auth=raw.startsWith('{')?JSON.parse(raw):{accessToken:raw};}catch(_){throw new Error('光鸭凭证格式无效');}
@@ -5352,15 +5059,12 @@ function cpGuangyaCredentialParams(params){
  return Object.assign({},params,{guangyaAuth:JSON.stringify(auth)});
 }
 
-// Compose a complete local credential without changing stored session identity
-// or borrowing refresh/device values from the common account.
 function cpXunleiCredentialParams(params){
  if(!params||typeof params!=='object'||Array.isArray(params))return params;
  const fields=['xunleiRefreshToken','xunleiDeviceId'],own=key=>Object.prototype.hasOwnProperty.call(params,key);
  if(!fields.some(own))return params;
  for(const key of ['xunleiAuth',...fields])if(own(key)&&(typeof params[key]!=='string'||/[\x00-\x1f\x7f]/.test(params[key])))throw new Error('迅雷凭证格式无效');
  const refresh=String(params.xunleiRefreshToken||'').trim(),device=String(params.xunleiDeviceId||'').trim();
- // Preserve legacy JSON and its original identity when the new fields are empty.
  if(!refresh&&!device)return params;
  const raw=String(params.xunleiAuth||'').trim();let auth;
  try{auth=raw.startsWith('{')?JSON.parse(raw):{accessToken:raw};}catch(_){throw new Error('迅雷凭证格式无效');}
@@ -5471,7 +5175,6 @@ function rexStableId(siteKey, url) {
 
 return (function createNetdiskAdapter(options) {
  qpCheckShares=async function(shares){return shares.map(share=>Object.assign({},share,{validity:'uncertain'}));};
- // Website checks belong to the discovery adapter. Drive APIs validate shares.
  getSite=()=>options.site;
 
  return {bind:params=>bindForwardParams(params),enabled:provider=>rexIsBaiduProvider(provider)&&quanpanProviderEnabled(provider),matchesSiteTitle:(title,params)=>cpSearchResultMatches(title,params),prepareDirectoryIdentity:(year,params)=>cpSiteYearMatches(year,params),parseShare:entry=>qpShare(entry),encode:value=>encodeLink(value),
@@ -5502,16 +5205,6 @@ return (function createNetdiskAdapter(options) {
  clear:()=>clearRexCatalogCache()};
 })({"linkPrefix":"juhebai:","site":"https://tv.214521.xyz"});
 })();
-// juhe.baidu 引擎版 runtime：三站 CMS 搜索 + CatPaw DriveEngine。
-// 引擎负责百度分享解析、转存、目录、分集匹配、播放头；
-// 本文件只负责三站搜索、详情分享提取，以及 discovery 契约。
-// 注意：引擎链接（juhebai:）与旧版模块链接不兼容，旧收藏/历史需重新添加。
-// 注意：本模块只用单独 Cookie（credentialSource 强制 local，不继承通用配置）。
-// 注意：年份未知时跳过 prepareDirectoryIdentity（引擎对“查询有年份、
-// 条目无年份”返回 false，照抄示例会把无年份的 CMS 条目全丢弃）。
-// 注意：清晰度标签（resourceCategory）按旧版行为，只给资源标题加前缀
-// （8K/4K/1080P/其他），不做画质过滤；引擎自带的 resourceCategory
-// 只控展示分类，标题上看不见，等于没作用。
 
 var JUHE_SITES = [
   { key: 'huajuan', label: '花卷', hostParam: 'host_huajuan', defaultHost: 'https://www.hjzhencai.top' },
@@ -5585,8 +5278,6 @@ function juheIsMaintenanceHtml(html) {
     || /<h1[^>]*>\s*站点维护中\s*<\/h1>/i.test(head);
 }
 
-// 站点请求：走引擎预算（timeoutMs + 失效检查），requestFn 映射到宿主的 get。
-// 引擎请求失败时直连兜底，保证宿主 http 形态差异不致命。
 function juheIsTerminalError(e) {
   return !!e && ['ABORTED', 'OPERATION_TIMEOUT', 'ACCOUNT_CHANGED'].indexOf(e.code) >= 0;
 }
@@ -5634,8 +5325,6 @@ function juheSearchUrl(site, keyword, page, params) {
   return juheSiteHost(site, params) + '/index.php/vod/search/page/' + (page || 1) + '/wd/' + encodeURIComponent(keyword) + '.html';
 }
 
-// 搜索页解析：三站同一 CMS，逻辑一致；标题取法取三站并集
-// （花卷多 .module-card-item-title 一路，其余站走不到便自然落到后备）。
 function juheMediaType(category, title) {
   var cat = String(category || '');
   if (/(?:电视剧|电视连续剧|连续剧|剧集|短剧|情景剧|国产剧|港剧|台剧|韩剧|日剧|美剧|英剧|泰剧|欧美剧|海外剧|大陆剧|网剧|网络剧|番剧|综艺|纪录片|动漫|动画)/.test(cat)) return 'tv';
@@ -5790,7 +5479,6 @@ async function juheSiteSearch(site, keyword, params) {
   return items;
 }
 
-// 百度分享解析：/s/ 与 wap/init?surl= 两种；提取码取 ?pwd= / #pwd= / 文本里的 提取码。
 function juheBaiduParse(url) {
   try { url = decodeURIComponent(String(url || '')).replace(/\s+/g, ''); }
   catch (e) { url = String(url || '').replace(/\s+/g, ''); }

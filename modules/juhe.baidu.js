@@ -1,4 +1,4 @@
-var WidgetMetadata = {"id":"juhe.baidu","title":"聚合百度版","version":"1.1.7","requiredVersion":"0.0.1","description":"纯百度聚合（CatPaw 引擎版）：并发搜索3个源（花卷/虎斑/多多），转存后返回百度网盘播放源；百度 Cookie 只用本模块设置；旧版收藏链接不兼容。","author":"夏恩","site":"https://github.com/InchStudio/ForwardWidgets","detailCacheDuration":3600,"credentialSource":"local","globalParams":[{"name":"baiduCookie","title":"百度 Cookie","type":"input","value":""},{"name":"resourceCategory","title":"清晰度标签","type":"enumeration","value":"8k","enumOptions":[{"title":"8K","value":"8k"},{"title":"4K","value":"4k"},{"title":"1080P","value":"1080p"},{"title":"其他","value":"other"}]},{"name":"host_huajuan","title":"花卷站点地址","type":"input","value":"https://www.hjzhencai.top"},{"name":"host_huban","title":"虎斑站点地址","type":"input","value":"http://43.248.128.118:16969"},{"name":"host_duoduo","title":"多多站点地址","type":"input","value":"https://tv.214521.xyz"}],"modules":[{"id":"loadResource","title":"聚合百度[盘]","description":"按当前影片详情并发搜索各源并返回百度网盘播放源","functionName":"loadResource","type":"stream","cacheDuration":0,"params":[]},{"id":"clearRexCatalogCache","title":"刷新网盘目录缓存","functionName":"clearRexCatalogCache","cacheDuration":0,"params":[]}],"search":{"title":"搜索聚合百度","functionName":"search","params":[{"name":"keyword","title":"关键词","type":"input","value":""},{"name":"page","title":"页码","type":"page","value":"1"}]}};
+var WidgetMetadata = {"id":"juhe.baidu","title":"聚合百度版","version":"1.1.8","requiredVersion":"0.0.1","description":"纯百度聚合（花卷/虎斑/多多）：读取百度网盘分享并返回原画直链，不转存；只使用本模块百度 Cookie；旧版收藏/历史链接需重新添加。","author":"夏恩","site":"https://github.com/InchStudio/ForwardWidgets","detailCacheDuration":3600,"credentialSource":"local","globalParams":[{"name":"baiduCookie","title":"百度 Cookie","type":"input","value":""},{"name":"resourceCategory","title":"资源标签","type":"enumeration","value":"none","enumOptions":[{"title":"不标注","value":"none"},{"title":"8K标记(旧)","value":"8k"},{"title":"4K","value":"4k"},{"title":"1080P","value":"1080p"},{"title":"其他","value":"other"}]},{"name":"host_huajuan","title":"花卷站点地址","type":"input","value":"https://www.hjzhencai.top"},{"name":"host_huban","title":"虎斑站点地址","type":"input","value":"http://43.248.128.118:16969"},{"name":"host_duoduo","title":"多多站点地址","type":"input","value":"https://tv.214521.xyz"}],"modules":[{"id":"loadResource","title":"聚合百度[盘]","description":"按当前影片详情并发搜索各源并返回百度网盘播放源","functionName":"loadResource","type":"stream","cacheDuration":0,"params":[]},{"id":"clearRexCatalogCache","title":"刷新网盘目录缓存","functionName":"clearRexCatalogCache","cacheDuration":0,"params":[]}],"search":{"title":"搜索聚合百度","functionName":"search","params":[{"name":"keyword","title":"关键词","type":"input","value":""},{"name":"page","title":"页码","type":"page","value":"1"}]}};
 var DriveEngine = (function(){var WidgetMetadata;
 WidgetMetadata = {"id":"juhe.baidu.rex","title":"聚合百度版","version":"2.2.4","requiredVersion":"0.0.1","description":"全盘影视搜索，支持夸克、百度、UC、115、123、移动、天翼、迅雷网盘及外挂字幕。","author":"balge","site":"https://quanpan.xyz","detailCacheDuration":1800,"globalParams":[{"name":"site","title":"站点地址（留空使用全盘搜索）","type":"input","value":"https://quanpan.xyz"},{"name":"quarkCookie","title":"垮 Cookie","type":"input"},{"name":"baiduCookie","title":"佰 Cookie","type":"input"},{"name":"cookie115","title":"伍 Cookie","type":"input"},{"name":"xunleiAuth","title":"迅雷访问令牌","type":"input","value":"","placeholders":[{"title":"填写 access_token 或 Authorization；自动识别 Web/App；迅雷三项全部留空时使用通用配置","value":""}]},{"name":"xunleiRefreshToken","title":"迅雷刷新令牌","type":"input","value":"","placeholders":[{"title":"填写 refresh_token，用于自动续期；可留空；迅雷三项全部留空时使用通用配置","value":""}]},{"name":"xunleiDeviceId","title":"迅雷设备号","type":"input","value":"","placeholders":[{"title":"填写 device_id；留空优先从令牌读取，否则使用默认设备号；迅雷三项全部留空时使用通用配置","value":""}]},{"name":"guangyaAuth","title":"光鸭访问令牌","type":"input","value":"","placeholders":[{"title":"填写 accessToken；光鸭三项全部留空时使用通用配置","value":""}]},{"name":"guangyaRefreshToken","title":"光鸭刷新令牌","type":"input","value":"","placeholders":[{"title":"填写 refreshToken，用于自动续期；可留空；光鸭三项全部留空时使用通用配置","value":""}]},{"name":"guangyaDeviceId","title":"光鸭设备号","type":"input","value":"","placeholders":[{"title":"填写 deviceId；留空使用默认设备号；光鸭三项全部留空时使用通用配置","value":""}]},{"name":"multiSource","title":"聚合搜索","type":"enumeration","value":"enabled","enumOptions":[{"title":"启用","value":"enabled"},{"title":"禁用","value":"disabled"}]}],"modules":[{"id":"searchResources","title":"搜索网盘资源","functionName":"search","cacheDuration":0,"params":[{"name":"keyword","title":"关键词","type":"input"}]},{"id":"refreshCatalog","title":"刷新目录缓存","functionName":"clearRexCatalogCache","cacheDuration":0,"params":[]},{"id":"loadResource","title":"加载资源","functionName":"loadResource","type":"stream","cacheDuration":0,"params":[]}],"search":{"title":"全盘搜索","functionName":"search","params":[{"name":"keyword","title":"关键词","type":"input"},{"name":"page","title":"页码","type":"page"}]}};
 
@@ -5376,22 +5376,116 @@ function cpXunleiCredentialParams(params){
  return Object.assign({},params,{xunleiAuth:JSON.stringify(auth)});
 }
 
+function rexEngineError(code, message) {
+  var error = new Error(message || '资源链接无效，请重新添加');
+  error.code = code || 'INVALID_LINK';
+  return error;
+}
+function rexPlainObject(value) {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+function rexIsBaiduProvider(provider) {
+  return provider === 'baidu';
+}
+function rexCopyOwn(value) {
+  var out = {};
+  for (var key in value) if (Object.prototype.hasOwnProperty.call(value, key)) out[key] = value[key];
+  return out;
+}
+function rexNormalizeShare(share) {
+  if (!rexPlainObject(share)) throw rexEngineError('INVALID_SHARE');
+  var provider = share.provider == null || share.provider === '' ? 'baidu' : share.provider;
+  if (!rexIsBaiduProvider(provider)) throw rexEngineError('PROVIDER_NOT_ALLOWED', '本模块只支持百度网盘分享');
+  var out = rexCopyOwn(share);
+  out.provider = 'baidu';
+  return out;
+}
+function rexNormalizeShareList(value) {
+  if (value == null) return [];
+  if (!Array.isArray(value)) throw rexEngineError('INVALID_SHARES');
+  if (value.length > 20) throw rexEngineError('INVALID_SHARES', '分享数量超出限制');
+  var out = [];
+  for (var i = 0; i < value.length; i++) out.push(rexNormalizeShare(value[i]));
+  return out;
+}
+function rexNormalizeEngineLink(link) {
+  var info = decodeLink(link);
+  if (!rexPlainObject(info)) throw rexEngineError('INVALID_LINK');
+  if (info.action !== 'play' && info.action !== 'detail') throw rexEngineError('INVALID_LINK');
+  var out = { action: info.action };
+  if (out.action === 'play') {
+    var hasSources = Array.isArray(info.sources) && info.sources.length > 0;
+    var hasVideo = rexPlainObject(info.videoInfo);
+    if (!hasSources && !hasVideo) throw rexEngineError('INVALID_LINK');
+    if (hasSources) {
+      if (info.sources.length > 20) throw rexEngineError('INVALID_SHARES', '播放线路超出限制');
+      out.sources = [];
+      for (var i = 0; i < info.sources.length; i++) {
+        var s = info.sources[i];
+        if (!rexPlainObject(s) || (s.action != null && s.action !== 'play') || !rexPlainObject(s.videoInfo)) throw rexEngineError('INVALID_LINK');
+        var ns = { action: 'play', videoInfo: rexCopyOwn(s.videoInfo) };
+        if (s.provider != null && s.provider !== '') {
+          if (!rexIsBaiduProvider(s.provider)) throw rexEngineError('PROVIDER_NOT_ALLOWED', '本模块只支持百度网盘');
+          ns.provider = 'baidu';
+        } else {
+          ns.provider = 'baidu';
+        }
+        if (s.lineName != null) ns.lineName = String(s.lineName);
+        if (s.title != null) ns.title = String(s.title);
+        if (s.packageSizeBytes != null) ns.packageSizeBytes = Number(s.packageSizeBytes) || 0;
+        if (s.channelUsername != null) ns.channelUsername = String(s.channelUsername);
+        if (s.channelDisplayName != null) ns.channelDisplayName = String(s.channelDisplayName);
+        if (typeof s.qpCandidateOrder === 'number') ns.qpCandidateOrder = s.qpCandidateOrder;
+        out.sources.push(ns);
+      }
+    }
+    if (hasVideo) out.videoInfo = rexCopyOwn(info.videoInfo);
+    if (info.provider != null && info.provider !== '') {
+      if (!rexIsBaiduProvider(info.provider)) throw rexEngineError('PROVIDER_NOT_ALLOWED', '本模块只支持百度网盘');
+      out.provider = 'baidu';
+    } else if (!hasSources) {
+      out.provider = 'baidu';
+    }
+    if (info.lineName != null) out.lineName = String(info.lineName);
+    if (info.title != null) out.title = String(info.title);
+    if (info.mediaType === 'movie' || info.mediaType === 'tv') out.mediaType = info.mediaType;
+    if (info.packageSizeBytes != null) out.packageSizeBytes = Number(info.packageSizeBytes) || 0;
+    return encodeLink(out);
+  }
+  out.title = String(info.title || '');
+  if (info.site != null) out.site = String(info.site);
+  out.shares = rexNormalizeShareList(info.shares || []);
+  if (info.siteRef != null) out.siteRef = String(info.siteRef);
+  if (info.id != null) out.id = String(info.id);
+  if (info.posterPath != null) out.posterPath = String(info.posterPath);
+  if (info.backdropPath != null) out.backdropPath = String(info.backdropPath);
+  if (info.description != null) out.description = String(info.description);
+  if (info.mediaType === 'movie' || info.mediaType === 'tv') out.mediaType = info.mediaType;
+  if (typeof info.year === 'number' && info.year >= 1800 && info.year <= 2200) out.year = info.year;
+  if (typeof info.season === 'number' && info.season >= 1 && info.season <= 99) out.season = info.season;
+  return encodeLink(out);
+}
+function rexStableId(siteKey, url) {
+  return 'juhe-baidu-' + baiduSha1(String(siteKey || '') + '|' + String(url || ''));
+}
+
 return (function createNetdiskAdapter(options) {
  qpCheckShares=async function(shares){return shares.map(share=>Object.assign({},share,{validity:'uncertain'}));};
  // Website checks belong to the discovery adapter. Drive APIs validate shares.
  getSite=()=>options.site;
 
- return {bind:params=>bindForwardParams(params),enabled:provider=>quanpanProviderEnabled(provider),matchesSiteTitle:(title,params)=>cpSearchResultMatches(title,params),prepareDirectoryIdentity:(year,params)=>cpSiteYearMatches(year,params),parseShare:entry=>qpShare(entry),encode:value=>encodeLink(value),
+ return {bind:params=>bindForwardParams(params),enabled:provider=>rexIsBaiduProvider(provider)&&quanpanProviderEnabled(provider),matchesSiteTitle:(title,params)=>cpSearchResultMatches(title,params),prepareDirectoryIdentity:(year,params)=>cpSiteYearMatches(year,params),parseShare:entry=>qpShare(entry),encode:value=>encodeLink(value),
  decode:link=>decodeLink(link),isLink:link=>typeof link==='string'&&link.startsWith(options.linkPrefix),candidateLimit:()=>qpCandidateLimit(),
  loadDetail:async link=>{
   const info=decodeLink(link);
   if(info?.action!=='play')return loadDetail(link);
   const resources=await loadResource({link});
   const items=resources.filter(r=>r.url).map(resource=>Object.assign({},resource,{
-   type:'url',title:info.title,mediaType:info.mediaType||'tv',link,
+   id:'juhe-baidu-'+baiduSha1(link+'|'+String(resource.url||'')),
+   type:'url',title:info.title||resource.name||'',mediaType:info.mediaType||'tv',link,
    videoUrl:resource.url,headers:resource.headers||resource.customHeaders
   }));
-  if(!items.length)throw new Error('未能获取播放资源，请更换资源或检查网盘账号');
+  if(!items.length)throw new Error('未能获取播放资源，请更换资源或检查百度账号');
   return items;
  },
  owner:()=>cpResourceOwner,
@@ -5399,7 +5493,13 @@ return (function createNetdiskAdapter(options) {
  loadResource:(params,site)=>{
   if(site&&(cpRequestedYear(params).conflict||!cpRelevanceTitles(params).length||params.type!=='movie'&&(!Number.isSafeInteger(Number(params.season??1))||Number(params.season??1)<1||!Number.isSafeInteger(Number(params.episode))||Number(params.episode)<1)))return Promise.resolve([]);
   return loadResource(site?Object.assign({},params,{cpSiteSearch:site.search,cpSiteRead:site.read,cpSiteIdentity:site.identity}):params);
- },clear:()=>clearRexCatalogCache()};
+ },
+ __rexSession:(function(){var values=Object.create(null),baseGet=safeStorageGet,baseSet=safeStorageSet,failed=0;
+  safeStorageGet=function(key){if(Object.prototype.hasOwnProperty.call(values,key))return values[key];var value;try{value=baseGet(key);}catch(_){return '';}if(value&&typeof value.then==='function')return '';values[key]=value;return value;};
+  safeStorageSet=function(key,value){var text=String(value);values[key]=text;var result;try{result=baseSet(key,text);}catch(_){failed++;return;}if(result&&typeof result.then==='function')result.then(function(){},function(){failed++;});};
+  return {values:values,failed:function(){return failed;},resetFailed:function(){failed=0;}};})(),
+ __rexHelper:{stableId:function(k,u){return rexStableId(k,u);},hash:function(s){return baiduSha1(String(s));},normalizeLink:function(l){return rexNormalizeEngineLink(l);}},
+ clear:()=>clearRexCatalogCache()};
 })({"linkPrefix":"juhebai:","site":"https://tv.214521.xyz"});
 })();
 // juhe.baidu 引擎版 runtime：三站 CMS 搜索 + CatPaw DriveEngine。
@@ -5450,7 +5550,7 @@ function juheToInt(v, defVal) {
 }
 
 function juheOrigin(url) {
-  try { return new URL(String(url || '')).origin; } catch (e) { return ''; }
+  return juheOriginText(url);
 }
 
 function juheStripSlash(s) {
@@ -5487,7 +5587,10 @@ function juheIsMaintenanceHtml(html) {
 
 // 站点请求：走引擎预算（timeoutMs + 失效检查），requestFn 映射到宿主的 get。
 // 引擎请求失败时直连兜底，保证宿主 http 形态差异不致命。
-async function juheSiteFetch(url, params, referer) {
+function juheIsTerminalError(e) {
+  return !!e && ['ABORTED', 'OPERATION_TIMEOUT', 'ACCOUNT_CHANGED'].indexOf(e.code) >= 0;
+}
+async function juheSiteBody(url, params, referer) {
   var headers = Object.assign({}, JUHE_HEADERS, { Referer: referer || '' });
   try {
     var resp = await DriveEngine.request(
@@ -5495,11 +5598,36 @@ async function juheSiteFetch(url, params, referer) {
       function (spec) { return Widget.http.get(spec.url, { headers: spec.headers, timeout: spec.timeoutMs }); },
       DriveEngine.owner()
     );
-    return String(resp && resp.data || '');
+    return resp && resp.data;
   } catch (e) {
+    if (juheIsTerminalError(e)) throw e;
+    var signal = params && params.signal;
+    if (signal && signal.aborted) throw e;
     var resp2 = await Widget.http.get(url, { headers: headers, timeout: 20000 });
-    return String(resp2 && resp2.data || '');
+    return resp2 && resp2.data;
   }
+}
+function juheBodyText(value) {
+  if (typeof value === 'string') return value;
+  if (value == null) return '';
+  try { return JSON.stringify(value); } catch (_) { return String(value); }
+}
+async function juheSiteFetch(url, params, referer) {
+  return juheBodyText(await juheSiteBody(url, params, referer));
+}
+
+async function juheLoadHtml(html, label) {
+  var loaded = Widget.html.load(html);
+  if (loaded && typeof loaded.then === 'function') loaded = await loaded;
+  if (typeof loaded !== 'function') throw new Error((label || '页面') + '解析不可用');
+  return loaded;
+}
+
+function juheOriginText(url) {
+  var match = /^(https?:)\/\/([a-z0-9.-]+)(?::(\d{1,5}))?(?:\/|$)/i.exec(String(url || ''));
+  if (!match) return '';
+  var port = match[3] && Number(match[3]) !== (match[1].toLowerCase() === 'https:' ? 443 : 80) ? ':' + Number(match[3]) : '';
+  return match[1].toLowerCase() + '://' + match[2].toLowerCase() + port;
 }
 
 function juheSearchUrl(site, keyword, page, params) {
@@ -5508,32 +5636,77 @@ function juheSearchUrl(site, keyword, page, params) {
 
 // 搜索页解析：三站同一 CMS，逻辑一致；标题取法取三站并集
 // （花卷多 .module-card-item-title 一路，其余站走不到便自然落到后备）。
-function juheParseSearch(html, site, params) {
+function juheMediaType(category, title) {
+  var cat = String(category || '');
+  if (/(?:电视剧|电视连续剧|连续剧|剧集|短剧|情景剧|国产剧|港剧|台剧|韩剧|日剧|美剧|英剧|泰剧|欧美剧|海外剧|大陆剧|网剧|网络剧|番剧|综艺|纪录片|动漫|动画)/.test(cat)) return 'tv';
+  var t = String(title || '');
+  return /(?:电视剧|电视连续剧|连续剧|剧集|短剧|综艺|纪录片|动漫|动画|共\s*\d+\s*集|全\s*\d+\s*集|更新至第?\d*集|第\s*[一二三四五六七八九十\d]+\s*季|(?:^|[^A-Za-z0-9])S\d{1,2}(?:E\d{1,2})?(?=$|[^A-Za-z0-9])|anime|series)/i.test(t) ? 'tv' : 'movie';
+}
+function juheCmsYear(explicit, title) {
+  var y = Number(explicit) || 0, m = /[（(]\s*((?:19|20)\d{2})\s*[）)]\s*$/.exec(String(title || ''));
+  var embedded = m ? Number(m[1]) : 0;
+  if (y >= 1800 && y <= 2200) return embedded && embedded !== y ? undefined : y;
+  return embedded >= 1800 ? embedded : undefined;
+}
+function juheSeasonNum(text) {
+  var t = juheText(text);
+  var m = /第\s*([一二三四五六七八九十0-9]+)\s*季/.exec(t) || /(?:^|[^a-z0-9])S(\d{1,2})(?=$|[^a-z0-9])/i.exec(t);
+  if (!m) return undefined;
+  var raw = m[1];
+  if (/^\d+$/.test(raw)) return Number(raw) || undefined;
+  var map = { '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '十': 10 };
+  if (map[raw]) return map[raw];
+  var m2 = /^([一二三四五六七八九])?十([一二三四五六七八九])?$/.exec(raw);
+  if (m2) return (m2[1] ? map[m2[1]] : 1) * 10 + (m2[2] ? map[m2[2]] : 0);
+  return undefined;
+}
+
+function juheCmsInfo(card, $) {
+  var year = 0;
+  var yearNodes = card.find("a[href*='/search/year/']");
+  if (!yearNodes.length && card.find('.module-info-item-content').length) yearNodes = card.find('.module-info-item-content').first();
+  if (!yearNodes.length && card.find('.video-info-aux').length) yearNodes = card.find('.video-info-aux').first();
+  yearNodes.each(function (_, el) {
+    if (year) return;
+    var m = /(?:^|[^0-9])((?:19|20)\d{2})(?=[^0-9]|$)/.exec(juheText($(el).text()));
+    if (m) year = Number(m[1]);
+  });
+  var classNode = card.find('.module-card-item-class').first();
+  var typeNode = card.find("a[href*='/vod/type/']").first();
+  var category = juheText(classNode.text() || typeNode.text()).replace(/^花卷/, '');
+  var remark = juheText(card.find('.module-item-note, .video-serial').first().text());
+  var desc = juheText(card.find('.module-info-item-content, .video-info-item').eq(1).text());
+  return { year: year, category: category, remark: remark, description: desc };
+}
+async function juheParseSearch(html, site, params) {
   if (juheIsMaintenanceHtml(html)) return [];
-  var $ = Widget.html.load(html);
-  var out = [];
-  var seen = {};
+  var $ = null;
+  try { $ = await juheLoadHtml(html, '搜索页'); } catch (_) { $ = null; }
+  var out = [], seen = {};
+  if ($) {
   $('.module-search-item, .module-items .module-item').each(function (_, el) {
     var card = $(el);
     var linkNode = card.find("h3 a[href*='/index.php/vod/detail/'], .module-item-title[href*='/index.php/vod/detail/'], a[href*='/index.php/vod/detail/']").first();
     var href = juheAbsUrl(linkNode.attr('href') || '', site, params);
     if (!href || seen[href]) return;
+    var rawTitle = juheText(card.find('.module-card-item-title').first().text() || linkNode.attr('title') || linkNode.text() || card.find('img').first().attr('alt') || '');
+    if (!rawTitle) return;
+    var info = juheCmsInfo(card, $);
+    var title = juheCleanTitle(rawTitle);
     var img = card.find('img').first();
-    var title = juheCleanTitle(card.find('.module-card-item-title').first().text() || linkNode.attr('title') || linkNode.text() || img.attr('alt') || '');
-    if (!title) return;
     var poster = juheAbsUrl(img.attr('data-src') || img.attr('data-original') || img.attr('src') || '', site, params);
-    var remark = juheText(card.find('.video-serial, .module-item-text').first().text());
-    var desc = juheText(card.find('.video-info-item, .module-item-style.video-text').last().text());
-    var description = [remark, desc].filter(Boolean).join('\n');
     seen[href] = true;
     out.push({
-      id: href, type: 'url', mediaType: 'movie', title: title,
-      posterPath: poster, backdropPath: poster, description: description,
-      link: href, year: juheYearNum(title + '\n' + description)
+      id: href, type: 'url', mediaType: juheMediaType(info.category, rawTitle), title: title,
+      rawTitle: rawTitle, season: juheSeasonNum(rawTitle), category: info.category,
+      posterPath: poster, backdropPath: poster,
+      description: [info.remark, info.description].filter(Boolean).join('\n'),
+      link: href, year: juheCmsYear(info.year, rawTitle)
     });
   });
+  }
   if (!out.length) {
-    var blockRe = /<div[^>]+class=["'][^"']*module-search-item[^"']*["'][\s\S]*?(?=<div[^>]+class=["'][^"']*module-search-item[^"']*["']<\/div>\s*<\/div>\s*<\/main>|<footer|$)/ig;
+    var blockRe = /<div[^>]+class=["'][^"']*module-search-item[^"']*["'][\s\S]*?(?=<div[^>]+class=["'][^"']*module-search-item[^"']*["']|<footer|$)/ig;
     var blocks = String(html || '').match(blockRe) || [];
     for (var bi = 0; bi < blocks.length; bi++) {
       var block = blocks[bi];
@@ -5546,15 +5719,17 @@ function juheParseSearch(html, site, params) {
         || block.match(/<img[^>]*alt=["']([^"']+)["']/i);
       var imgMatch = block.match(/<img[^>]*(?:data-src|data-original|src)=["']([^"']+)["']/i);
       var descMatch = block.match(/<div[^>]+class=["'][^"']*video-info-item[^"']*["'][^>]*>([\s\S]*?)<\/div>/i);
-      var title = juheCleanTitle(titleMatch && titleMatch[1] || hrefMatch[2] || '');
+      var rawTitle = juheText((titleMatch && titleMatch[1]) || hrefMatch[2] || '');
+      var title = juheCleanTitle(rawTitle);
       if (!title) continue;
       seen[href] = true;
       out.push({
-        id: href, type: 'url', mediaType: 'movie', title: title,
+        id: href, type: 'url', mediaType: juheMediaType('', rawTitle), title: title,
+        rawTitle: rawTitle, season: juheSeasonNum(rawTitle), category: '',
         posterPath: juheAbsUrl(imgMatch && imgMatch[1] || '', site, params),
         backdropPath: juheAbsUrl(imgMatch && imgMatch[1] || '', site, params),
         description: juheText(descMatch && descMatch[1] || '').replace(/<[^>]+>/g, ''),
-        link: href, year: juheYearNum(title)
+        link: href, year: juheCmsYear(0, rawTitle)
       });
     }
   }
@@ -5562,14 +5737,20 @@ function juheParseSearch(html, site, params) {
 }
 
 async function juheSuggestSearch(site, keyword, params) {
-  var url = juheSiteHost(site, params) + '/index.php/ajax/suggest?mid=1&wd=' + encodeURIComponent(keyword) + '&limit=100';
-  var html = await juheSiteFetch(url, params, juheSiteHost(site, params) + '/');
-  var data = html;
+  var host = juheSiteHost(site, params);
+  var url = host + '/index.php/ajax/suggest?mid=1&wd=' + encodeURIComponent(keyword) + '&limit=100';
+  var data = await juheSiteBody(url, params, host + '/');
   if (typeof data === 'string') {
-    try { data = JSON.parse(data); } catch (e) { data = null; }
+    var trimmed = data.trim();
+    if (trimmed.charAt(0) !== '{') {
+      var brace = trimmed.indexOf('{');
+      if (brace > 0) trimmed = trimmed.slice(brace, trimmed.lastIndexOf('}') + 1);
+      if (trimmed.charAt(0) !== '{') return [];
+    }
+    try { data = JSON.parse(trimmed); } catch (_) { return []; }
   }
   if (!data || data.code !== 1 || !Array.isArray(data.list)) return [];
-  var out = [];
+  var out = [], seen = {};
   for (var i = 0; i < data.list.length; i++) {
     var raw = data.list[i] || {};
     var idText = String(raw.id == null ? '' : raw.id);
@@ -5579,32 +5760,34 @@ async function juheSuggestSearch(site, keyword, params) {
       var idMatch = idText.match(/\/vod\/detail\/id\/(\d{1,12})\.html/);
       if (idMatch) vodId = idMatch[1];
     }
-    var title = juheCleanTitle(raw.name || '');
-    if (!vodId || !title) continue;
-    var link = juheSiteHost(site, params) + '/index.php/vod/detail/id/' + vodId + '.html';
+    var rawTitle = juheText(raw.name || '');
+    if (!vodId || !rawTitle || seen[vodId]) continue;
+    seen[vodId] = true;
+    var link = host + '/index.php/vod/detail/id/' + vodId + '.html';
     var poster = juheAbsUrl(raw.pic || '', site, params);
     if (/\/load\.gif(\?|$)/i.test(poster)) poster = '';
     out.push({
-      id: link, type: 'url', mediaType: 'movie', title: title,
+      id: link, type: 'url', mediaType: 'movie', title: juheCleanTitle(rawTitle), rawTitle: rawTitle,
       posterPath: poster, backdropPath: poster,
-      description: juheText(raw.remark || ''), link: link, year: juheYearNum(title)
+      description: juheText(raw.remark || ''), link: link, year: undefined
     });
   }
   return out;
 }
 
 async function juheSiteSearch(site, keyword, params) {
-  try {
-    var page = juheToInt(params && params.page, 1) || 1;
-    var html = await juheSiteFetch(juheSearchUrl(site, keyword, page, params), params, juheSiteHost(site, params) + '/');
-    var items = juheParseSearch(html, site, params);
-    if (!items.length) {
-      try { items = await juheSuggestSearch(site, keyword, params); } catch (e) { items = []; }
+  var page = juheToInt(params && params.page, 1);
+  if (page < 1 || page > 50) return [];
+  var host = juheSiteHost(site, params);
+  var html = await juheSiteFetch(juheSearchUrl(site, keyword, page, params), params, host + '/');
+  var items = await juheParseSearch(html, site, params);
+  if (!items.length && page === 1) {
+    try { items = await juheSuggestSearch(site, keyword, params); } catch (e) {
+      if (juheIsTerminalError(e)) throw e;
+      items = [];
     }
-    return items;
-  } catch (e) {
-    return [];
   }
+  return items;
 }
 
 // 百度分享解析：/s/ 与 wap/init?surl= 两种；提取码取 ?pwd= / #pwd= / 文本里的 提取码。
@@ -5637,167 +5820,232 @@ function juheAttachSharePwd(shareUrl, contextText) {
   return shareUrl + (shareUrl.indexOf('#') >= 0 ? '&pwd=' + pwd : '#pwd=' + pwd);
 }
 
-// 详情页解析：只留百度分享（与旧版一致），三站选择器相同。
-function juheParseDetail(html, site, params) {
+function juheDetailShareUrl(text) {
+  var m = String(text || '').match(/https?:\/\/[^\s"'<>]+/i);
+  return m ? m[0] : '';
+}
+function juheParseDetailInto($, html, site, params) {
   if (juheIsMaintenanceHtml(html)) {
-    return { title: site.label + '[盘]', posterPath: '', backdropPath: '', description: '', lines: [] };
+    return { title: site.label + '[盘]', rawTitle: '', posterPath: '', backdropPath: '', description: '', lines: [] };
   }
-  var $ = Widget.html.load(html);
-  var title = juheCleanTitle($('.video-info h1, h1').first().text() || $("meta[property='og:title']").attr('content') || '');
-  var poster = juheAbsUrl($('.lazyload, .lazyloaded, .module-item-pic img, img').first().attr('data-original')
-    || $('.lazyload, .lazyloaded, .module-item-pic img, img').first().attr('data-src')
-    || $('.lazyload, .lazyloaded, .module-item-pic img, img').first().attr('src')
+  var rawTitle = juheText($('.video-info h1, h1').first().text() || $("meta[property='og:title']").attr('content') || '');
+  var img = $('.module-item-pic img, .lazyload, .lazyloaded, .video-cover img, .video-pic img, img').first();
+  var poster = juheAbsUrl(img.attr('data-original') || img.attr('data-src') || img.attr('src')
     || $("meta[property='og:image']").attr('content') || '', site, params);
   var description = juheText($('.sqjj_a').first().text() || $('.zkjj_a').first().text() || $("meta[name='description']").attr('content') || '');
-  var lines = [];
-  var seen = {};
+  var yearText = juheText($("a[href*='/vod/search/year/'], .video-info-aux, .module-info-item-content").first().text());
+  var ym = /(?:^|[^0-9])((?:19|20)\d{2})(?=[^0-9]|$)/.exec(yearText);
+  var category = juheText($("a[href*='/vod/type/']").first().text());
+  var lines = [], seen = {};
+  function add(raw, lineTitle, scopeText) {
+    var url = juheDetailShareUrl(raw);
+    var parsed = null;
+    try { parsed = url ? juheBaiduParse(url) : null; } catch (_) { parsed = null; }
+    if (!parsed || !parsed.shareId) return;
+    var pwd = parsed.sharePwd || juheExtractSharePwd(scopeText);
+    var finalUrl = pwd ? url + (url.indexOf('#') >= 0 ? '&pwd=' : '#pwd=') + pwd : url;
+    if (seen[finalUrl]) return;
+    seen[finalUrl] = true;
+    lines.push({ title: lineTitle || juheCleanTitle(rawTitle) || site.label + '[盘]', shareUrl: finalUrl });
+  }
   $('.module-row-info').each(function (_, el) {
-    var row = $(el);
-    var lineTitle = juheText(row.find('.module-row-title h4').first().text());
-    var cands = [
-      juheText(row.find('.module-row-title p').first().text()),
-      juheText(row.find('[data-clipboard-text]').first().attr('data-clipboard-text')),
-      juheText(row.find('a.btn-down').first().attr('href'))
-    ];
-    var share = '';
-    for (var ci = 0; ci < cands.length && !share; ci++) {
-      if (/^https?:\/\//i.test(cands[ci])) share = cands[ci];
-    }
-    if (!share) {
-      for (var cj = 0; cj < cands.length && !share; cj++) {
-        var um = String(cands[cj]).match(/https?:\/\/[^\s"'<>]+/i);
-        if (um) share = um[0];
-      }
-    }
-    if (!share) share = cands[0] || cands[1] || cands[2] || '';
-    if (!share) return;
-    share = juheAttachSharePwd(share, row.text());
-    if (!share || seen[share]) return;
-    if (String(share).toLowerCase().indexOf('pan.baidu.com') < 0) return;
-    seen[share] = true;
-    lines.push({ title: lineTitle || title || site.label + '[盘]', shareUrl: share });
+    var row = $(el), lineTitle = juheText(row.find('.module-row-title h4').first().text());
+    var text = juheText(row.find('.module-row-title p').first().text()
+      || row.find('[data-clipboard-text]').first().attr('data-clipboard-text') || '');
+    var downHref = juheText(row.find('a.btn-down').first().attr('href') || '');
+    var scope = juheText(row.text());
+    if (text) add(text, lineTitle, scope);
+    if (downHref) add(downHref, lineTitle, scope);
   });
   if (!lines.length) {
     $('.down-wrap a.down-card-url[href]').each(function (_, el) {
       var node = $(el);
-      var share = juheText(node.attr('href') || '');
-      if (!share) return;
-      share = juheAttachSharePwd(share, node.closest('.down-wrap').text() || node.parent().text());
-      if (!share || seen[share]) return;
-      if (String(share).toLowerCase().indexOf('pan.baidu.com') < 0) return;
-      if (!/\/s\/[\w-]+/.test(share)) return;
-      seen[share] = true;
-      lines.push({ title: title || site.label + '[盘]', shareUrl: share });
+      add(juheText(node.attr('href') || ''), juheText(rawTitle), juheText(node.closest('.down-wrap').text() || node.parent().text()));
     });
   }
   if (!lines.length) {
-    var linkRe = /(https?:\/\/pan\.baidu\.com\/[^\s"'<>]+)/ig;
-    var m;
-    while ((m = linkRe.exec(html))) {
-      var shareUrl = m[1].replace(/&amp;/g, '&');
-      var ctxStart = Math.max(0, m.index - 300);
-      var ctxEnd = Math.min(html.length, m.index + m[0].length + 300);
-      shareUrl = juheAttachSharePwd(shareUrl, String(html.slice(ctxStart, ctxEnd)).replace(/<[^>]+>/g, ' '));
-      if (seen[shareUrl]) continue;
-      seen[shareUrl] = true;
-      lines.push({ title: title || site.label + '[盘]', shareUrl: shareUrl });
+    var found = [], linkRe = /(?:https?:\/\/)?pan\.baidu\.com\/[^\s"'<>]+/ig, match;
+    while ((match = linkRe.exec(html))) found.push({ index: match.index, url: match[0] });
+    for (var i = 0; i < found.length; i++) {
+      var start = Math.max(0, found[i].index - 300);
+      var end = Math.min(html.length, found[i].index + found[i].url.length + 300);
+      add(found[i].url, juheCleanTitle(rawTitle), String(html.slice(start, end)).replace(/<[^>]+>/g, ' '));
     }
   }
-  return { title: title || site.label + '[盘]', posterPath: poster, backdropPath: poster, description: description, lines: lines };
+  return {
+    title: juheCleanTitle(rawTitle) || site.label + '[盘]', rawTitle: rawTitle,
+    posterPath: poster, backdropPath: poster, description: description,
+    year: juheCmsYear(ym ? Number(ym[1]) : 0, rawTitle), category: category, lines: lines
+  };
+}
+async function juheParseDetail(html, site, params) {
+  var $ = await juheLoadHtml(html, '详情页');
+  return juheParseDetailInto($, html, site, params);
 }
 
-// 把一行详情行转成引擎行：每站标题一行，分享在 read 时才解引用。
+function juheStableId(siteKey, url) {
+  return 'juhe-baidu-' + DriveEngine.__rexHelper.hash(String(siteKey || '') + '|' + String(url || ''));
+}
+function juheRowId(site, url) {
+  return juheStableId(site.key, url);
+}
 function juheRowFor(site, item, params) {
   return {
-    id: site.key + ':' + item.link,
+    id: juheRowId(site, item.link),
     cpSiteCardId: item.link,
     type: 'url',
-    mediaType: 'movie',
+    mediaType: item.mediaType || 'movie',
     title: item.title,
+    year: item.year,
     provider: 'baidu',
     posterPath: item.posterPath || '',
     backdropPath: item.backdropPath || '',
     description: item.description || '',
     link: DriveEngine.encode({
-      action: 'detail', title: item.title, site: juheSiteHost(site, params),
-      shares: [], siteRef: site.key + '|' + item.link
+      action: 'detail', title: item.title, rawTitle: item.rawTitle || item.title,
+      mediaType: item.mediaType || 'movie', year: item.year, season: item.season,
+      cmsYear: item.year, category: item.category,
+      posterPath: item.posterPath || '', backdropPath: item.backdropPath || '', description: item.description || '',
+      site: juheSiteHost(site, params), shares: [], siteRef: site.key + '|' + item.link
     })
   };
+}
+
+function juheSiteSearchTimed(site, keyword, params, ms) {
+  var settled = false;
+  var timer = null;
+  var work = juheSiteSearch(site, keyword, params).then(function (items) {
+    settled = true;
+    if (timer) clearTimeout(timer);
+    return items;
+  }, function (e) {
+    settled = true;
+    if (timer) clearTimeout(timer);
+    throw e;
+  });
+  if (typeof setTimeout !== 'function') return work;
+  return Promise.race([work, new Promise(function (resolve) {
+    timer = setTimeout(function () { if (!settled) resolve([]); }, ms || 8000);
+  })]);
 }
 
 async function juheSearchRows(keyword, params, query) {
   keyword = juheText(keyword);
   if (!keyword) return [];
-  var groups = await Promise.all(JUHE_SITES.map(function (site) {
-    return juheSiteSearch(site, keyword, params).catch(function () { return []; });
+  if (keyword.length > 100) return [];
+  var groups = await Promise.all(JUHE_SITES.map(async function (site) {
+    try {
+      return await juheSiteSearchTimed(site, keyword, params, 8000);
+    } catch (e) {
+      if (juheIsTerminalError(e)) throw e;
+      return [];
+    }
   }));
-  var rows = [];
+  var rows = [], titleOnlyRows = [], emitted = {};
+  var looseQuery = null;
+  if (query) {
+    looseQuery = Object.assign({}, query);
+    delete looseQuery.year;
+    delete looseQuery.releaseYear;
+    delete looseQuery.airDate;
+    var stripBracketYear = function (t) { return String(t || '').replace(/\s*[（(]\s*(?:19|20)\d{2}\s*[）)]\s*/g, '').trim(); };
+    if (looseQuery.title != null) looseQuery.title = stripBracketYear(looseQuery.title);
+    if (looseQuery.seriesName != null) looseQuery.seriesName = stripBracketYear(looseQuery.seriesName);
+  }
   for (var si = 0; si < groups.length; si++) {
-    var site = JUHE_SITES[si];
-    var items = groups[si] || [];
+    var site = JUHE_SITES[si], items = groups[si] || [];
     for (var ii = 0; ii < items.length; ii++) {
       var item = items[ii] || {};
-      if (!item.title || !item.link) continue;
+      if (!item.title || !item.link || emitted[item.link]) continue;
       if (query) {
-        if (!DriveEngine.matchesSiteTitle(item.title, query)) continue;
-        if (typeof item.year === 'number') {
-          if (!await DriveEngine.prepareDirectoryIdentity(item.year, query)) continue;
+        var probe = Object.assign({}, item, { title: item.rawTitle || item.title });
+        if (!DriveEngine.matchesSiteTitle(probe.title, query)) {
+          if (looseQuery && DriveEngine.matchesSiteTitle(probe.title, looseQuery)) {
+            titleOnlyRows.push(juheRowFor(site, item, params));
+            emitted[item.link] = true;
+          }
+          continue;
         }
-        // 年份未知时跳过年份校验（见文件头注释），只凭标题匹配。
+        if (typeof item.year === 'number') {
+          if (!await DriveEngine.prepareDirectoryIdentity(item.year, query)) {
+            titleOnlyRows.push(juheRowFor(site, item, params));
+            emitted[item.link] = true;
+            continue;
+          }
+        }
       }
+      emitted[item.link] = true;
       rows.push(juheRowFor(site, item, params));
     }
   }
+  if (query && !rows.length && titleOnlyRows.length) return titleOnlyRows;
   return rows;
 }
 
-// discovery.read：按行里的 siteRef 回站抓详情，提出百度分享交给引擎。
+function juheValidateSiteRef(siteRef, params) {
+  var raw = String(siteRef || '');
+  var bar = raw.indexOf('|');
+  if (bar < 0) return null;
+  var site = juheSiteByKey(raw.slice(0, bar));
+  var detailUrl = raw.slice(bar + 1);
+  if (!site || !detailUrl) return null;
+  var match = /^(https?):\/\/([a-z0-9.-]+)(?::(\d{1,5}))?(\/[^?#]*)(?:\?[^#]*)?$/i.exec(String(detailUrl));
+  if (!match) return null;
+  if (match[1].toLowerCase() !== 'https' && !(site.key === 'huban' && match[1].toLowerCase() === 'http')) return null;
+  var siteHost = juheSiteHost(site, params || {}).replace(/^https?:\/\//i, '').replace(/\/.*$/, '');
+  var siteHostParts = siteHost.split(':');
+  var host = siteHostParts[0];
+  var sitePort = siteHostParts.length > 1 ? Number(siteHostParts[1]) : (juheSiteHost(site, params || {}).indexOf('https://') === 0 ? 443 : 80);
+  if (String(match[2]).toLowerCase() !== host.toLowerCase()) return null;
+  if (!/^\/index\.php\/vod\/detail\/id\/\d{1,12}\.html$/i.test(match[4])) return null;
+  if (match[3] && Number(match[3]) !== sitePort) return null;
+  return { site: site, url: match[1] + '://' + match[2] + (match[3] && Number(match[3]) !== (match[1].toLowerCase() === 'https' ? 443 : 80) ? ':' + match[3] : '') + match[4] };
+}
+
 async function juheReadRow(link) {
   var info = DriveEngine.decode(link);
   if (!info || !info.siteRef) return null;
-  var bar = String(info.siteRef).indexOf('|');
-  if (bar < 0) return null;
-  var site = juheSiteByKey(String(info.siteRef).slice(0, bar));
-  var detailUrl = String(info.siteRef).slice(bar + 1);
-  if (!site || !detailUrl) return null;
+  var target = juheValidateSiteRef(info.siteRef, {});
+  if (!target) return null;
   var html = '';
   try {
-    html = await juheSiteFetch(detailUrl, {}, juheOrigin(detailUrl) + '/');
+    var origin = target.url.replace(/^(https?:\/\/[^/]+).*$/i, '$1');
+    html = await juheSiteFetch(target.url, {}, origin + '/');
   } catch (e) {
     return null;
   }
-  var detail = juheParseDetail(html, site, {});
+  var detail = await juheParseDetail(html, target.site, {});
   var shares = [];
   for (var i = 0; i < (detail.lines || []).length; i++) {
     var rawShare = detail.lines[i].shareUrl || '';
     if (!rawShare) continue;
-    // 详情行里的分享常带尾巴文本（“ 提取码：abcd”），引擎 parseShare 只认干净 URL：
-    // 先截出 URL 本体，提取码单独走 password 字段。
     var urlMatch = String(rawShare).match(/https?:\/\/[^\s"'<>]+/i);
     var cleanUrl = urlMatch ? urlMatch[0] : '';
     if (!cleanUrl) continue;
     var pwd = '';
     var qm = cleanUrl.match(/[?&#]pwd=([A-Za-z0-9]{4})/i);
     if (qm) pwd = qm[1];
-    else {
-      var tm = String(rawShare).match(/(?:提取码|访问码|取件码|密码|pwd)\s*[:：=]?\s*([A-Za-z0-9]{4})(?![A-Za-z0-9])/i);
-      if (tm) pwd = tm[1];
-    }
     var share = null;
-    try {
-      share = DriveEngine.parseShare({ url: cleanUrl, password: pwd ? pwd : undefined });
-    } catch (e) { share = null; }
+    try { share = DriveEngine.parseShare({ url: cleanUrl, password: pwd ? pwd : undefined }); } catch (_) { share = null; }
     if (!share || share.provider !== 'baidu') continue;
     shares.push(share);
   }
   if (!shares.length) return null;
-  return { action: 'detail', title: detail.title || info.title, site: info.site, shares: shares };
+  return {
+    action: 'detail', title: detail.title || info.title, rawTitle: detail.rawTitle,
+    mediaType: info.mediaType || juheMediaType(detail.category, detail.rawTitle || detail.title),
+    year: typeof info.year === 'number' ? info.year : detail.year,
+    posterPath: info.posterPath || detail.posterPath, backdropPath: info.backdropPath || detail.backdropPath,
+    description: detail.description || info.description || '',
+    site: juheOriginText(target.url), shares: shares,
+    id: juheStableId(target.site.key, target.url), siteRef: info.siteRef
+  };
 }
 
 function juheDiscovery(params) {
   var hosts = JUHE_SITES.map(function (site) { return juheSiteHost(site, params); });
   return {
-    identity: 'juhe.baidu:v1:' + JSON.stringify(hosts),
+    identity: 'juhe.baidu:v1.2:' + JSON.stringify(hosts),
     search: async function (query) {
       return juheSearchRows(query.keyword || query.title || query.seriesName || '', params, query);
     },
@@ -5807,34 +6055,29 @@ function juheDiscovery(params) {
   };
 }
 
-// 清晰度标签（旧版 sourceQualityConfig 的映射）：只定标题前缀，不做过滤。
 function juheQualityLabel(params) {
-  var value = juheText((params && (params.resourceCategory || params.quality_tag)) || '8k').toLowerCase();
+  var value = juheText((params && (params.resourceCategory || params.quality_tag)) || 'none').toLowerCase();
   if (value === '4k') return '4K';
   if (value === '1080p' || value === '1080' || value === 'fhd') return '1080P';
   if (value === 'other' || value === 'others' || value === '其他' || value === '其它') return '其他';
-  if (!value || value === '8k') return '8K';
-  return value.toUpperCase();
+  if (value === '8k') return '8K(手动)';
+  return '';
 }
-
-// 给引擎返回的资源标题加清晰度前缀（旧版 cardName 的做法）；
-// 不动 url/headers 等播放字段，已带前缀的不重复加。
 function juheLabelResources(resources, params) {
   if (!Array.isArray(resources)) return resources;
   var label = juheQualityLabel(params);
   if (!label) return resources;
-  for (var i = 0; i < resources.length; i++) {
-    var item = resources[i];
-    if (!item || typeof item !== 'object') continue;
-    if (item.title && String(item.title).indexOf(label) !== 0) item.title = label + ' ' + item.title;
-    if (item.name && String(item.name).indexOf(label) !== 0) item.name = label + ' ' + item.name;
-  }
-  return resources;
+  return resources.map(function (item) {
+    if (!item || typeof item !== 'object') return item;
+    var copy = Object.assign({}, item);
+    if (copy.title && String(copy.title).indexOf(label) !== 0) copy.title = label + ' ' + copy.title;
+    if (copy.name && String(copy.name).indexOf(label) !== 0) copy.name = label + ' ' + copy.name;
+    return copy;
+  });
 }
-
 function juheLabelDetail(detail, params) {
   if (detail && Array.isArray(detail.episodeItems)) {
-    juheLabelResources(detail.episodeItems, params);
+    return Object.assign({}, detail, { episodeItems: juheLabelResources(detail.episodeItems, params) });
   }
   return detail;
 }
@@ -5854,24 +6097,166 @@ async function loadDetail(input) {
   DriveEngine.bind(params);
   var link = params.link || '';
   if (!DriveEngine.isLink(link)) throw new Error('不支持的资源链接');
-  var info = DriveEngine.decode(link);
-  if (info && info.action === 'play') return juheLabelDetail(await DriveEngine.loadDetail(link), params);
-  if (info && info.action === 'detail' && info.shares && info.shares.length) {
-    return juheLabelDetail(await DriveEngine.loadDetail(link), params);
+  var safeLink = rexNormalizeEngineLink(link);
+  var info = DriveEngine.decode(safeLink);
+  if (info && (info.action === 'play' || (info.shares && info.shares.length))) {
+    return juheLabelDetail(await DriveEngine.loadDetail(safeLink), params);
   }
   var detail = await juheReadRow(link);
   if (!detail || !detail.shares.length) {
-    return { id: link, type: 'url', title: (info && info.title) || '', link: link, episodeItems: [] };
+    var plain = Object.assign({}, info || {}, { id: (info && info.id) || juheStableId('site', (info && info.siteRef) || link) });
+    return { id: plain.id, type: 'url', title: plain.title || (info && info.title) || '', posterPath: plain.posterPath || '',
+      backdropPath: plain.backdropPath || '', description: plain.description || '', link: link, episodeItems: [] };
   }
-  return juheLabelDetail(await DriveEngine.loadDetail(DriveEngine.encode(detail)), params);
+  return juheLabelDetail(await DriveEngine.loadDetail(rexNormalizeEngineLink(DriveEngine.encode(detail))), params);
 }
 
 async function loadResource(params) {
   params = params || {};
   params.credentialSource = 'local';
   DriveEngine.bind(params);
-  if (DriveEngine.isLink(params.link)) return juheLabelResources(await DriveEngine.loadResource(params), params);
+  if (DriveEngine.isLink(params.link)) {
+    var safeLink = rexNormalizeEngineLink(params.link);
+    var info = DriveEngine.decode(safeLink);
+    if (info && info.action !== 'play' && (!info.shares || !info.shares.length) && info.siteRef) {
+      var resolved = await juheReadRow(params.link);
+      if (!resolved || !resolved.shares.length) return [];
+      safeLink = rexNormalizeEngineLink(DriveEngine.encode(resolved));
+    }
+    var copy = Object.assign({}, params, { link: safeLink });
+    return juheLabelResources(await DriveEngine.loadResource(copy), params);
+  }
   return juheLabelResources(await DriveEngine.loadResource(params, juheDiscovery(params)), params);
 }
 
 async function clearRexCatalogCache() { return DriveEngine.clear(); }
+
+var rexClearBase = clearRexCatalogCache;
+function juheStorageGet(key) {
+  try {
+    if (!Widget || !Widget.storage || typeof Widget.storage.get !== 'function') return '';
+    return Widget.storage.get(key);
+  } catch (_) { return ''; }
+}
+function juheStorageSet(key, value) {
+  try {
+    if (!Widget || !Widget.storage || typeof Widget.storage.set !== 'function') return null;
+    var result = Widget.storage.set(key, String(value));
+    return result && typeof result.then === 'function' ? result : null;
+  } catch (_) { return null; }
+}
+async function juheReadValue(key) {
+  try {
+    var value = await juheStorageGet(key);
+    return value == null ? '' : String(value);
+  } catch (_) { return ''; }
+}
+async function juheWriteMany(entries) {
+  var failures = 0;
+  for (var i = 0; i < entries.length; i++) {
+    try {
+      var p = juheStorageSet(entries[i][0], entries[i][1]);
+      if (p) await p;
+    } catch (_) { failures++; }
+  }
+  return failures === 0;
+}
+async function juheAccountSnapshot(params) {
+  var incoming = params && typeof params.baiduCookie === 'string' ? params.baiduCookie : null;
+  var stored = await juheReadValue('juhe.baidu.baidu.cookie');
+  var migrated = '';
+  if (!stored) {
+    var enhanced = await juheReadValue('enhanced:juhe.baidu.rex:local:baiduCookie');
+    if (enhanced) {
+      try { var parsed = JSON.parse(enhanced); if (typeof parsed === 'string' && /\bBDUSS=[^;\s]/.test(parsed)) migrated = parsed; } catch (_) {}
+      if (!migrated && /\bBDUSS=[^;\s]/.test(enhanced)) migrated = enhanced;
+    }
+  }
+  var effective = incoming != null && incoming.trim() ? incoming.trim() : (stored || migrated || '');
+  if (/[\x00-\x1f\x7f]/.test(effective)) throw new Error('百度 Cookie 格式无效');
+  return effective;
+}
+async function juheStoreSnapshot(params, cookie) {
+  var entries = [
+    ['juhe.baidu.baidu.cookie', cookie],
+    ['enhanced:juhe.baidu.rex:setting:credentialSource', JSON.stringify('local')],
+    ['enhanced:juhe.baidu.rex:local-initialized', JSON.stringify('true')]
+  ];
+  if (params && typeof params.baiduCookie === 'string' && params.baiduCookie.trim()) {
+    entries.push(['enhanced:juhe.baidu.rex:local:baiduCookie', JSON.stringify(cookie)]);
+  }
+  return juheWriteMany(entries);
+}
+
+var rexSession = DriveEngine.__rexSession;
+
+async function juheEntry(params) {
+  var safe = {}, src = params || {};
+  for (var key in src) if (Object.prototype.hasOwnProperty.call(src, key)) safe[key] = src[key];
+  safe.credentialSource = 'local';
+  var hidden = ['quarkCookie', 'cookieQuark', 'quarkck', 'cookie', 'cookie115', 'xunleiAuth',
+    'xunleiRefreshToken', 'xunleiDeviceId', 'guangyaAuth', 'guangyaRefreshToken', 'guangyaDeviceId', 'site', 'host'];
+  for (var i = 0; i < hidden.length; i++) delete safe[hidden[i]];
+  if (safe.link && !(typeof safe.link === 'string' && safe.link.indexOf('juhebai:') === 0)) throw new Error('不支持的资源链接');
+  var cookie = await juheAccountSnapshot(safe);
+  rexSession.values['juhe.baidu.baidu.cookie'] = cookie;
+  rexSession.values['enhanced:juhe.baidu.rex:local:baiduCookie'] = JSON.stringify(cookie);
+  rexSession.values['enhanced:juhe.baidu.rex:setting:credentialSource'] = JSON.stringify('local');
+  rexSession.values['enhanced:juhe.baidu.rex:local-initialized'] = JSON.stringify('true');
+  rexSession.values['juhe.baidu.multiSource'] = 'enabled';
+  await juheStoreSnapshot(safe, cookie);
+  return safe;
+}
+
+search = async function (params) {
+  var safe = await juheEntry(params);
+  return juheSearchRows(safe.keyword || '', safe, null);
+};
+
+loadDetail = async function (input) {
+  var safe = await juheEntry(typeof input === 'string' ? { link: input } : input);
+  var link = safe.link || '';
+  if (!DriveEngine.isLink(link)) throw new Error('不支持的资源链接');
+  var safeLink = DriveEngine.__rexHelper.normalizeLink(link);
+  var info = DriveEngine.decode(safeLink);
+  if (info && (info.action === 'play' || (info.shares && info.shares.length))) {
+    return juheLabelDetail(await DriveEngine.loadDetail(safeLink), safe);
+  }
+  var detail = await juheReadRow(link);
+  if (!detail || !detail.shares.length) {
+    var plain = info || {};
+    return { id: plain.id || juheStableId('site', plain.siteRef || link), type: 'url', title: plain.title || '',
+      mediaType: plain.mediaType === 'tv' ? 'tv' : 'movie', posterPath: plain.posterPath || '',
+      backdropPath: plain.backdropPath || '', description: plain.description || '', link: link, episodeItems: [] };
+  }
+  var next = DriveEngine.__rexHelper.normalizeLink(DriveEngine.encode(Object.assign({}, detail, { action: 'detail' })));
+  var resolved = await DriveEngine.loadDetail(next);
+  return juheLabelDetail(Object.assign({}, resolved, {
+    id: detail.id,
+    posterPath: resolved.posterPath || detail.posterPath || '',
+    backdropPath: resolved.backdropPath || detail.backdropPath || '',
+    description: resolved.description || detail.description || '',
+    mediaType: detail.mediaType || resolved.mediaType
+  }), safe);
+};
+
+loadResource = async function (params) {
+  var safe = await juheEntry(params);
+  if (DriveEngine.isLink(safe.link)) {
+    var safeLink = DriveEngine.__rexHelper.normalizeLink(safe.link);
+    var info = DriveEngine.decode(safeLink);
+    if (info && info.action !== 'play' && (!info.shares || !info.shares.length) && info.siteRef) {
+      var resolved = await juheReadRow(safe.link);
+      if (!resolved || !resolved.shares.length) return [];
+      safeLink = DriveEngine.__rexHelper.normalizeLink(DriveEngine.encode(Object.assign({}, resolved, { action: 'detail' })));
+    }
+    return juheLabelResources(await DriveEngine.loadResource(Object.assign({}, safe, { link: safeLink })), safe);
+  }
+  return juheLabelResources(await DriveEngine.loadResource(safe, juheDiscovery(safe)), safe);
+};
+
+clearRexCatalogCache = async function () {
+  var result = await rexClearBase();
+  if (rexSession && rexSession.failed && rexSession.failed()) throw new Error('目录缓存写入持久存储失败，请检查存储权限后重试');
+  return result;
+};

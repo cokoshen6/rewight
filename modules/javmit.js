@@ -7,10 +7,10 @@ WidgetMetadata = {
     title: "JAVMIT",
     description: "JAVMIT - 無修正 JAV (在线播放)",
     author: "Coko",
-    version: "1.6.7",
+    version: "1.6.8",
     requiredVersion: "0.0.1",
     site: "https://javmit.com",
-    iconurl: "https://javmit.com/wp-content/uploads/2026/04/cropped-red-play-icon-circle-with-white-triangle-middle_609989-1987-192x192.jpg",
+    iconurl: "https://tu.100923.xyz/file/1794410267153_javmit-icon.png",
     detailCacheDuration: 300,
     globalParams: [],
     modules: [
@@ -265,7 +265,6 @@ async function loadDetail(link) {
         var rawTitle = jm_stripHtml(p.title && p.title.rendered);
         var html = (p.content && p.content.rendered) || "";
         var code = jm_code(rawTitle, html);
-        // 中文标题：从括号里取，去番号前缀和垃圾后缀（对标 getav 的简洁格式）
         var cnTitle = jm_jpTitle(rawTitle) || "";
         if (!cnTitle && rawTitle && rawTitle !== code) cnTitle = rawTitle;
         cnTitle = String(cnTitle).trim();

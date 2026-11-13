@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "huang",
   title: "黄视频",
-  version: "1.0.2",
+  version: "1.0.3",
   requiredVersion: "0.0.1",
   description: "黄视频：国产AV、糖心Vlog、网红福利姬、探花、PMV、ASMR、短剧",
   author: "Coko",
@@ -501,12 +501,29 @@ async function loadDetail(link) {
   }
 }
 
+function huResourceVideoId(params) {
+  const candidates = [];
+  if (params && typeof params === "object") {
+    
+    [params.id, params.link, params.url, params.videoUrl].forEach((value) => {
+      if (value != null && String(value).trim()) candidates.push(String(value).trim());
+    });
+  } else if (params != null) {
+    candidates.push(String(params).trim());
+  }
+  for (const raw of candidates) {
+    const parsed = huParseOwnedLink(raw);
+    if (parsed && parsed.kind === "video") return parsed.id;
+    const m = raw.match(/^https:\/\/huang\.video\/videos\/(\d+)\/?(?:[?#].*)?$/);
+    if (m) return m[1];
+  }
+  return "";
+}
+
 async function loadResource(params = {}) {
   try {
-    const raw = params.link != null ? params.link : params.id;
-    const parsed = huParseOwnedLink(raw);
-    if (!parsed || parsed.kind !== "video") return [];
-    const id = parsed.id;
+    const id = huResourceVideoId(params);
+    if (!id) return [];
     const $ = await huLoadHtml("/videos/" + id);
     const url = huContentUrl($, huJsonLd($));
     if (!url) return [];

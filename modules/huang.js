@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "huang",
   title: "黄视频",
-  version: "1.0.3",
+  version: "1.0.4",
   requiredVersion: "0.0.1",
   description: "黄视频：国产AV、糖心Vlog、网红福利姬、探花、PMV、ASMR、短剧",
   author: "Coko",
@@ -504,14 +504,20 @@ async function loadDetail(link) {
 function huResourceVideoId(params) {
   const candidates = [];
   if (params && typeof params === "object") {
-    
     [params.id, params.link, params.url, params.videoUrl].forEach((value) => {
       if (value != null && String(value).trim()) candidates.push(String(value).trim());
     });
+    if (params.item && typeof params.item === "object") {
+      [params.item.id, params.item.link, params.item.url, params.item.videoUrl].forEach((value) => {
+        if (value != null && String(value).trim()) candidates.push(String(value).trim());
+      });
+    }
   } else if (params != null) {
     candidates.push(String(params).trim());
   }
-  for (const raw of candidates) {
+  for (const raw0 of candidates) {
+    const raw = raw0.split("#")[0].trim();
+    if (!raw) continue;
     const parsed = huParseOwnedLink(raw);
     if (parsed && parsed.kind === "video") return parsed.id;
     const m = raw.match(/^https:\/\/huang\.video\/videos\/(\d+)\/?(?:[?#].*)?$/);
@@ -520,9 +526,79 @@ function huResourceVideoId(params) {
   return "";
 }
 
+async function huSeriesVideoIds(sid) {
+  const $ = await huLoadHtml("/series/" + sid);
+  const ids = [];
+  const seen = {};
+  $("ol li a[href^=\"/videos/\"]").each((i, a) => {
+    const href = $(a).attr("href") || "";
+    const vm = href.match(/^\/videos\/(\d+)$/);
+    if (!vm || seen[vm[1]]) return;
+    seen[vm[1]] = true;
+    ids.push(vm[1]);
+  });
+  return ids;
+}
+
 async function loadResource(params = {}) {
   try {
-    const id = huResourceVideoId(params);
+    let id = huResourceVideoId(params);
+    if (!id) {
+      const fields = [params.id, params.link, params.url, params.videoUrl];
+      let sid = "";
+      for (const raw of fields) {
+        const parsed = huParseOwnedLink(raw);
+        if (parsed && parsed.kind === "series") { sid = parsed.id; break; }
+      }
+      if (sid) {
+        const titleM = String(params.title || "").match(/第\s*(\d+)\s*集/);
+        const hasIndex = typeof params.index === "number" && params.index >= 0;
+        let hasVideoHint = false;
+        for (const raw of fields) {
+          const s = String(raw === undefined ? "" : raw).trim().split("#")[0];
+          if (!s) continue;
+          const parsed = huParseOwnedLink(s);
+          if (parsed && parsed.kind === "video") { hasVideoHint = true; break; }
+          if (/^\d+$/.test(s) && s !== sid) { hasVideoHint = true; break; }
+        }
+        const hasEpHint = (typeof params.episode === "number" && params.episode > 0) || (typeof params.episode === "string" && /^\d+$/.test(params.episode));
+        if (titleM || hasIndex || hasVideoHint || hasEpHint) {
+          const ids = await huSeriesVideoIds(sid);
+          if (ids.length > 0) {
+            let picked = "";
+            if (titleM) {
+              const n = Number(titleM[1]);
+              if (n >= 1 && n <= ids.length) picked = ids[n - 1];
+            }
+            if (!picked && hasIndex && params.index < ids.length) {
+              picked = ids[params.index];
+            }
+            if (!picked) {
+              for (const raw of fields) {
+                const s = String(raw === undefined ? "" : raw).trim().split("#")[0];
+                if (!s) continue;
+                const parsed = huParseOwnedLink(s);
+                if (parsed && parsed.kind === "video" && ids.indexOf(parsed.id) >= 0) { picked = parsed.id; break; }
+                if (/^\d+$/.test(s) && ids.indexOf(s) >= 0) { picked = s; break; }
+              }
+            }
+            if (!picked) {
+              let target = 0;
+              if (typeof params.episode === "number" && params.episode > 0) target = params.episode;
+              else if (typeof params.episode === "string" && /^\d+$/.test(params.episode)) target = Number(params.episode);
+              if (!target) {
+                for (const raw of fields) {
+                  const s = String(raw === undefined ? "" : raw).trim();
+                  if (/^\d+$/.test(s) && s !== sid) { target = Number(s); break; }
+                }
+              }
+              if (target >= 1 && target <= ids.length) picked = ids[target - 1];
+            }
+            if (picked) id = picked;
+          }
+        }
+      }
+    }
     if (!id) return [];
     const $ = await huLoadHtml("/videos/" + id);
     const url = huContentUrl($, huJsonLd($));

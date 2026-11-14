@@ -1,7 +1,7 @@
 WidgetMetadata = {
     "id": "getav",
     "title": "GetAV",
-    "version": "1.4.0",
+    "version": "1.4.4",
     "requiredVersion": "0.0.1",
     "description": "Getav视频",
     "author": "Coko",
@@ -1782,9 +1782,9 @@ function gaMovieRows(rows) {
 
 
 const GA_DMM_PREFIX_MAP = {
-    FSDSS: "1", FCDSS: "1", FNS: "1", FTHTD: "1", FALENO: "1", FGAN: "1",
+    FSDSS: "1", FCDSS: "1", FNS: "1", FTHTD: "1", FALENO: "1", FGAN: "1", DLDSS: "1",
     FSNF: "1", FLAV: "1", NHDTC: "1", KUSE: "1", SDNM: "1", STARS: "1",
-    STAR: "1", START: "1", SODS: "1", MOGI: "1", FTAV: "1", WSA: "2",
+    STAR: "1", START: "1", SODS: "1", SDDE: "1", MOGI: "1", FTAV: "1", WSA: "2",
     MBDD: "301", REBD: "h_346", REBDB: "h_346", GSHRB: "h_346",
     NAAC: "h_706", MAAN: "h_1711"
 };
@@ -1803,7 +1803,35 @@ function gaDmmPoster(code) {
     return "https://awsimgsrc.dmm.co.jp/pics_dig/digital/video/" + cid + "/" + cid + "ps.jpg";
 }
 
-const GA_POSTER_MIN_RANGE = "bytes=100000-100000";
+const GA_DMM_STILL_COUNT = 10;
+const GA_DMM_STILL_RANGE = "bytes=0-0";
+async function gaProbeStill(url) {
+    const target = gaHttpUrl(url);
+    if (!target) return false;
+    try {
+        const res = await Widget.http.get(target, {
+            headers: { "User-Agent": GA_UA, "Range": GA_DMM_STILL_RANGE }, timeout: 9000, allow_redirects: false
+        });
+        const status = gaStatus(res), type = gaContentType(res);
+        const body = res && res.data;
+        if (typeof body === "string" && /^\s*<(?:!doctype|html)/i.test(body)) return false;
+        return (status === 200 || status === 206) && /^image\//.test(type);
+    } catch (error) { return false; }
+}
+async function gaDmmStills(code) {
+    const cid = gaDmmContentId(code);
+    if (!cid) return [];
+    const urls = [], flags = [];
+    for (let i = 1; i <= GA_DMM_STILL_COUNT; i++) {
+        urls.push("https://pics.dmm.co.jp/digital/video/" + cid + "/" + cid + "jp-" + String(i).padStart(3, "0") + ".jpg");
+        flags.push(false);
+    }
+    const jobs = urls.map((url, index) => async () => { flags[index] = await gaProbeStill(url); });
+    await gaPool(jobs, 4, Date.now() + 9000);
+    return urls.filter((url, index) => flags[index]);
+}
+
+const GA_POSTER_MIN_RANGE = "bytes=0-0";
 const GA_COVER_HIT_TTL = 7 * 86400000;
 const GA_COVER_STATE = { memory: Object.create(null), jobs: Object.create(null), cleaned: false };
 
@@ -1923,7 +1951,16 @@ async function gaFillPosters(items, deadline) {
         if (url) item.posterPath = url;
     });
     await gaPool(jobs, 4, end);
+    items.forEach(item => {
+        if (item && !item.posterPath && gaMovieId(item.id)) {
+            const code = gaMovieId(item.id);
+            if (!/^FC2/i.test(code) && !/^\d{6,}-\d{3,}$/.test(code) && item.backdropPath) item.posterPath = item.backdropPath;
+        }
+    });
     await gaFillJavdbPosters(items, end);
+    items.forEach(item => {
+        if (item && !item.posterPath && item.backdropPath) item.posterPath = item.backdropPath;
+    });
     return items;
 }
 
@@ -1991,6 +2028,7 @@ async function gaFillJavdbPosters(items, deadline) {
     const targets = items.filter(item => item && !item.posterPath && gaMovieId(item.id));
     const jobs = targets.map(item => async () => {
         const code = gaMovieId(item.id);
+        if (!/^FC2/i.test(code) && !/^\d{6,}-\d{3,}$/.test(code)) return;
         const url = await gaCoverOnce("javdb", code, () => gaJavdbCover(code));
         if (url) item.posterPath = url;
     });
@@ -2346,22 +2384,7 @@ function gaDetailItem(data, code, zhTitle, options) {
     if (stills.length) item.backdropPaths = Array.from(new Set(stills));
     const preview = gaDisplayImg(data.previewVideoUrl, options);
     if (preview) { item.previewUrl = preview; item.trailers = [{ coverUrl: poster, url: preview }]; }
-    if (Array.isArray(data.relatedMovies) && data.relatedMovies.length) {
-        try {
-            const related = gaMovieRows(data.relatedMovies).filter(m => gaMovieId(m.id) !== code).map(m => gaItem(m, options)).filter(Boolean);
-            if (related.length) item.relatedItems = related;
-        } catch (error) {}
-    }
     return item;
-}
-
-async function gaRelatedFallback(data, selfId, options) {
-    const genres = (Array.isArray(data && data.genres) ? data.genres : []).filter(g => g && gaCatalogId("genre", g.id));
-    if (!genres.length) return [];
-    try {
-        const same = await gaListByFolder("genre", gaCatalogId("genre", genres[0].id), 1, "latest", options);
-        return same.filter(m => m.id !== gaMovieId(selfId)).slice(0, 12);
-    } catch (error) { return []; }
 }
 
 async function loadDetail(link) {
@@ -2375,9 +2398,9 @@ async function loadDetail(link) {
     await gaInvalidateLegacyCoverCaches();
     if (!owned.private) await gaFillPosters([item]);
     if (!item.posterPath) item.posterPath = item.backdropPath;
-    if (!item.relatedItems || !item.relatedItems.length) {
-        const related = await gaRelatedFallback(data, item.id, options);
-        if (related.length) item.relatedItems = related;
+    if (!owned.private && (!item.backdropPaths || !item.backdropPaths.length)) {
+        const stills = await gaDmmStills(owned.code);
+        if (stills.length) item.backdropPaths = stills;
     }
     return item;
 }
@@ -2478,22 +2501,26 @@ async function gaProbeLine(line) {
 const _lineCache = Object.create(null);
 
 async function gaProbedLines(data, code) {
-    const lines = gaPlayLines(data), flags = lines.map(() => true), deadline = Date.now() + 15000;
-    const jobs = lines.map((line, index) => async () => {
+    const lines = gaPlayLines(data);
+    if (!lines.length) return [];
+    const deadline = Date.now() + 15000;
+    for (const line of lines) {
+        if (Date.now() > deadline) break;
         const hit = _lineCache[line.url], now = Date.now();
-        if (hit && now >= hit.at && now - hit.at < 30000) { flags[index] = hit.ok; return; }
-        const ok = await gaProbeLine(line);
-        flags[index] = ok;
-        _lineCache[line.url] = { at: Date.now(), ok: ok };
-    });
-    await gaPool(jobs, 4, deadline);
+        let ok;
+        if (hit && now >= hit.at && now - hit.at < 30000) ok = hit.ok;
+        else {
+            ok = await gaProbeLine(line);
+            _lineCache[line.url] = { at: Date.now(), ok: ok };
+        }
+        if (ok) return [line];
+    }
     const keys = Object.keys(_lineCache);
     if (keys.length > 200) {
         keys.sort((a, b) => _lineCache[a].at - _lineCache[b].at);
         keys.slice(0, keys.length - 200).forEach(k => { delete _lineCache[k]; });
     }
-    const alive = lines.filter((line, index) => flags[index]);
-    return alive.length ? alive : lines;
+    return lines;
 }
 
 function gaHlsUrl(raw) {
@@ -2511,7 +2538,7 @@ function gaLineDescription(code, name) {
 async function loadResource(params) {
     const code = gaCodeFromParams(params);
     if (!code) return [];
-    const data = await gaFetchDetail(code, { fresh: true });
+    const data = await gaFetchDetail(code);
     if (!data) return [];
     const lines = await gaProbedLines(data, code);
     

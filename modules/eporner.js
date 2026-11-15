@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "eporner",
   title: "Eporner",
-  version: "1.2.3",
+  version: "1.2.4",
   requiredVersion: "0.0.1",
   description: "Eporner HD porn videos",
   author: "Coko",
@@ -459,7 +459,7 @@ function epItemFromCard($, card) {
     type: "video",
     title: (a.text() || "").trim(),
     coverUrl: epCover(thumb),
-    backdropPath: epBackdrop(thumb),
+    backdropPath: epCover(thumb),
     description: desc,
     link: EP_SITE + href
   };
@@ -647,7 +647,7 @@ async function epSearchVideos(kw, page) {
       type: "video",
       title: v.title || "",
       coverUrl: epCover(thumb),
-      backdropPath: epBackdrop(thumb),
+      backdropPath: epCover(thumb),
       description: [v.length_min, v.rate ? v.rate + "分" : "", v.views ? v.views + "次观看" : ""].filter(function (x) { return !!x; }).join(" · "),
       link: v.url || (EP_SITE + "/video-" + v.id + "/")
     };
@@ -733,7 +733,7 @@ async function loadDetail(link) {
       id: "eporner:" + parsed.code,
       type: "video",
       title: title,
-      coverUrl: epBackdrop(poster),
+      coverUrl: epCover(poster),
       backdropPath: epBackdrop(poster),
       description: description,
       link: parsed.url,

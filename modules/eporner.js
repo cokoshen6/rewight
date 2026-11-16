@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "eporner",
   title: "Eporner",
-  version: "1.2.4",
+  version: "1.2.5",
   requiredVersion: "0.0.1",
   description: "Eporner HD porn videos",
   author: "Coko",
@@ -16,7 +16,7 @@ WidgetMetadata = {
     },
     {
       name: "showApiWithCookie",
-      title: "有 Cookie 时也显示 API 资源",
+      title: "CDN线路",
       type: "enumeration",
       value: "off",
       enumOptions: [
@@ -28,28 +28,27 @@ WidgetMetadata = {
   modules: [
     {
       id: "browse",
-      title: "视频",
-      functionName: "loadBrowseList",
       type: "video",
+      title: "最新",
+      functionName: "loadBrowseList",
       params: [
-        {
-          name: "sort",
-          title: "排序",
-          type: "enumeration",
-          value: "latest",
-          enumOptions: [
-            { title: "最新", value: "latest" },
-            { title: "热门", value: "popular" }
-          ]
-        },
+        { name: "page", title: "页码", type: "page" }
+      ]
+    },
+    {
+      id: "popular",
+      type: "video",
+      title: "热门",
+      functionName: "loadPopularList",
+      params: [
         { name: "page", title: "页码", type: "page" }
       ]
     },
     {
       id: "categories",
+      type: "video",
       title: "分类",
       functionName: "loadCategoryList",
-      type: "video",
       params: [
         {
           name: "category",
@@ -71,7 +70,6 @@ WidgetMetadata = {
             { title: "黑人", value: "ebony" },
             { title: "硬核", value: "hardcore" },
             { title: "动漫", value: "hentai" },
-            { title: "印度", value: "indian" },
             { title: "跨种族", value: "interracial" },
             { title: "日本", value: "japanese" },
             { title: "拉丁", value: "latina" },
@@ -113,9 +111,9 @@ WidgetMetadata = {
     },
     {
       id: "tags",
+      type: "video",
       title: "标签",
       functionName: "loadTagList",
-      type: "video",
       params: [
         {
           name: "tag",
@@ -179,46 +177,10 @@ WidgetMetadata = {
       ]
     },
     {
-      id: "hotsearch",
-      title: "热门搜索",
-      functionName: "loadHotSearchList",
-      type: "video",
-      params: [
-        {
-          name: "hotword",
-          title: "热门搜索词",
-          type: "enumeration",
-          value: "japanese uncensored",
-          enumOptions: [
-            { title: "Japanese Uncensored", value: "japanese uncensored" },
-            { title: "JOI", value: "joi" },
-            { title: "Goth", value: "goth" },
-            { title: "Russian", value: "russian" },
-            { title: "Czech", value: "czech" },
-            { title: "Stepmom", value: "stepmom" },
-            { title: "MILF", value: "milf" },
-            { title: "Teen", value: "teen" },
-            { title: "Anal", value: "anal" },
-            { title: "Big Tits", value: "big tits" },
-            { title: "Hardcore", value: "hardcore" },
-            { title: "Amateur", value: "amateur" },
-            { title: "Brunette", value: "brunette" },
-            { title: "Blonde", value: "blonde" }
-          ]
-        },
-        {
-          name: "customHotword",
-          title: "自定义搜索词",
-          type: "input"
-        },
-        { name: "page", title: "页码", type: "page" }
-      ]
-    },
-    {
       id: "models",
+      type: "video",
       title: "演员作品",
       functionName: "loadModelList",
-      type: "video",
       params: [
         {
           name: "model",
@@ -249,14 +211,28 @@ WidgetMetadata = {
           title: "自定义演员（填演员页路径，如 angela-white-umh5v，填了就用这个）",
           type: "input"
         },
+        {
+          name: "sort",
+          title: "排序",
+          type: "enumeration",
+          value: "recent",
+          enumOptions: [
+            { title: "最新", value: "recent" },
+            { title: "本周热门", value: "top-weekly" },
+            { title: "最多播放", value: "most-viewed" },
+            { title: "最高评分", value: "top-rated" },
+            { title: "最长时长", value: "longest" },
+            { title: "最短时长", value: "shortest" }
+          ]
+        },
         { name: "page", title: "页码", type: "page" }
       ]
     },
     {
       id: "sites",
+      type: "video",
       title: "频道",
       functionName: "loadSiteList",
-      type: "video",
       params: [
         {
           name: "site",
@@ -434,11 +410,32 @@ function epCover(thumb) {
   return thumb;
 }
 
-function epBackdrop(thumb) {
+function epBackdrop(thumb, portrait) {
   if (!thumb) return "";
   var m = thumb.match(/\/(\d+)\/(\d+)_(?:240|360)\.jpg$/);
-  if (m) return "https://imggen.eporner.com/" + m[1] + "/1920/1080/" + m[2] + ".jpg";
+  if (m) {
+    var dimensions = portrait ? "1080/1920" : "1920/1080";
+    return "https://imggen.eporner.com/" + m[1] + "/" + dimensions + "/" + m[2] + ".jpg";
+  }
   return epCover(thumb);
+}
+
+function epVideoOrientation(html) {
+  var m = String(html || "").match(/data-video-analytics\s*=\s*([\"'])(.*?)\1/i);
+  if (!m) return "";
+  try {
+    var raw = m[2].replace(/&quot;/g, '\"').replace(/&#39;|&apos;/g, "'").replace(/&amp;/g, "&");
+    var data = JSON.parse(raw);
+    return data && (data.orientation === "portrait" || data.orientation === "landscape") ? data.orientation : "";
+  } catch (e) {
+    return "";
+  }
+}
+
+function epDetailImageFields(orientation, poster) {
+  if (orientation === "portrait") return { posterPath: epBackdrop(poster, true) };
+  var landscape = epBackdrop(poster, false);
+  return { coverUrl: landscape, backdropPath: landscape };
 }
 
 function epItemFromCard($, card) {
@@ -471,7 +468,9 @@ async function epFetchList(url) {
   var $ = await Widget.html.load(res.data);
   var out = [];
   var seen = {};
-  $(".mb").each(function (i, el) {
+  var cards = $("#vidresults .mb");
+  if (!cards.length) cards = $(".mb");
+  cards.each(function (i, el) {
     var item = epItemFromCard($, el);
     if (item && !seen[item.id]) { seen[item.id] = 1; out.push(item); }
   });
@@ -498,30 +497,10 @@ function epListUrl(base, page, sort) {
 
 async function epFetchPaged(base, appPage, sort, buildUrl) {
   var page = Number(appPage || 1);
-  if (!(page >= 1)) page = 1;
-  var sitePage = Math.floor((page - 1) / 3) + 1;
-  var offset = ((page - 1) % 3) * EP_PAGE_SIZE;
-  var skey = "eporner_lc_" + String(base + "|" + (sort || "")).replace(/[^A-Za-z0-9]/g, "_");
-  var items = null;
-  if (offset !== 0) {
-    try {
-      var raw = epStoreGet(skey);
-      var cache = raw ? JSON.parse(raw) : null;
-      var now = (typeof Date !== "undefined" && Date.now) ? Date.now() : 0;
-      if (cache && cache.sp === sitePage && cache.items && cache.items.length) {
-        if (!now || !cache.t || (now - cache.t) < 600000) items = cache.items;
-      }
-    } catch (e) {}
-  }
-  if (!items) {
-    var url = buildUrl ? buildUrl(sitePage) : epListUrl(base, sitePage, sort);
-    items = await epFetchList(url);
-    try {
-      var now2 = (typeof Date !== "undefined" && Date.now) ? Date.now() : 0;
-      epStoreSet(skey, JSON.stringify({ sp: sitePage, t: now2, items: items }));
-    } catch (e) {}
-  }
-  return items.slice(offset, offset + EP_PAGE_SIZE);
+  if (!isFinite(page) || page < 1) page = 1;
+  page = Math.floor(page);
+  var url = buildUrl ? buildUrl(page) : epListUrl(base, page, sort);
+  return await epFetchList(url);
 }
 
 function epGenreTarget(params) {
@@ -544,8 +523,18 @@ async function epGenreList(params, sort) {
       return tagBase + (sp > 1 ? sp + "/" : "") + (sort ? sort + "/" : "");
     });
   }
-  if (gt.section === "cat") return await epFetchPaged(EP_SITE + "/cat/" + encodeURIComponent(slug) + "/", page, sort || null);
-  return await epFetchPaged(EP_SITE + "/pornstar/" + encodeURIComponent(slug) + "/", page, null);
+  if (gt.section === "cat") {
+    var genreCatBase = EP_SITE + "/cat/" + encodeURIComponent(slug) + "/";
+    return await epFetchPaged(genreCatBase, page, sort, function (sp) {
+      return genreCatBase + (sort ? "SORT-" + sort + "/" : "") + (sp > 1 ? sp + "/" : "");
+    });
+  }
+  var genreModelBase = EP_SITE + "/pornstar/" + encodeURIComponent(slug) + "/";
+  var modelSorts = ["recent", "top-weekly", "most-viewed", "top-rated", "longest", "shortest"];
+  var modelSort = modelSorts.indexOf(sort) !== -1 ? sort : "recent";
+  return await epFetchPaged(genreModelBase, page, modelSort, function (sp) {
+    return genreModelBase + (sp > 1 ? sp + "/" : "") + modelSort + "/";
+  });
 }
 
 async function loadBrowseList(params) {
@@ -556,8 +545,19 @@ async function loadBrowseList(params) {
     var gl = await epGenreList(params, null);
     if (gl) return gl;
     var page = Number(params.page || 1);
-    var base = params.sort === "popular" ? EP_SITE + "/best-videos/" : EP_SITE + "/";
-    return await epFetchPaged(base, page, null);
+    return await epFetchPaged(EP_SITE + "/", page, null);
+  } catch (e) {
+    return [];
+  }
+}
+
+async function loadPopularList(params) {
+  params = params || {};
+  epCookie(params);
+  epShowApi(params);
+  try {
+    var page = Number(params.page || 1);
+    return await epFetchPaged(EP_SITE + "/best-videos/", page, null);
   } catch (e) {
     return [];
   }
@@ -574,10 +574,24 @@ async function loadCategoryList(params) {
     var page = Number(params.page || 1);
     var cat = epSlug(params.customCategory) || epSlug(params.category);
     if (!cat) return await loadBrowseList({ sort: "latest", page: page });
-    return await epFetchPaged(EP_SITE + "/cat/" + encodeURIComponent(cat) + "/", page, sort);
+    var catBase = EP_SITE + "/cat/" + encodeURIComponent(cat) + "/";
+    return await epFetchPaged(catBase, page, sort, function (sp) {
+      return catBase + (sort ? "SORT-" + sort + "/" : "") + (sp > 1 ? sp + "/" : "");
+    });
   } catch (e) {
     return [];
   }
+}
+
+function epTagSegment(value) {
+  var raw = String(value || "").trim();
+  try {
+    raw = decodeURIComponent(raw);
+  } catch (e) {
+    return "";
+  }
+  if (!raw || /[/?#]/.test(raw)) return "";
+  return encodeURIComponent(raw);
 }
 
 async function loadTagList(params) {
@@ -589,9 +603,12 @@ async function loadTagList(params) {
     var gl = await epGenreList(params, sort);
     if (gl) return gl;
     var page = Number(params.page || 1);
-    var tag = epSlug(params.customTag) || epSlug(params.tag);
-    if (!tag) return await loadBrowseList({ sort: "latest", page: page });
-    var tagBase = EP_SITE + "/tag/" + encodeURIComponent(tag) + "/";
+    var tagInput = String(params.customTag || params.tag || "").trim();
+    var customTagUrl = tagInput.match(/^https?:\/\/www\.eporner\.com\/tag\/([^/?#]+)\/?$/i);
+    var tag = customTagUrl ? customTagUrl[1] : tagInput.replace(/^\/tag\//i, "").replace(/\/$/, "");
+    var tagSegment = epTagSegment(tag);
+    if (!tagSegment) return [];
+    var tagBase = EP_SITE + "/tag/" + tagSegment + "/";
     return await epFetchPaged(tagBase, page, sort, function (sp) {
       return tagBase + (sp > 1 ? sp + "/" : "") + (sort ? sort + "/" : "");
     });
@@ -608,9 +625,18 @@ async function loadModelList(params) {
     var gl = await epGenreList(params, null);
     if (gl) return gl;
     var page = Number(params.page || 1);
-    var model = String(params.customModel || "").trim().replace(/^\/pornstar\/|\/$/g, "") || String(params.model || "").trim();
-    if (!model) return await loadBrowseList({ sort: "latest", page: page });
-    return await epFetchPaged(EP_SITE + "/pornstar/" + encodeURIComponent(model) + "/", page, null);
+    var model = String(params.customModel || "").trim() || String(params.model || "").trim();
+    var full = model.match(/^https?:\/\/www\.eporner\.com\/pornstar\/([^/?#]+)\/?$/i);
+    var path = model.match(/^\/?pornstar\/([^/?#]+)\/?$/i);
+    if (full) model = full[1];
+    else if (path) model = path[1];
+    if (!/^[A-Za-z0-9-]+$/.test(model)) return [];
+    var modelSorts = ["recent", "top-weekly", "most-viewed", "top-rated", "longest", "shortest"];
+    var sort = modelSorts.indexOf(params.sort) !== -1 ? params.sort : "recent";
+    var modelBase = EP_SITE + "/pornstar/" + model + "/";
+    return await epFetchPaged(modelBase, page, sort, function (sp) {
+      return modelBase + (sp > 1 ? sp + "/" : "") + sort + "/";
+    });
   } catch (e) {
     return [];
   }
@@ -622,8 +648,11 @@ async function loadSiteList(params) {
   epShowApi(params);
   try {
     var page = Number(params.page || 1);
-    var site = String(params.customSite || "").trim().replace(/^\/channel\/|\/$/g, "") || String(params.site || "").trim();
-    if (!site) return await loadBrowseList({ sort: "latest", page: page });
+    var siteInput = String(params.customSite || "").trim() || String(params.site || "").trim();
+    var fullSite = siteInput.match(/^https?:\/\/www\.eporner\.com\/channel\/([^/?#]+)\/?$/i);
+    var pathSite = siteInput.match(/^\/?channel\/([^/?#]+)\/?$/i);
+    var site = fullSite ? fullSite[1] : pathSite ? pathSite[1] : siteInput;
+    if (!/^[A-Za-z0-9-]+$/.test(site)) return [];
     var sort = params.sort && params.sort !== "latest" ? params.sort : null;
     var siteBase = EP_SITE + "/channel/" + encodeURIComponent(site) + "/";
     return await epFetchPaged(siteBase, page, sort, function (sp) {
@@ -668,22 +697,6 @@ async function search(params) {
   }
 }
 
-async function loadHotSearchList(params) {
-  params = params || {};
-  epCookie(params);
-  epShowApi(params);
-  try {
-    var gl = await epGenreList(params, null);
-    if (gl) return gl;
-    var page = Number(params.page || 1);
-    var kw = String(params.customHotword || "").trim() || String(params.hotword || "").trim();
-    if (!kw) return [];
-    return await epSearchVideos(kw, page);
-  } catch (e) {
-    return [];
-  }
-}
-
 function epParseDetailUrl(link) {
   var s = String(link || "");
   var m = s.match(/\/video-([A-Za-z0-9]+)\//);
@@ -711,36 +724,62 @@ async function loadDetail(link) {
     var durText = "";
     var dm = desc.match(/Duration:\s*([0-9:]+)/);
     if (dm) durText = dm[1];
-    var uploader = $("a[href^=\"/profile/\"]").first().text().trim();
+    var uploader = $(".video-info-tags .vit-uploader a[href^=\"/profile/\"]").first().text().trim();
     var genreItems = [];
     var seenTag = {};
+    $(".video-info-tags .vit-category a[href^=\"/cat/\"]").each(function (i, a) {
+      var href = $(a).attr("href") || "";
+      var cm = href.match(/^\/cat\/([^/]+)\/?$/);
+      var title = ($(a).text() || "").trim();
+      if (cm && title && !seenTag["cat:" + cm[1]]) {
+        seenTag["cat:" + cm[1]] = 1;
+        genreItems.push({ id: "cat:" + cm[1], title: title });
+      }
+    });
     var tagLinks = $(".video-info-tags .vit-tag a[href^=\"/tag/\"]");
-    if (!tagLinks.length) tagLinks = $(".video-info-tags a[href^=\"/tag/\"]");
     tagLinks.each(function (i, a) {
       var href = $(a).attr("href") || "";
-      var tm = href.match(/^\/tag\/([^\/]+)\//);
-      if (tm && !seenTag[tm[1]]) { seenTag[tm[1]] = 1; genreItems.push({ id: "tag:" + tm[1], title: ($(a).text() || "").trim() }); }
+      var tm = href.match(/^\/tag\/([^/]+)\/?$/);
+      var title = ($(a).text() || "").trim();
+      if (tm && title && !seenTag["tag:" + tm[1]]) {
+        seenTag["tag:" + tm[1]] = 1;
+        genreItems.push({ id: "tag:" + tm[1], title: title });
+      }
+    });
+    var peoples = [];
+    var seenPeople = {};
+    $(".video-info-tags .vit-pornstar a[href^=\"/pornstar/\"]").each(function (i, a) {
+      var href = $(a).attr("href") || "";
+      var pm = href.match(/^\/pornstar\/([^/]+)\/?$/);
+      var title = ($(a).text() || "").trim();
+      if (pm && title && !seenPeople[pm[1]]) {
+        seenPeople[pm[1]] = 1;
+        peoples.push({ id: "model:" + pm[1], title: title });
+      }
     });
     var related = [];
     var seenRel = {};
-    $(".mb").each(function (i, el) {
+    $("#relateddiv .mb").each(function (i, el) {
       if (related.length >= 8) return;
       var item = epItemFromCard($, el);
       if (item && item.id !== "eporner:" + parsed.code && !seenRel[item.id]) { seenRel[item.id] = 1; related.push(item); }
     });
     var description = [uploader ? "上传者 " + uploader : "", durText ? "时长 " + durText : ""].filter(function (x) { return !!x; }).join(" · ");
-    return {
+    var orientation = epVideoOrientation(html);
+    var detailItem = {
       id: "eporner:" + parsed.code,
       type: "video",
       title: title,
-      coverUrl: epCover(poster),
-      backdropPath: epBackdrop(poster),
       description: description,
       link: parsed.url,
       genreItems: genreItems,
-      peoples: [],
+      peoples: peoples,
       relatedItems: related
     };
+    var imageFields = epDetailImageFields(orientation, poster);
+    Object.keys(imageFields).forEach(function (key) { detailItem[key] = imageFields[key]; });
+    return detailItem;
+
   } catch (e) {
     return null;
   }

@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "xojav",
   title: "XOJAV",
-  version: "1.0.2",
+  version: "1.0.3",
   requiredVersion: "0.0.1",
   description: "XOJAV.TV 精選亞洲素人成人影片：最新、分類、熱門、標籤、搜索",
   author: "Coko",
@@ -138,11 +138,8 @@ function xjParseCards($) {
 
 async function xjFetchList(baseUrl, blockId, sort, page) {
   page = Math.max(1, Number(page) || 1);
-  var url = baseUrl;
-  if (page > 1) {
-    var sep = baseUrl.indexOf("?") >= 0 ? "&" : "?";
-    url = baseUrl + sep + "mode=async&function=get_block&block_id=" + blockId + "&sort_by=" + sort + "&from=" + page;
-  }
+  var sep = baseUrl.indexOf("?") >= 0 ? "&" : "?";
+  var url = baseUrl + sep + "mode=async&function=get_block&block_id=" + blockId + "&sort_by=" + sort + "&from=" + page;
   var res = await Widget.http.get(url, { headers: XJ_HEADERS });
   var html = (res && res.data) || "";
   if (typeof html !== "string" || !html) return [];

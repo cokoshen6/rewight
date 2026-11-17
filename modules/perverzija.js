@@ -1,12 +1,12 @@
-// Perverzija Tube（tube.perverzija.com）：列表 / 分类 / 搜索 / 详情 / 播放。
-// 播放链：详情页 iframe 取 data（32 位 hex）-> xtremestream 播放器页取 vt
-// -> proto_api castsign 取 ct -> castmaster / castmedia 出标准 HLS。
+
+
+
 WidgetMetadata = {
   id: "perverzija",
   title: "Perverzija Tube",
   description: "tube.perverzija.com 列表、片商、标签、搜索与 XtremeStream 播放源",
   author: "Coko",
-  version: "1.1.0",
+  version: "1.1.1",
   requiredVersion: "0.0.1",
   site: "https://tube.perverzija.com",
   detailCacheDuration: 30,
@@ -147,7 +147,7 @@ function pvClean(s) {
     .trim();
 }
 
-// 只取列表主容器，避开侧栏、轮播与相关推荐
+
 function pvListingHtml(html) {
   var h = String(html || "");
   var start = h.search(/class="(?:video|search)-listing-content/);
@@ -191,7 +191,7 @@ function pvParseCards(html) {
   return out;
 }
 
-// 列表地址：path 自带的 orderby 一律以 sort 参数为准；sort 缺省为 date
+
 function pvListUrl(path, page, sort) {
   var p = parseInt(page || 1, 10);
   if (isNaN(p) || p < 1) p = 1;
@@ -228,7 +228,7 @@ function pvWithImages(item, url) {
 }
 
 function pvToItems(cards) {
-  // 分类列表横版卡片：只留 backdropPath
+  
   return cards.map(function (c) {
     var item = { id: c.url, type: "url", mediaType: "movie", title: c.title, link: c.url, description: c.desc || "" };
     if (c.img) item.backdropPath = c.img;
@@ -236,7 +236,7 @@ function pvToItems(cards) {
   });
 }
 
-// 浏览分类：最新/最多播放/最多点赞/精选场景/完整影片/VR 并进一个模块，各带默认排序
+
 var PV_BROWSE = {
   latest: { path: "/", sort: "date" },
   popular: { path: "/", sort: "view" },
@@ -247,10 +247,10 @@ var PV_BROWSE = {
 async function loadList(params) {
   params = params || {};
   var sort = params.sort;
-  // 浏览分类缺省跟随分类的排序；排序显式选了才覆盖；无分类时默认 date
+  
   var browseCat = params.category && PV_BROWSE[params.category] ? PV_BROWSE[params.category] : null;
   if (!sort || sort === "auto") sort = browseCat ? browseCat.sort : "date";
-  // 详情页点演员 / 标签后，App 带着 genreId / peopleId 回到列表模块
+  
   var tax = params.genreId || params.peopleId || "";
   if (tax) {
     var tk = pvTaxonomyKind(tax);
@@ -258,13 +258,13 @@ async function loadList(params) {
   }
   var path = params.path || "/";
   if (browseCat) path = browseCat.path;
-  // 片商：39 个顶级片商 + VR 并进一个模块（VR 走 /vr/，不是 /studio/vr/）
+  
   if (params.studio && String(params.studio).trim()) {
     var studioSlug = String(params.studio).trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "");
     if (studioSlug === "vr") path = "/vr/";
     else if (studioSlug) path = "/studio/" + studioSlug + "/";
   }
-  // 热门标签：枚举 46 个热门 + “自定义”选项；选“自定义”时用 customTag 输入框的值；customTag 为空时不拼 /tag/custom/，回落首页
+  
   var rawTag = "";
   if (params.tag && String(params.tag).trim()) {
     if (String(params.tag).trim() === "custom") {
@@ -320,7 +320,7 @@ function pvPrettyDuration(sec) {
   return (h ? h + ":" : "") + (h && m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
 }
 
-// 详情页 -> { videoId, title, cover, desc, duration, studio, stars, tags }
+
 async function pvParseDetail(url) {
   var html = await pvGet(url, SITE + "/");
   var titleM =
@@ -467,7 +467,7 @@ async function loadActorList(params) {
   return pvToItems(pvParseCards(await pvGet(SITE + "/?s=" + encodeURIComponent(pvActorDisplayName(actor)), SITE + "/")));
 }
 
-// 只认本站详情页：https://tube.perverzija.com/<单段 slug>/，其余一律不解析
+
 function pvOwnedLink(raw) {
   var s = String(raw || "").split("#")[0].split("?")[0];
   var m = s.match(/^https:\/\/tube\.perverzija\.com\/([^\/]+)\/$/);
@@ -475,11 +475,11 @@ function pvOwnedLink(raw) {
   return SITE + "/" + m[1] + "/";
 }
 
-// 线路缓存：同一 videoId 10 分钟内复用，避免重复签发
+
 var PV_STREAM_CACHE = {};
 var PV_STREAM_TTL = 10 * 60 * 1000;
 
-// proto_api 对 m3u8 返回 application/octet-stream，桥接层可能给 base64，这里统一还原成文本
+
 var PV_B64_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 function pvBase64Decode(text) {
@@ -529,7 +529,7 @@ function pvBinaryToText(body) {
   return text;
 }
 
-// 部分影片只上传了低画质，master 里却仍列出 1080/720（返回 404），需实测筛掉
+
 async function pvPlaylistAlive(playlistUrl, referer) {
   try {
     var raw = await pvGet(playlistUrl, referer);
@@ -539,14 +539,14 @@ async function pvPlaylistAlive(playlistUrl, referer) {
   }
 }
 
-// 播放器页取 vt，castsign 取 ct，产出 castmaster / castmedia 线路
+
 async function pvResolveStream(url, detailUrl, preset) {
   var d = preset || (await pvParseDetail(url));
   if (!d.videoId) throw new Error("未找到播放器 id，可能影片无源");
   var cached = PV_STREAM_CACHE[d.videoId];
   if (cached && Date.now() - cached.t < PV_STREAM_TTL) return { detail: d, lines: cached.lines };
-  // 站点会随机分配 xtremestream 子域，部分子域用旧版接口且被 Cloudflare 拦；
-  // 视频 id 全局通用，任一播放器子域都能签发 vt/ct，逐个尝试直到拿到令牌
+  
+  
   var bases = [];
   function pushBase(b) {
     if (b && bases.indexOf(b) < 0) bases.push(b);
@@ -587,7 +587,7 @@ async function pvResolveStream(url, detailUrl, preset) {
   });
   var ct = String((signResp && signResp.data) || "").replace(/\s+/g, "");
   if (!ct || ct.indexOf("forbidden") === 0) throw new Error("castsign 签名失败");
-  // master 与 castmedia 都必须带 vt；castmaster 返回的变体地址自带完整签名（含新 ct）
+  
   var cm = apiBase + vtParam + "&ct=" + encodeURIComponent(ct) + "&op=castmaster";
   var autoLine = { name: "自动（自适应）", description: "HLS · XtremeStream 自适应码率（兜底）", url: cm, customHeaders: { "User-Agent": UA, Referer: playerUrl } };
   var master = "";
@@ -635,7 +635,7 @@ async function pvResolveStream(url, detailUrl, preset) {
       customHeaders: { "User-Agent": UA, Referer: playerUrl },
     });
   }
-  // 自适应 master 始终兜底放最后
+  
   lines.push(autoLine);
   PV_STREAM_CACHE[d.videoId] = { t: Date.now(), lines: lines };
   return { detail: d, lines: lines };
@@ -644,7 +644,7 @@ async function pvResolveStream(url, detailUrl, preset) {
 async function loadDetail(link) {
   var url = String(link || "").split("#")[0];
   var owned = pvOwnedLink(url);
-  if (!owned && !pvTaxonomyKind(url)) return null;
+  if (!owned && !pvTaxonomyKind(url)) throw new Error("无法识别的详情链接: " + link);
   if (!owned) {
     var taxonomy = pvTaxonomyKind(url);
     var works = await loadTaxonomyList(taxonomy.path, 1);

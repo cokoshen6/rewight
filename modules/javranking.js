@@ -1,7 +1,7 @@
 WidgetMetadata = {
     id: "javranking",
     title: "JavRanking 榜单",
-    version: "1.3.7",
+    version: "1.3.8",
     requiredVersion: "0.0.1",
     description: "JavRanking 影片榜单与元数据：DMM 销量榜 / JAVDB TOP250 / 神作总榜（含官方预告片）",
     author: "Coko",
@@ -648,11 +648,11 @@ function jrSlugFromUrl(url) {
 
 async function loadDetail(link) {
     const m = String(link || "").match(/^javranking:(\d+)$/);
-    if (!m) return null;
+    if (!m) throw new Error("无法识别的详情链接: " + link);
     const id = m[1];
     const html = await jrFetchText(JR_BASE + "/videos/" + id + "/");
     const ld = jrParseJsonLd(html);
-    if (!ld || !ld.alternateName) return null;
+    if (!ld || !ld.alternateName) return [];
     const code = String(ld.alternateName).trim().toUpperCase();
     const lines = [String(ld.name || "").trim(), ""];
     lines.push("番号: " + code);

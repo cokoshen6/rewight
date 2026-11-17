@@ -3,7 +3,7 @@ WidgetMetadata = {
   title: "野果短剧",
   description: "野果短剧 - AI短剧每日更新",
   author: "Coko",
-  version: "1.0.6",
+  version: "1.0.7",
   requiredVersion: "0.0.1",
   iconurl: "https://yeguodj.com/favicon.ico",
   site: "https://yeguodj.com",
@@ -243,10 +243,10 @@ function ygDramaId(link, id) {
 }
 async function loadDetail(link) {
   var vid = ygDramaId(link);
-  if (!vid) return null;
+  if (!vid) throw new Error("无法识别的详情链接: " + link);
   var base = ygProxyBase();
   var data = await ygApi("/api/playlet/detail", { id: vid });
-  if (!data || !data.video_id) return null;
+  if (!data || !data.video_id) return [];
   var eps = data.episodes || [];
   var items = [];
   for (var i = 0; i < eps.length; i++) {

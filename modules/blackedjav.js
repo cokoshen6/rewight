@@ -3,11 +3,11 @@ var BJ_API = BJ_HOST + "/wp-json/wp/v2";
 var BJ_UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
 
 WidgetMetadata = {
-    id: "blackedJAV",
+    id: "blackedjav",
     title: "BlackedJAV",
     description: "BlackedJAV - Interracial JAV (元数据)",
     author: "Coko",
-    version: "3.2.3",
+    version: "3.2.4",
     requiredVersion: "0.0.1",
     site: "https://blackedjav.com",
     iconurl: "https://blackedjav.com/favicon.ico",
@@ -189,9 +189,9 @@ function bj_longTitle(html) {
 async function loadDetail(params) {
     var link = bj_str(params && (params.link || params.id || params.url));
     var m = link.match(/^bj:(\d+)$/);
-    if (!m) return null;
+    if (!m) throw new Error("无法识别的详情链接: " + link);
     var post = await bj_api("/posts/" + m[1]);
-    if (!post || !post.id) return null;
+    if (!post || !post.id) return [];
     var code = bj_code(post.title);
     var html = bj_str(post.content && post.content.rendered);
     var actress = bj_metaField(html, "Actress");

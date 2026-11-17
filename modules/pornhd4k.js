@@ -3,7 +3,7 @@ WidgetMetadata = {
   title: "PornHD 4K",
   description: "pornhd4k.net 列表、工作室、标签、搜索与 HLS 播放源",
   author: "Coko",
-  version: "1.1.2",
+  version: "1.1.3",
   requiredVersion: "0.0.1",
   site: "https://pornhd4k.net",
   detailCacheDuration: 30,
@@ -296,9 +296,9 @@ function phUnesc(s) {
 
 async function loadDetail(link) {
   var url = (typeof link === "string") ? link : ((link && (link.url || link.link || link.id)) || "");
-  if (!url || url.indexOf(SITE) !== 0 || url.indexOf("/movies/") === -1) return null;
+  if (!url || url.indexOf(SITE) !== 0 || url.indexOf("/movies/") === -1) throw new Error("无法识别的详情链接: " + url);
   var html = (await phGet(url, SITE + "/")).data || "";
-  if (!html) return null;
+  if (!html) return [];
   var title = phUnesc(phMeta(html, "og:title")) || "";
   var desc = phUnesc(phMeta(html, "og:description") || phMeta(html, "description")) || "";
   var cover = phMeta(html, "og:image") || "";

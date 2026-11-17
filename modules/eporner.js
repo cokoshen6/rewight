@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "eporner",
   title: "Eporner",
-  version: "1.2.5",
+  version: "1.2.6",
   requiredVersion: "0.0.1",
   description: "Eporner HD porn videos",
   author: "Coko",
@@ -709,9 +709,9 @@ function epParseDetailUrl(link) {
 async function loadDetail(link) {
   try {
     var parsed = epParseDetailUrl(link);
-    if (!parsed) return null;
+    if (!parsed) throw new Error("无法识别的详情链接: " + link);
     var res = await epGet(parsed.url);
-    if (!res || !res.data) return null;
+    if (!res || !res.data) return [];
     var $ = await Widget.html.load(res.data);
     var html = res.data;
     var title = ($("meta[property=\"og:title\"]").attr("content") || "").replace(/ - EPORNER$/, "").trim();
@@ -781,7 +781,7 @@ async function loadDetail(link) {
     return detailItem;
 
   } catch (e) {
-    return null;
+    throw e;
   }
 }
 

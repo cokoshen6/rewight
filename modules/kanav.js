@@ -6,7 +6,7 @@ WidgetMetadata = {
     title: "KanAV",
     description: "KanAV - 在线AV",
     author: "Coko",
-    version: "1.0.4",
+    version: "1.0.5",
     requiredVersion: "0.0.1",
     site: "https://kanav.ad",
     iconurl: "https://kanav.ad/favicon.ico",
@@ -147,10 +147,10 @@ function kv_parseId(input) {
 
 async function loadDetail(link) {
     var path = kv_parseId(link);
-    if (!path) return null;
+    if (!path) throw new Error("无法识别的详情链接: " + link);
     var url = path.indexOf("http") === 0 ? path : KV_HOST + path;
     var html = await kv_get(url);
-    if (!html) return null;
+    if (!html) return [];
     var $ = Widget.html.load(html);
     
     var title = "";

@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "javheo",
   title: "JavHeo",
-  version: "1.0.7",
+  version: "1.0.8",
   requiredVersion: "0.0.1",
   description: "JavHeo JAV/FC2 视频：最新、分类、搜索，OK CDN 直链播放",
   author: "Coko",
@@ -321,12 +321,12 @@ function jhOwnedWatchId(link) {
 async function loadDetail(link) {
   var url = jhStr(link);
   var wid = jhOwnedWatchId(url);
-  if (!wid) return null;
+  if (!wid) throw new Error("无法识别的详情链接: " + link);
   var html = await jhGet(url);
-  if (!html) return null;
+  if (!html) return [];
   var $ = Widget.html.load(html);
   var title = jhClean($('meta[property="og:title"]').attr("content") || $("h1").first().text());
-  if (!title) return null;
+  if (!title) return [];
   var sp = jhSplitTitle(title);
   var cover = $('meta[property="og:image"]').attr("content") || "";
   var durSec = $('meta[property="video:duration"]').attr("content")

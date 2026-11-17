@@ -1,7 +1,7 @@
 WidgetMetadata = {
   "id": "anysex",
   "title": "AnySex",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "requiredVersion": "0.0.1",
   "description": "分类、排序、搜索与按需播放。",
   "author": "Coko",
@@ -901,10 +901,10 @@ function axMetadataLinks($) {
 async function loadDetail(link) {
   try {
     var owned = axOwnedLink(link);
-    if (!owned) return null;
+    if (!owned) throw new Error("无法识别的详情链接: " + link);
     var html = await axHTML(owned.url, {}, false, true);
     var doc = axDocument(html, owned);
-    if (!doc) return null;
+    if (!doc) return [];
     var $ = doc.$, ld = doc.ld, current = doc.owned;
     var title = axText($('.block-video .page-title h1').first().text()) || axText(ld.name);
     if (!title) throw new Error('详情页缺少标题，站点结构可能已变化');

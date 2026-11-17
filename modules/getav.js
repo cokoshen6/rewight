@@ -1,7 +1,7 @@
 WidgetMetadata = {
     "id": "getav",
     "title": "GetAV",
-    "version": "1.4.4",
+    "version": "1.4.5",
     "requiredVersion": "0.0.1",
     "description": "Getav视频",
     "author": "Coko",
@@ -2389,12 +2389,12 @@ function gaDetailItem(data, code, zhTitle, options) {
 
 async function loadDetail(link) {
     const owned = gaOwnedLink(link);
-    if (!owned) return null;
+    if (!owned) throw new Error("无法识别的详情链接: " + link);
     const data = await gaFetchDetail(owned.code);
-    if (!data) return null;
+    if (!data) return [];
     const options = { private: owned.private };
     const item = gaDetailItem(data, owned.code, owned.title, options);
-    if (!item) return null;
+    if (!item) return [];
     await gaInvalidateLegacyCoverCaches();
     if (!owned.private) await gaFillPosters([item]);
     if (!item.posterPath) item.posterPath = item.backdropPath;

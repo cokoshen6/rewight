@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "huang",
   title: "黄视频",
-  version: "1.0.4",
+  version: "1.0.5",
   requiredVersion: "0.0.1",
   description: "黄视频：国产AV、糖心Vlog、网红福利姬、探花、PMV、ASMR、短剧",
   author: "Coko",
@@ -381,13 +381,13 @@ async function search(params = {}) {
 async function loadDetail(link) {
   try {
     const parsed = huParseOwnedLink(link);
-    if (!parsed) return null;
+    if (!parsed) throw new Error("无法识别的详情链接: " + link);
     if (parsed.kind === "series") {
       const $ = await huLoadHtml("/series/" + parsed.id);
       const title = huCleanText($("h1").first().text()) || huCleanText($('meta[property="og:title"]').attr("content")).replace(/\s*\|\s*黄视频$/, "");
-      if (!title) return null;
+      if (!title) return [];
       const cover = $('meta[property="og:image"]').attr("content") || "";
-      if (!/^https:\/\//.test(cover)) return null;
+      if (!/^https:\/\//.test(cover)) return [];
       const item = {
         id: "huang:series:" + parsed.id,
         type: "url",
@@ -429,11 +429,11 @@ async function loadDetail(link) {
     const $ = await huLoadHtml("/videos/" + id);
     const ld = huJsonLd($);
     const title = huCleanText($("h1").first().text()) || (ld && huCleanText(ld.name)) || "";
-    if (!title) return null;
+    if (!title) return [];
     let cover = "";
     if (ld && Array.isArray(ld.thumbnailUrl) && ld.thumbnailUrl[0]) cover = ld.thumbnailUrl[0];
     if (!cover) cover = $('meta[property="og:image"]').attr("content") || "";
-    if (!/^https:\/\//.test(cover)) return null;
+    if (!/^https:\/\//.test(cover)) return [];
     const item = {
       id: "huang:" + id,
       type: "url",

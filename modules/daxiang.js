@@ -4,7 +4,7 @@ WidgetMetadata = {
     description: "大象视频 / 分类浏览 / 搜索",
     author: "Coko",
     site: "https://jj88mm.com",
-    version: "1.0.3",
+    version: "1.0.4",
     requiredVersion: "0.0.1",
     detailCacheDuration: 300,
     modules: [ {
@@ -243,10 +243,10 @@ function dx_extractM3u8(vodUrl, prefix) {
 
 async function loadDetail(link) {
     var p = dx_parseLink(link);
-    if (!p) return null;
+    if (!p) throw new Error("无法识别的详情链接: " + link);
     try {
         var r = await dx_fetchDetail(p.id);
-        if (!r) return null;
+        if (!r) return [];
         var urls = dx_extractM3u8(r.vod_url, p.host || DX_MEDIA_PREFIX);
         var videoSources = urls.map(function(u) {
             return {

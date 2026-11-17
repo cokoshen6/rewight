@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "avbebe",
   title: "Avbebe",
-  version: "1.0.8",
+  version: "1.0.9",
   requiredVersion: "0.0.1",
   description: "Avbebe 高清H動畫、3D動畫、成人影片",
   author: "Coko",
@@ -283,16 +283,16 @@ function avParseDataItem(html) {
 }
 
 async function loadDetail(link) {
-  if (!link) return null;
+  if (!link) throw new Error("无法识别的详情链接: " + link);
   var url = String(link);
   if (url.indexOf("http") !== 0) {
     var id = String(link).replace(/^avbebe:/, "");
-    if (!/^\d+$/.test(id)) return null;
+    if (!/^\d+$/.test(id)) throw new Error("无法识别的详情链接: " + link);
     url = AV_BASE + "/archives/" + id;
   }
   var resp = await avGet(url);
   var html = avBody(resp);
-  if (!html) return null;
+  if (!html) return [];
   var postId = avPostId(url);
   var data = avParseDataItem(html);
   var tm = html.match(/<h1[^>]*class="[^"]*jeg_post_title[^"]*"[^>]*>([\s\S]*?)<\/h1>/);

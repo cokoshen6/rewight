@@ -3,7 +3,7 @@ WidgetMetadata = {
   title: "野果短剧",
   description: "野果短剧 - AI短剧每日更新",
   author: "Coko",
-  version: "1.0.7",
+  version: "1.0.8",
   requiredVersion: "0.0.1",
   iconurl: "https://yeguodj.com/favicon.ico",
   site: "https://yeguodj.com",
@@ -15,7 +15,8 @@ WidgetMetadata = {
     { id: "tags", title: "标签", functionName: "loadTags", type: "video", params: [{ name: "tag", title: "标签", type: "enumeration", value: "玄幻", enumOptions: [{ title: "玄幻", value: "玄幻" }, { title: "乱伦", value: "乱伦" }, { title: "人妻", value: "人妻" }, { title: "古装", value: "古装" }, { title: "都市", value: "都市" }, { title: "校园", value: "校园" }, { title: "换妻", value: "换妻" }, { title: "群P", value: "群P" }, { title: "禁忌", value: "禁忌" }, { title: "脑洞", value: "脑洞" }, { title: "多人", value: "多人" }, { title: "妈妈", value: "妈妈" }, { title: "姐姐", value: "姐姐" }, { title: "姐弟", value: "姐弟" }, { title: "出轨", value: "出轨" }, { title: "绿帽", value: "绿帽" }, { title: "NTR", value: "NTR" }, { title: "调教", value: "调教" }, { title: "熟女", value: "熟女" }, { title: "剧情向", value: "剧情向" }] }] },
     { id: "explore", title: "探索分类", functionName: "loadExplore", type: "video", params: [{ name: "theme", title: "主题", type: "enumeration", value: "0", enumOptions: [{ title: "全部", value: "0" }, { title: "野果原创", value: "7" }, { title: "真人短剧", value: "8" }, { title: "魔改漫剧", value: "9" }, { title: "网红改编", value: "10" }, { title: "PMV裸舞", value: "11" }] }, { name: "setting", title: "设定", type: "enumeration", value: "0", enumOptions: [{ title: "全部", value: "0" }, { title: "禁忌伦理", value: "23" }, { title: "职场反差", value: "24" }, { title: "改造调教", value: "25" }, { title: "出轨绿帽", value: "26" }, { title: "高H剧情", value: "27" }, { title: "后宫多人", value: "28" }, { title: "逆袭系统", value: "29" }] }, { name: "background", title: "背景", type: "enumeration", value: "0", enumOptions: [{ title: "全部", value: "0" }, { title: "校园", value: "39" }, { title: "都市", value: "40" }, { title: "年代", value: "41" }, { title: "古代", value: "43" }, { title: "玄幻", value: "44" }, { title: "末世", value: "45" }, { title: "灵异", value: "46" }] }, { name: "time", title: "时间", type: "enumeration", value: "0", enumOptions: [{ title: "全部", value: "0" }, { title: "7天内", value: "1" }, { title: "14天内", value: "2" }, { title: "30天内", value: "3" }, { title: "90天内", value: "4" }] }, { name: "recommend", title: "推荐", type: "enumeration", value: "0", enumOptions: [{ title: "全部", value: "0" }, { title: "最新", value: "1" }, { title: "最热", value: "2" }] }] },
     { id: "loadResource", title: "播放资源", functionName: "loadResource", type: "stream", cacheDuration: 0, params: [] }
-  ]
+  ],
+  search: { id: "search", title: "搜索", functionName: "loadSearch", params: [{ name: "keyword", title: "关键词", type: "input" }, { name: "page", title: "页码", type: "page" }] }
 };
 
 var YG_API = "https://yeguodj.com/api.php";

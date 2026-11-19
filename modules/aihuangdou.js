@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "aihuangdou",
   title: "黄桃短剧",
-  version: "1.0.4",
+  version: "1.0.5",
   requiredVersion: "0.0.1",
   description: "AI成人短剧 / AI漫剧",
   author: "Coko",
@@ -219,15 +219,10 @@ function ahParseCards(html, base) {
     if (!title) continue;
     const pm = c.match(/data-src="(https:[^"]+)"/);
     const poster = pm ? ahUnescape(pm[1]) : "";
-    let subtitle = "";
-    const mm = c.match(/<p>(AI[^<]*?)<span>([^<]*)<\/span><\/p>/);
-    if (mm) subtitle = (ahUnescape(mm[1]).trim() + " " + ahUnescape(mm[2]).trim()).trim();
-    const fm = c.match(/<span class="eps-flag">([^<]+)<\/span>/);
-    if (fm) subtitle = (subtitle ? subtitle + " · " : "") + ahUnescape(fm[1]).trim();
     let desc = "";
     const dm = c.match(/class="card-desc">([^<]*)/);
     if (dm) desc = ahUnescape(dm[1]).trim();
-    out.push(ahItem(id, title, subtitle, desc, poster, base));
+    out.push(ahItem(id, title, "", desc, poster, base));
   }
   return out;
 }
@@ -296,21 +291,7 @@ function ahParseRankings(html, base) {
       const rm = c.match(/rank-(?:lead|runner)-watermark">0?(\d+)</) || c.match(/rank-no">0?(\d+)</);
       if (rm) rank = Number(rm[1]);
     }
-    let meta = "";
-    const pRe = /<p[^>]*>([^<]*)<\/p>/g;
-    let pm2;
-    while ((pm2 = pRe.exec(c)) !== null) {
-      const t = ahUnescape(pm2[1]).trim();
-      if (t.indexOf("AI短剧") === 0 || t.indexOf("AI漫剧") === 0) { meta = t; break; }
-    }
-    let metric = "";
-    const bm = c.match(/<b>(\d+)<\/b>/);
-    if (bm) metric = bm[1];
-    let subtitle = "";
-    if (rank) subtitle += "第" + rank + "名";
-    if (meta) subtitle += (subtitle ? " · " : "") + meta;
-    if (metric) subtitle += (subtitle ? " · " : "") + "热力指数 " + metric;
-    const item = ahItem(id, title, subtitle, "", poster, base);
+    const item = ahItem(id, title, "", "", poster, base);
     item._rank = rank || 999;
     items.push(item);
   }
@@ -397,7 +378,7 @@ async function loadDetail(link) {
       return [];
     }
     if (!d || !d.title) return [];
-    const item = ahItem(id, String(d.title).trim(), d.epCount ? String(d.epCount) : "", d.description ? String(d.description) : "", d.poster ? String(d.poster) : "", base);
+    const item = ahItem(id, String(d.title).trim(), "", d.description ? String(d.description) : "", d.poster ? String(d.poster) : "", base);
     const tags = [];
     const seen = {};
     const tagRe = /<a[^>]+href="\/tag\/([a-z0-9]+)\/"[^>]*>([^<]+)<\/a>/g;

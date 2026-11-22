@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "aihuangdou",
   title: "黄桃短剧",
-  version: "1.0.6",
+  version: "1.0.7",
   requiredVersion: "0.0.1",
   description: "AI成人短剧 / AI漫剧",
   author: "Coko",
@@ -414,11 +414,9 @@ async function loadDetail(link) {
 function ahParseResourceTarget(c) {
   if (!c) return null;
   const s = String(c).trim();
-  let m = s.match(/aihuangdou:(\d+)(?:#ep(\d+))?/);
+  let m = s.match(/^aihuangdou:(\d+)(?:#ep(\d+))?$/);
   if (m) return { id: m[1], ep: m[2] ? Number(m[2]) : 0 };
-  m = s.match(/\/video\/(\d+)(?:\/(\d+))?\//);
-  if (m) return { id: m[1], ep: m[2] ? Number(m[2]) : 0 };
-  m = s.match(/^(\d+)(?:#ep(\d+))?$/);
+  m = s.match(/aihuangdou\.com\/video\/(\d+)(?:\/(\d+))?\//);
   if (m) return { id: m[1], ep: m[2] ? Number(m[2]) : 0 };
   return null;
 }

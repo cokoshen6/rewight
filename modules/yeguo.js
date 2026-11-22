@@ -3,7 +3,7 @@ WidgetMetadata = {
   title: "野果短剧",
   description: "野果短剧 - AI短剧每日更新",
   author: "Coko",
-  version: "1.0.9",
+  version: "1.1.0",
   requiredVersion: "0.0.1",
   iconurl: "https://yeguodj.com/favicon.ico",
   site: "https://yeguodj.com",
@@ -234,13 +234,18 @@ async function loadExplore(params) {
 
 function ygDramaId(link, id) {
   var s = id || "";
-  if (!s && link) {
-    var m = link.match(/drama\/detail\/(\d+)/);
-    if (m) s = m[1];
+  if (s && s.indexOf("yeguo:") === 0) {
+    s = s.slice(6);
+    if (s.indexOf(":ep") >= 0) s = s.split(":ep")[0];
+    return s || "";
   }
-  if (s && s.indexOf("yeguo:") === 0) s = s.slice(6);
-  if (s && s.indexOf(":ep") >= 0) s = s.split(":ep")[0];
-  return s || "";
+  if (link) {
+    var m = String(link).match(/yeguodj\.com\/drama\/detail\/(\d+)/);
+    if (m) return m[1];
+    m = String(link).match(/^yeguo:(\d+)(?::ep\d+)?$/);
+    if (m) return m[1];
+  }
+  return "";
 }
 async function loadDetail(link) {
   var vid = ygDramaId(link);

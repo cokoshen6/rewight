@@ -3,7 +3,7 @@ WidgetMetadata = {
   title: "91视频",
   description: "91视频：海量成人视频、国产原创与日本AV主题合集、AI短剧、短视频、黑料吃瓜与合集",
   author: "Coko",
-  version: "1.1.3",
+  version: "1.1.4",
   requiredVersion: "0.0.1",
   iconurl: "https://tu.100923.xyz/file/1795041695096_91porna-icon-round.png",
   detailCacheDuration: 60,
@@ -679,18 +679,16 @@ function npParseLink(link) {
   if (m) return { key: m[1], kind: "cg" };
   m = s.match(/91porna:([A-Za-z0-9]+)/);
   if (m) return { key: m[1], kind: /^\d+$/.test(m[1]) ? "detail" : "avdetail" };
-  m = s.match(/\/ai\/([\w-]+)(?:\/episode-(\d+))?/);
+  m = s.match(/91porna\.com\/ai\/([\w-]+)(?:\/episode-(\d+))?/);
   if (m) return { key: m[1], kind: "ai", ep: m[2] ? Number(m[2]) : 0 };
-  m = s.match(/\/melonshort\/video\/(\d+)/);
+  m = s.match(/91porna\.com\/melonshort\/video\/(\d+)/);
   if (m) return { key: m[1], kind: "short" };
-  m = s.match(/\/moviesets\/(.+)/);
+  m = s.match(/91porna\.com\/moviesets\/(.+)/);
   if (m) return { key: m[1].replace(/\/+$/, ""), kind: "set" };
-  m = s.match(/\/heiliao-chigua\/(\d+)/);
+  m = s.match(/91porna\.com\/heiliao-chigua\/(\d+)/);
   if (m) return { key: m[1], kind: "cg" };
-  m = s.match(/\/comic\/index\/(detail|avdetail)\?video_key=([^"&]+)/);
+  m = s.match(/91porna\.com\/comic\/index\/(detail|avdetail)\?video_key=([^"&]+)/);
   if (m) return { key: m[2], kind: m[1] };
-  m = s.match(/^(\d+)$/);
-  if (m) return { key: m[1], kind: "detail" };
   return null;
 }
 

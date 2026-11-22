@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "jav",
   title: "JAV聚合",
-  version: "1.4.1",
+  version: "1.4.5",
   requiredVersion: "0.0.1",
   description: "按番号聚合 JAVDay、123AV、Manko、JavMit 播放源，只保留 720p 及以上的线路。",
   author: "Coko",
@@ -85,6 +85,8 @@ function qualityHeight(text) {
   let max = 0, m;
   const re = /(?:^|[^0-9])(\d{3,4})\s*[pP](?:[^a-zA-Z0-9]|$)/g;
   while ((m = re.exec(s))) max = Math.max(max, Number(m[1]));
+  const re2 = /(?:^|[^0-9])(\d{3,4})\s*[xX]\s*(\d{3,4})(?:[^0-9]|$)/g;
+  while ((m = re2.exec(s))) max = Math.max(max, Number(m[2]));
   return max;
 }
 
@@ -104,12 +106,37 @@ function unescapeJs(v) {
 
 
 const LOAD_BUDGET = 8000;
+const SOURCE_BUDGET_MS = { "JAVDay": 6000, "123AV": 8000, "Manko": 8000, "JavMit": 5000 };
 let DEADLINE = 0;
 function budgetLeft() {
   return DEADLINE ? DEADLINE - Date.now() : 99999;
 }
 function budgetOk() {
   return budgetLeft() > 500;
+}
+function dlTimeoutSec(dl) {
+  if (!dl) return 0;
+  const left = Math.ceil((dl - Date.now()) / 1000);
+  if (left < 3) return 3;
+  if (left > 40) return 40;
+  return left;
+}
+async function httpGet(url, opts, dl) {
+  opts = opts || {};
+  let u = String(url);
+  if (opts.params) {
+    const pairs = [];
+    for (const k of Object.keys(opts.params)) pairs.push(encodeURIComponent(k) + "=" + encodeURIComponent(String(opts.params[k])));
+    if (pairs.length) u += (u.indexOf("?") >= 0 ? "&" : "?") + pairs.join("&");
+  }
+  if (dl && Date.now() > dl) throw new Error("source timeout");
+  const t = dlTimeoutSec(dl);
+  if (t && Widget.http && typeof Widget.http.request === "function") {
+    const req = { url: u, method: "GET", timeout: t };
+    if (opts.headers) req.headers = opts.headers;
+    return await Widget.http.request(req);
+  }
+  return await Widget.http.get(u, opts.headers ? { headers: opts.headers } : {});
 }
 
 const CACHE_TTL = 10 * 60 * 1000;
@@ -133,7 +160,7 @@ async function writeCache(key, items) {
   } catch (e) {   }
 }
 
-async function getTextWith(url, headers) {
+async function getTextWith(url, headers, dl) {
   const variants = [];
   if (headers) variants.push(headers);
   if (headers && headers.Referer) {
@@ -143,12 +170,12 @@ async function getTextWith(url, headers) {
   if (headers) variants.push(headers);
   if (!variants.length) variants.push(undefined);
   let text = "";
-  
   for (let i = 0; i < variants.length; i++) {
     if (i > 0 && !budgetOk()) break;
+    if (dl && Date.now() > dl) break;
     let res;
     try {
-      res = await Widget.http.get(url, variants[i] ? { headers: variants[i] } : undefined);
+      res = await httpGet(url, variants[i] ? { headers: variants[i] } : {}, dl);
     } catch (e) { continue; }
     const body = res && typeof res.data === "string" ? res.data : "";
     if (body && body.indexOf("#EXTM3U") === 0) return body;
@@ -157,9 +184,10 @@ async function getTextWith(url, headers) {
   return text;
 }
 
-async function getText(url, params) {
+async function getText(url, params, dl) {
   if (!budgetOk()) return "";
-  const res = await Widget.http.get(url, params ? { params: params } : {});
+  if (dl && Date.now() > dl) return "";
+  const res = await httpGet(url, params ? { params: params } : {}, dl);
   if (!res || typeof res.data !== "string") return "";
   return res.data;
 }
@@ -194,8 +222,8 @@ function parseMasterText(text, masterUrl, label, code, headers) {
   return out;
 }
 
-async function hlsVariants(masterUrl, label, code, headers) {
-  const text = await getTextWith(masterUrl, headers);
+async function hlsVariants(masterUrl, label, code, headers, dl) {
+  const text = await getTextWith(masterUrl, headers, dl);
   return parseMasterText(text, masterUrl, label, code, headers);
 }
 
@@ -205,7 +233,8 @@ function resolveRelative(baseUrl, ref) {
 }
 
 
-async function probeHeight(playlistText, playlistUrl, headers) {
+async function probeHeight(playlistText, playlistUrl, headers, dl) {
+  if (dl && Date.now() > dl) return null;
   const lines = String(playlistText || "").split(/\r?\n/);
   let segment = "";
   for (const raw of lines) {
@@ -227,12 +256,12 @@ async function probeHeight(playlistText, playlistUrl, headers) {
 }
 
 
-async function resolvePlaylist(playlistUrl, label, code, headers) {
-  const text = await getTextWith(playlistUrl, headers);
+async function resolvePlaylist(playlistUrl, label, code, headers, dl) {
+  const text = await getTextWith(playlistUrl, headers, dl);
   const variants = parseMasterText(text, playlistUrl, label, code, headers);
   if (variants.length) return variants;
   if (!text || text.indexOf("#EXTM3U") !== 0) return [];
-  const size = await probeHeight(text, playlistUrl, headers);
+  const size = await probeHeight(text, playlistUrl, headers, dl);
   if (size && size.height) {
     if (size.height < MIN_HEIGHT) return [];
     const item = {
@@ -276,23 +305,21 @@ function pickMatches(html, base, code, source, hrefTest) {
   return out;
 }
 
-async function searchSource(source, code) {
+async function searchSource(source, code, dl) {
   const shown = displayCode(code);
   try {
     if (source.name === "JAVDay") {
-      
       return [{ title: shown, url: source.base + "/videos/" + code + "/", source: source.name }];
     }
     if (source.name === "123AV") {
-      const html = await getText(source.base + "/" + source.locale + "/search", { keyword: shown });
+      const html = await getText(source.base + "/" + source.locale + "/search", { keyword: shown }, dl);
       return pickMatches(html, source.base, code, source.name, function (h) { return h.indexOf("/v/") >= 0; });
     }
     if (source.name === "JavMit") {
-      
-      const res = await Widget.http.get(JAVMIT_API + "/posts", {
+      const res = await httpGet(JAVMIT_API + "/posts", {
         params: { search: shown, per_page: 5, _embed: 0, orderby: "relevance" },
         headers: { "User-Agent": JAVMIT_UA, Referer: "https://javmit.com/", Accept: "application/json" }
-      });
+      }, dl);
       let posts = res && res.data;
       if (typeof posts === "string") {
         try { posts = JSON.parse(posts); } catch (e) { return []; }
@@ -308,29 +335,44 @@ async function searchSource(source, code) {
       return out;
     }
     if (source.name === "Manko") {
-      const api = await mankoApi(source);
+      const api = await mankoApi(source, dl);
       if (!api) return [];
-      const res = await Widget.http.get(api + "/swx/movie/search", {
-        params: { keyword: shown, page: 1, size: 24, can_manko: "true" }
-      });
-      const body = res && res.data;
-      if (!body || typeof body.data !== "string") return [];
-      const rows = mankoDecode(body.data);
-      if (!Array.isArray(rows)) return [];
-      const out = [];
-      for (const row of rows) {
-        if (!row || !row._id) continue;
-        if (E_badId(row._id)) continue;
-        if (normalizeCode(extractCode(row.title)) !== code) continue;
-        out.push({
-          title: String(row.title || ""),
-          url: api + "/swx/movie/detail/" + encodeURIComponent(String(row._id)),
-          id: String(row._id),
-          categoryId: String(row.category_id || ""),
-          source: source.name
-        });
+      const accepted = [code];
+      const keywords = [shown];
+      const vm = code.match(/^([A-Z]{3,12}S)([0-9]{2,6})$/);
+      if (vm) {
+        const variant = vm[1].slice(0, -1) + vm[2];
+        accepted.push(variant);
+        keywords.push(displayCode(variant));
       }
-      return out;
+      for (const keyword of keywords) {
+        let rows = null;
+        try {
+          const res = await httpGet(api + "/swx/movie/search", {
+            params: { keyword: keyword, page: 1, size: 24, can_manko: "true" }
+          }, dl);
+          const body = res && res.data;
+          if (body && typeof body.data === "string") rows = mankoDecode(body.data);
+        } catch (e) { rows = null; }
+        if (!Array.isArray(rows)) continue;
+        const out = [], seenId = Object.create(null);
+        for (const row of rows) {
+          if (!row || !row._id) continue;
+          if (E_badId(row._id)) continue;
+          if (accepted.indexOf(normalizeCode(extractCode(row.title))) < 0) continue;
+          if (seenId[row._id]) continue;
+          seenId[row._id] = true;
+          out.push({
+            title: String(row.title || ""),
+            url: api + "/swx/movie/detail/" + encodeURIComponent(String(row._id)),
+            id: String(row._id),
+            categoryId: String(row.category_id || ""),
+            source: source.name
+          });
+        }
+        if (out.length) return out;
+      }
+      return [];
     }
   } catch (e) {
     console.error("[" + source.name + ".search] " + (e && e.message ? e.message : e));
@@ -344,8 +386,8 @@ function E_badId(id) {
 
  
 
-async function mankoApi(source) {
-  const html = await getText(source.base + "/home");
+async function mankoApi(source, dl) {
+  const html = await getText(source.base + "/home", null, dl);
   const m = html.match(/window\.ip\s*=\s*['"]([A-Za-z0-9.-]+)['"]/);
   if (!m || m[1].indexOf(".") < 0) return "";
   return "https://" + m[1];
@@ -390,29 +432,36 @@ function utf8(bytes) {
 
  
 
-async function mankoResources(match, code) {
-  const res = await Widget.http.get(match.url);
+const MANKO_UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_2 like Mac OS X) AppleWebKit/604.1.14 (KHTML, like Gecko)";
+
+async function mankoResources(match, code, dl) {
+  const res = await httpGet(match.url, {}, dl);
   const body = res && res.data;
   if (!body || typeof body.data !== "string") return [];
   const detail = mankoDecode(body.data);
   if (!detail || String(detail._id) !== match.id) return [];
   const out = [], seen = Object.create(null);
-  
   const categoryId = match.categoryId || detail.category_id || "";
   const label = "Manko " + (categoryId === "638ba0b6e6248f567f04b84c" ? "无M" : "有M");
-  const candidates = [detail.missav_video, detail.wasabi_url_1];
-  for (const raw of candidates) {
-    const url = String(raw || "");
+  const embedUrl = String(detail.wasabi_embed_url || "");
+  const candidates = [
+    { url: String(detail.missav_video || ""), headers: { "User-Agent": MANKO_UA, "Referer": "https://missav.live/" } },
+    { url: String(detail.wasabi_url_1 || ""), headers: embedUrl ? { "Referer": embedUrl } : null }
+  ];
+  for (const cand of candidates) {
+    const url = cand.url;
     if (!/^https:\/\//i.test(url)) continue;
     if (!/\.(?:m3u8|mp4)(?:[?#]|$)/i.test(url)) continue;
     if (seen[url]) continue;
     const fromPath = qualityHeight(url);
     if (fromPath >= MIN_HEIGHT) {
       seen[url] = true;
-      out.push({ name: label + " " + fromPath + "p", url: url, description: code, playerType: "app" });
+      const item = { name: label + " " + fromPath + "p", url: url, description: code, playerType: "app" };
+      if (cand.headers) item.customHeaders = cand.headers;
+      out.push(item);
       continue;
     }
-    const variants = await hlsVariants(url, label, code);
+    const variants = await hlsVariants(url, label, code, cand.headers || undefined, dl);
     for (const item of variants) {
       if (seen[item.url]) continue;
       seen[item.url] = true;
@@ -439,14 +488,14 @@ function javmitBestUrl(html) {
   return found;
 }
 
-async function javmitResources(match, code) {
+async function javmitResources(match, code, dl) {
   if (!budgetOk()) return [];
   if (!code) code = normalizeCode(extractCode(match.url));
   const pageUrl = match.url;
   const headers = { "User-Agent": JAVMIT_UA, Referer: "https://javmit.com/" };
   let html = "";
   try {
-    const res = await Widget.http.get(pageUrl, { headers: headers });
+    const res = await httpGet(pageUrl, { headers: headers }, dl);
     html = res && typeof res.data === "string" ? res.data : "";
   } catch (e) { return []; }
   if (!html) return [];
@@ -455,7 +504,7 @@ async function javmitResources(match, code) {
   const label = "JavMit" + (unc ? " 无码" : " 有码");
   if (found["1080P"]) return [{ name: label + " 1080p", url: found["1080P"], description: code, playerType: "app", customHeaders: headers }];
   if (found["720P"]) return [{ name: label + " 720p", url: found["720P"], description: code, playerType: "app", customHeaders: headers }];
-  if (found["MASTER"]) return resolvePlaylist(found["MASTER"], label, code, headers);
+  if (found["MASTER"]) return resolvePlaylist(found["MASTER"], label, code, headers, dl);
   return [];
 }
 
@@ -627,10 +676,10 @@ function oneTwoThreeTag(url) {
 }
 
 
-async function oneTwoThreeResources(match, code) {
+async function oneTwoThreeResources(match, code, dl) {
   const tag = oneTwoThreeTag(match.url);
   const label = "123AV " + tag;
-  const html = await getText(match.url);
+  const html = await getText(match.url, null, dl);
   const m = html.match(/player\(JSON\.parse\('([\s\S]*?)'\)/);
   if (!m) return [];
   const embedList = parseEmbedList(m[1]);
@@ -644,7 +693,7 @@ async function oneTwoThreeResources(match, code) {
     const streamApi = originMatch[1] + "/stream?id=" + encodeURIComponent(idMatch[1]);
     let media = null;
     try {
-      const res = await Widget.http.get(streamApi, { headers: { Referer: embedUrl } });
+      const res = await httpGet(streamApi, { headers: { Referer: embedUrl } }, dl);
       media = res && res.data && res.data.media ? res.data.media : null;
     } catch (e) { media = null; }
     const stream = media && typeof media.stream === "string" ? media.stream : "";
@@ -653,10 +702,10 @@ async function oneTwoThreeResources(match, code) {
     if (marker >= MIN_HEIGHT) {
       if (seen[stream]) continue;
       seen[stream] = true;
-      out.push({ name: label + " " + marker + "p", url: stream, description: code, playerType: "app" });
+      out.push({ name: label + " " + marker + "p", url: stream, description: code, playerType: "app", customHeaders: { Referer: embedUrl } });
       continue;
     }
-    const variants = await hlsVariants(stream, label, code, { Referer: embedUrl });
+    const variants = await hlsVariants(stream, label, code, { Referer: embedUrl }, dl);
     for (const item of variants) {
       if (seen[item.url]) continue;
       seen[item.url] = true;
@@ -676,8 +725,8 @@ function parseEmbedList(raw) {
 }
 
 
-async function javdayResources(match, code) {
-  const html = await getText(match.url);
+async function javdayResources(match, code, dl) {
+  const html = await getText(match.url, null, dl);
   if (!html) return [];
   const title = (html.match(/<title[^>]*>([\s\S]*?)<\/title>/i) || [])[1] || "";
   if (/404|not found/i.test(title) && normalizeCode(extractCode(safeText(title))) !== code) return [];
@@ -707,7 +756,7 @@ async function javdayResources(match, code) {
       out.push({ name: "JAVDay " + marker + "p", url: playlist, description: code, playerType: "app", customHeaders: headers });
       continue;
     }
-    const items = await resolvePlaylist(playlist, "JAVDay", code, headers);
+    const items = await resolvePlaylist(playlist, "JAVDay", code, headers, dl);
     for (const item of items) out.push(item);
   }
   return out;
@@ -726,12 +775,12 @@ function directMatch(text) {
   return null;
 }
 
-async function resourcesFor(match, code) {
+async function resourcesFor(match, code, dl) {
   try {
-    if (match.source === "Manko") return await mankoResources(match, code);
-    if (match.source === "123AV") return await oneTwoThreeResources(match, code);
-    if (match.source === "JavMit") return await javmitResources(match, code);
-    if (match.source === "JAVDay") return await javdayResources(match, code);
+    if (match.source === "Manko") return await mankoResources(match, code, dl);
+    if (match.source === "123AV") return await oneTwoThreeResources(match, code, dl);
+    if (match.source === "JavMit") return await javmitResources(match, code, dl);
+    if (match.source === "JAVDay") return await javdayResources(match, code, dl);
   } catch (e) {
     console.error("[" + match.source + ".resource] " + (e && e.message ? e.message : e));
   }
@@ -750,28 +799,31 @@ async function loadResource(params = {}) {
   const cached = await readCache(cacheKey);
   if (cached) return cached;
 
-  DEADLINE = Date.now() + LOAD_BUDGET;
+  const startAt = Date.now();
+  DEADLINE = startAt + LOAD_BUDGET;
+  function sourceDl(name) {
+    return Math.min(DEADLINE, startAt + (SOURCE_BUDGET_MS[name] || LOAD_BUDGET));
+  }
   const matched = [];
   const direct = direct0;
   if (direct) {
     if (direct.source === "Manko") {
       const id = (text.match(/movie-info\/([A-Za-z0-9]+)/) || [])[1];
       const mankoSource = SOURCES.filter(function (s) { return s.name === "Manko"; })[0];
-      const api = id ? await mankoApi(mankoSource) : "";
+      const api = id ? await mankoApi(mankoSource, sourceDl("Manko")) : "";
       if (id && api) matched.push({ title: "", url: api + "/swx/movie/detail/" + id, id: id, source: "Manko" });
     } else {
       matched.push(direct);
     }
   } else {
-    
     const searched = await Promise.all(SOURCES.map(function (source) {
-      return searchSource(source, code);
+      return searchSource(source, code, sourceDl(source.name));
     }));
     for (const rows of searched) {
       for (const row of rows) matched.push(row);
     }
   }
-  const groups = await Promise.all(matched.map(function (row) { return resourcesFor(row, code || ""); }));
+  const groups = await Promise.all(matched.map(function (row) { return resourcesFor(row, code || "", sourceDl(row.source)); }));
   const result = [], seenUrl = Object.create(null);
   for (const group of groups) {
     for (const item of group) {

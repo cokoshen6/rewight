@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "aihuangdou",
   title: "黄桃短剧",
-  version: "1.0.5",
+  version: "1.0.6",
   requiredVersion: "0.0.1",
   description: "AI成人短剧 / AI漫剧",
   author: "Coko",
@@ -481,6 +481,11 @@ async function loadResource(params = {}) {
     if (nm) ep = Number(nm[1]);
   }
   if (!ep) ep = 1;
+  const cacheKey = "aihuangdou_play_" + target.id + "_" + ep;
+  try {
+    const hit = await Widget.storage.get(cacheKey);
+    if (hit && hit.line && hit.at && Date.now() - hit.at < 600000) return [hit.line];
+  } catch (e) {}
   const referer = AH_BASE + "/video/" + target.id + "/";
   let playUrl = "";
   try {
@@ -490,10 +495,12 @@ async function loadResource(params = {}) {
     return [];
   }
   if (!playUrl) return [];
-  return [{
+  const line = {
     name: "第 " + ep + " 集",
     url: playUrl,
     playerType: "app",
     customHeaders: { Referer: referer, "User-Agent": AH_UA }
-  }];
+  };
+  try { await Widget.storage.set(cacheKey, { at: Date.now(), line: line }); } catch (e) {}
+  return [line];
 }

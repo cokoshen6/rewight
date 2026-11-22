@@ -3,7 +3,7 @@ WidgetMetadata = {
   title: "91视频",
   description: "91视频：海量成人视频、国产原创与日本AV主题合集、AI短剧、短视频、黑料吃瓜与合集",
   author: "Coko",
-  version: "1.1.2",
+  version: "1.1.3",
   requiredVersion: "0.0.1",
   iconurl: "https://tu.100923.xyz/file/1795041695096_91porna-icon-round.png",
   detailCacheDuration: 60,
@@ -1008,6 +1008,22 @@ async function npPostPlayback(pid, referer) {
 }
 
 async function loadResource(params = {}) {
+  const cand = (params && (params.link || params.id)) || (params && params.item && (params.item.link || params.item.id)) || "";
+  const cacheKey = cand ? "91porna_play_" + String(cand) : "";
+  if (cacheKey) {
+    try {
+      const hit = await Widget.storage.get(cacheKey);
+      if (hit && hit.lines && hit.at && Date.now() - hit.at < 600000) return hit.lines;
+    } catch (e) {}
+  }
+  const lines = await npResolveResource(params);
+  if (cacheKey && lines && lines.length) {
+    try { await Widget.storage.set(cacheKey, { at: Date.now(), lines: lines }); } catch (e) {}
+  }
+  return lines;
+}
+
+async function npResolveResource(params = {}) {
   const candidates = [];
   if (params) {
     if (params.link) candidates.push(params.link);

@@ -3,7 +3,7 @@ WidgetMetadata = {
   title: "野果短剧",
   description: "野果短剧 - AI短剧每日更新",
   author: "Coko",
-  version: "1.0.8",
+  version: "1.0.9",
   requiredVersion: "0.0.1",
   iconurl: "https://yeguodj.com/favicon.ico",
   site: "https://yeguodj.com",
@@ -305,6 +305,21 @@ function ygEpNum(params) {
   return 0;
 }
 async function loadResource(params) {
+  var vid = ygDramaId(params && params.link, params && params.id);
+  if (!vid) return [];
+  var epNum = ygEpNum(params);
+  var cacheKey = "yeguo_play_" + vid + "_" + (epNum > 0 ? epNum : "all");
+  try {
+    var hit = await Widget.storage.get(cacheKey);
+    if (hit && hit.lines && hit.at && Date.now() - hit.at < 600000) return hit.lines;
+  } catch (e) {}
+  var lines = await ygResolveResource(params);
+  if (lines && lines.length) {
+    try { await Widget.storage.set(cacheKey, { at: Date.now(), lines: lines }); } catch (e) {}
+  }
+  return lines;
+}
+async function ygResolveResource(params) {
   var vid = ygDramaId(params && params.link, params && params.id);
   if (!vid) return [];
   var detail = await ygApi("/api/playlet/detail", { id: vid });

@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "huangguotop",
   title: "黄果短剧榜",
-  version: "1.0.3",
+  version: "1.0.4",
   requiredVersion: "0.0.1",
   description: "黄果短剧榜：AI短剧、AI漫剧、排行榜与标签",
   author: "Coko",
@@ -358,12 +358,20 @@ async function loadResource(params = {}) {
     if (!owned) return [];
     let ep = hgEpHint(params, owned);
     if (!ep) ep = 1;
+    const cacheKey = "huangguotop_play_" + owned.id + "_" + ep;
+    try {
+      const hit = await Widget.storage.get(cacheKey);
+      if (hit && hit.line && hit.at && Date.now() - hit.at < 600000) return [hit.line];
+    } catch (e) {}
     const pageUrl = HG_BASE + "/play/" + owned.id + "/" + (ep > 1 ? ep + "/" : "");
     const data = await hgPostJson(HG_BASE + "/api/videos/" + owned.id + "/episodes/" + ep + "/playback", pageUrl);
     const streams = data && data.streams ? data.streams : null;
     if (!streams) return [];
     const lines = [];
     if (streams.main) lines.push(hgLine("高清", streams.main, pageUrl, data.cdn));
+    if (lines.length) {
+      try { await Widget.storage.set(cacheKey, { at: Date.now(), line: lines[0] }); } catch (e) {}
+    }
     return lines;
   } catch (e) { console.error("[loadResource] 失败:", e && e.message || e); return []; }
 }

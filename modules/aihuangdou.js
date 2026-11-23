@@ -1,7 +1,8 @@
 WidgetMetadata = {
   id: "aihuangdou",
   title: "黄桃短剧",
-  version: "1.0.7",
+  version: "1.0.8",
+  contentType: "shortDrama",
   requiredVersion: "0.0.1",
   description: "AI成人短剧 / AI漫剧",
   author: "Coko",

@@ -1,7 +1,8 @@
 WidgetMetadata = {
   id: "huangguotop",
   title: "黄果短剧榜",
-  version: "1.0.4",
+  version: "1.0.5",
+  contentType: "shortDrama",
   requiredVersion: "0.0.1",
   description: "黄果短剧榜：AI短剧、AI漫剧、排行榜与标签",
   author: "Coko",

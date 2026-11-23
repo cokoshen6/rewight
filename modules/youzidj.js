@@ -1,7 +1,8 @@
 WidgetMetadata = {
   id: "youzidj",
   title: "柚子短剧",
-  version: "1.0.2",
+  version: "1.0.3",
+  contentType: "shortDrama",
   requiredVersion: "0.0.1",
   description: "AI成人短剧 / AI换脸 / AI成人视频",
   author: "Coko",

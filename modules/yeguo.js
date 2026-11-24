@@ -3,7 +3,7 @@ WidgetMetadata = {
   title: "野果短剧",
   description: "野果短剧 - AI短剧每日更新",
   author: "Coko",
-  version: "1.1.1",
+  version: "1.1.5",
   contentType: "shortDrama",
   requiredVersion: "0.0.1",
   iconurl: "https://yeguodj.com/favicon.ico",
@@ -15,7 +15,7 @@ WidgetMetadata = {
     { id: "rank", title: "排行榜", functionName: "loadRank", type: "video", params: [{ name: "rank", title: "榜单", type: "enumeration", value: "week", enumOptions: [{ title: "周榜", value: "week" }, { title: "月榜", value: "month" }] }] },
     { id: "tags", title: "标签", functionName: "loadTags", type: "video", params: [{ name: "tag", title: "标签", type: "enumeration", value: "玄幻", enumOptions: [{ title: "玄幻", value: "玄幻" }, { title: "乱伦", value: "乱伦" }, { title: "人妻", value: "人妻" }, { title: "古装", value: "古装" }, { title: "都市", value: "都市" }, { title: "校园", value: "校园" }, { title: "换妻", value: "换妻" }, { title: "群P", value: "群P" }, { title: "禁忌", value: "禁忌" }, { title: "脑洞", value: "脑洞" }, { title: "多人", value: "多人" }, { title: "妈妈", value: "妈妈" }, { title: "姐姐", value: "姐姐" }, { title: "姐弟", value: "姐弟" }, { title: "出轨", value: "出轨" }, { title: "绿帽", value: "绿帽" }, { title: "NTR", value: "NTR" }, { title: "调教", value: "调教" }, { title: "熟女", value: "熟女" }, { title: "剧情向", value: "剧情向" }] }] },
     { id: "explore", title: "探索分类", functionName: "loadExplore", type: "video", params: [{ name: "theme", title: "主题", type: "enumeration", value: "0", enumOptions: [{ title: "全部", value: "0" }, { title: "野果原创", value: "7" }, { title: "真人短剧", value: "8" }, { title: "魔改漫剧", value: "9" }, { title: "网红改编", value: "10" }, { title: "PMV裸舞", value: "11" }] }, { name: "setting", title: "设定", type: "enumeration", value: "0", enumOptions: [{ title: "全部", value: "0" }, { title: "禁忌伦理", value: "23" }, { title: "职场反差", value: "24" }, { title: "改造调教", value: "25" }, { title: "出轨绿帽", value: "26" }, { title: "高H剧情", value: "27" }, { title: "后宫多人", value: "28" }, { title: "逆袭系统", value: "29" }] }, { name: "background", title: "背景", type: "enumeration", value: "0", enumOptions: [{ title: "全部", value: "0" }, { title: "校园", value: "39" }, { title: "都市", value: "40" }, { title: "年代", value: "41" }, { title: "古代", value: "43" }, { title: "玄幻", value: "44" }, { title: "末世", value: "45" }, { title: "灵异", value: "46" }] }, { name: "time", title: "时间", type: "enumeration", value: "0", enumOptions: [{ title: "全部", value: "0" }, { title: "7天内", value: "1" }, { title: "14天内", value: "2" }, { title: "30天内", value: "3" }, { title: "90天内", value: "4" }] }, { name: "recommend", title: "推荐", type: "enumeration", value: "0", enumOptions: [{ title: "全部", value: "0" }, { title: "最新", value: "1" }, { title: "最热", value: "2" }] }] },
-    { id: "loadResource", title: "播放资源", functionName: "loadResource", type: "stream", cacheDuration: 0, params: [] }
+    { id: "loadResource", title: "播放资源", functionName: "loadResource", type: "stream", cacheDuration: 600, params: [] }
   ],
   search: { id: "search", title: "搜索", functionName: "loadSearch", params: [{ name: "keyword", title: "关键词", type: "input" }, { name: "page", title: "页码", type: "page" }] }
 };
@@ -104,12 +104,18 @@ function ygB64Decode(s) {
   return out;
 }
 function ygUtf8Decode(bytes) {
-  var s = "", i = 0, c, c2, c3;
+  var s = "", i = 0, c, c2, c3, c4, cp;
   while (i < bytes.length) {
     c = bytes[i++];
     if (c < 128) s += String.fromCharCode(c);
     else if (c >= 192 && c < 224) { c2 = bytes[i++]; s += String.fromCharCode(((c & 31) << 6) | (c2 & 63)); }
-    else { c2 = bytes[i++]; c3 = bytes[i++]; s += String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63)); }
+    else if (c >= 224 && c < 240) { c2 = bytes[i++]; c3 = bytes[i++]; s += String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63)); }
+    else if (c >= 240 && c < 248) {
+      c2 = bytes[i++]; c3 = bytes[i++]; c4 = bytes[i++];
+      cp = ((c & 7) << 18) | ((c2 & 63) << 12) | ((c3 & 63) << 6) | (c4 & 63);
+      cp -= 0x10000;
+      s += String.fromCharCode(0xD800 + (cp >> 10), 0xDC00 + (cp & 1023));
+    }
   }
   return s;
 }
@@ -256,14 +262,16 @@ async function loadDetail(link) {
   if (!data || !data.video_id) return [];
   var eps = data.episodes || [];
   var items = [];
-  for (var i = 0; i < eps.length; i++) {
-    var ep = eps[i];
-    items.push({
-      id: "yeguo:" + data.video_id + ":ep" + ep.sort,
-      title: "第" + ep.sort + "集",
-      type: "video",
-      link: "https://yeguodj.com/drama/detail/" + data.video_id + "/#ep" + ep.sort
-    });
+  if (eps.length > 1) {
+    for (var i = 0; i < eps.length; i++) {
+      var ep = eps[i];
+      items.push({
+        id: "yeguo:" + data.video_id + ":ep" + ep.sort,
+        title: "第" + ep.sort + "集",
+        type: "video",
+        link: "https://yeguodj.com/drama/detail/" + data.video_id + "/#ep" + ep.sort
+      });
+    }
   }
   var tags = (data.tags || []).map(function (t) { return { id: "tag:" + t, title: t, type: "video" }; });
   var actors = (data.actor_list || []).map(function (a) { return { id: "actor:" + a.name, title: a.name, type: "video" }; });
@@ -314,14 +322,34 @@ async function loadResource(params) {
   var vid = ygDramaId(params && params.link, params && params.id);
   if (!vid) return [];
   var epNum = ygEpNum(params);
-  var cacheKey = "yeguo_play_" + vid + "_" + (epNum > 0 ? epNum : "all");
+  var cacheKey = "yeguo_play_" + vid;
+  var now = Date.now();
   try {
     var hit = await Widget.storage.get(cacheKey);
-    if (hit && hit.lines && hit.at && Date.now() - hit.at < 600000) return hit.lines;
+    if (hit && hit.lines && hit.at && now - hit.at < 600000) {
+      if (epNum > 0) {
+        var one = [];
+        for (var i = 0; i < hit.lines.length; i++) { if (hit.lines[i].name === "第" + epNum + "集") one.push(hit.lines[i]); }
+        if (one.length) return one;
+      } else if (hit.complete) {
+        return hit.lines;
+      }
+    }
   } catch (e) {}
   var lines = await ygResolveResource(params);
   if (lines && lines.length) {
-    try { await Widget.storage.set(cacheKey, { at: Date.now(), lines: lines }); } catch (e) {}
+    try {
+      var cur = await Widget.storage.get(cacheKey);
+      var merged = lines.slice();
+      var complete = epNum === 0;
+      if (cur && cur.lines && cur.at && now - cur.at < 600000 && epNum > 0) {
+        var names = {};
+        for (var j = 0; j < lines.length; j++) names[lines[j].name] = true;
+        for (var k = 0; k < cur.lines.length; k++) { if (!names[cur.lines[k].name]) merged.push(cur.lines[k]); }
+        complete = !!cur.complete;
+      }
+      await Widget.storage.set(cacheKey, { at: now, lines: merged, complete: complete });
+    } catch (e) {}
   }
   return lines;
 }

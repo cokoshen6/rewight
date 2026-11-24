@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "aihuangdou",
   title: "黄桃短剧",
-  version: "1.0.8",
+  version: "1.0.9",
   contentType: "shortDrama",
   requiredVersion: "0.0.1",
   description: "AI成人短剧 / AI漫剧",
@@ -404,7 +404,7 @@ async function loadDetail(link) {
         episode: n
       });
     }
-    if (episodeItems.length) item.episodeItems = episodeItems;
+    if (episodeItems.length > 1) item.episodeItems = episodeItems;
     return item;
   } catch (e) {
     console.error("[loadDetail] 失败:", e.message || e);

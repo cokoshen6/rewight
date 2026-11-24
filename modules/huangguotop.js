@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "huangguotop",
   title: "黄果短剧榜",
-  version: "1.0.5",
+  version: "1.0.7",
   contentType: "shortDrama",
   requiredVersion: "0.0.1",
   description: "黄果短剧榜：AI短剧、AI漫剧、排行榜与标签",
@@ -11,7 +11,7 @@ WidgetMetadata = {
   detailCacheDuration: 60,
   globalParams: [{ name: "imgProxy", title: "封面代理", type: "input", value: "" }],
   modules: [
-    { id: "loadResource", title: "播放资源", functionName: "loadResource", type: "stream", cacheDuration: 0, params: [] },
+    { id: "loadResource", title: "播放资源", functionName: "loadResource", type: "stream", cacheDuration: 600, params: [] },
     {
       id: "loadDramas", title: "AI短剧", functionName: "loadDramas", type: "video", cacheDuration: 3600,
       params: [
@@ -276,7 +276,7 @@ async function hgDramaDetail(id) {
   let em;
   while ((em = epRe.exec(html))) eps.add(em[1] ? Number(em[1]) : 1);
   const epNums = Array.from(eps).sort(function (a, b) { return a - b; });
-  if (epNums.length) {
+  if (epNums.length > 1) {
     item.episodeItems = epNums.map(function (n) {
       const ep = {
         id: "huangguotop:ep:" + id + ":" + n,

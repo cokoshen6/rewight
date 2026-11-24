@@ -3,7 +3,7 @@ WidgetMetadata = {
   title: "91视频",
   description: "91视频：海量成人视频、国产原创与日本AV主题合集、AI短剧、短视频、黑料吃瓜与合集",
   author: "Coko",
-  version: "1.1.4",
+  version: "1.1.5",
   requiredVersion: "0.0.1",
   iconurl: "https://tu.100923.xyz/file/1795041695096_91porna-icon-round.png",
   detailCacheDuration: 60,
@@ -723,7 +723,7 @@ async function npDetailDrama(target) {
   };
   const cover = npCover(npFirstPoster(html), base);
   if (cover) item.posterPath = cover;
-  if (nums.length) {
+  if (nums.length > 1) {
     item.episodeItems = nums.map(function (n) {
       return {
         id: "91porna:ai:" + target.key + ":ep" + n,
@@ -806,7 +806,7 @@ async function npDetailSet(target) {
     });
     if (!added) break;
   }
-  if (videos.length) item.episodeItems = videos;
+  if (videos.length > 1) item.episodeItems = videos;
   return item;
 }
 

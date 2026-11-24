@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "youzidj",
   title: "柚子短剧",
-  version: "1.0.3",
+  version: "1.0.4",
   contentType: "shortDrama",
   requiredVersion: "0.0.1",
   description: "AI成人短剧 / AI换脸 / AI成人视频",
@@ -376,7 +376,7 @@ async function loadDetail(link) {
       const epTitle = ep.name ? String(ep.name).trim() : "第" + n + "集";
       eps.push({ id: "youzidj:ep:" + p.slug + ":" + p.season + ":" + n, link: "youzidj:ep:" + p.slug + ":" + p.season + ":" + n, type: "video", title: epTitle, episode: n });
     }
-    if (eps.length) item.episodeItems = eps;
+    if (eps.length > 1) item.episodeItems = eps;
     return item;
   }
   const sectionPath = p.section === "face-swap" ? "ai-face-swap" : "ai-adult";

@@ -1,7 +1,7 @@
 WidgetMetadata = {
   id: "huangguoai",
   title: "黄果短剧",
-  version: "1.0.0",
+  version: "1.0.1",
   contentType: "shortDrama",
   requiredVersion: "0.0.1",
   description: "黄果短剧：AI短剧、AI漫剧、排行榜与标签",
@@ -281,7 +281,7 @@ async function hgDramaDetail(id) {
   const cover = hgCover(data.cover || "", base);
   const eps = Array.isArray(data.episodes) ? data.episodes : [];
   const epNums = eps.map(function (e) { return Number(e.ep_num); }).filter(function (n) { return n >= 1; }).sort(function (a, b) { return a - b; });
-  if (epNums.length) {
+  if (epNums.length > 1) {
     item.episodeItems = epNums.map(function (n) {
       const ep = {
         id: "huangguoai:ep:" + id + ":" + n,

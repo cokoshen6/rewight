@@ -1,7 +1,7 @@
 WidgetMetadata = {
     "id": "getav",
     "title": "GetAV",
-    "version": "1.4.6",
+    "version": "1.4.7",
     "requiredVersion": "0.0.1",
     "description": "Getav视频",
     "author": "Coko",
@@ -2574,7 +2574,9 @@ async function loadResource(params) {
     const data = await gaFetchDetail(code, { fresh: true });
     if (!data) return [];
     const lines = await gaProbedLines(data, code);
-    const result = lines.map(l => ({
+    const hi = lines.filter(l => (l.rank || 0) >= 720);
+    const keep = hi.length ? hi : lines.slice(0, 1);
+    const result = keep.map(l => ({
         name: l.name,
         description: gaLineDescription(code, l.name),
         url: l.url,

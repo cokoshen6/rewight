@@ -1,7 +1,7 @@
 WidgetMetadata = {
     "id": "getav",
     "title": "GetAV",
-    "version": "1.4.5",
+    "version": "1.4.6",
     "requiredVersion": "0.0.1",
     "description": "Getav视频",
     "author": "Coko",
@@ -1676,7 +1676,7 @@ const GA_LINK = "getav:";
 
 const GA_PAGE_SIZE = 20;
 const GA_PRIVATE_MARKER = "@private:";
-const GA_HTTP_TIMEOUT = 15000;
+const GA_HTTP_TIMEOUT = 15;
 
 function gaSafeText(raw) {
     if (typeof raw !== "string" && typeof raw !== "number") return "";
@@ -1733,6 +1733,15 @@ function gaStatus(response) {
     const value = response && (response.status != null ? response.status : response.statusCode);
     const n = Number(value);
     return isFinite(n) && n > 0 ? n : 0;
+}
+
+function gaHttpStatus(error) {
+    if (!error) return 0;
+    const direct = gaStatus(error && error.response || error);
+    if (direct) return direct;
+    const text = error && typeof error.message === "string" ? error.message : "";
+    const m = text.match(/^HTTP (\d{3}):/);
+    return m ? Number(m[1]) : 0;
 }
 
 function gaContentType(response) {
@@ -1809,9 +1818,8 @@ async function gaProbeStill(url) {
     const target = gaHttpUrl(url);
     if (!target) return false;
     try {
-        const res = await Widget.http.get(target, {
-            headers: { "User-Agent": GA_UA, "Range": GA_DMM_STILL_RANGE }, timeout: 9000, allow_redirects: false
-        });
+        const res = await Widget.http.request({ url: target, method: "GET",
+            headers: { "User-Agent": GA_UA, "Range": GA_DMM_STILL_RANGE }, timeout: 9, allow_redirects: false });
         const status = gaStatus(res), type = gaContentType(res);
         const body = res && res.data;
         if (typeof body === "string" && /^\s*<(?:!doctype|html)/i.test(body)) return false;
@@ -1889,11 +1897,21 @@ function gaCoverRead(key, max) {
 function gaCoverWrite(key, map, max) {
     const merged = gaCoverRead(key, max), patch = gaCoverClean(map, max), now = Date.now();
     Object.keys(patch).forEach(code => {
-        if (!merged[code] || Math.min(patch[code].t, now) >= Math.min(merged[code].t, now)) merged[code] = patch[code];
+        const cur = merged[code];
+        if (patch[code].u === "" && cur && cur.u) return;
+        if (!cur || Math.min(patch[code].t, now) >= Math.min(cur.t, now)) merged[code] = patch[code];
     });
     const result = gaCoverClean(merged, max);
+    let text = JSON.stringify(result);
+    if (text.length > 500000) {
+        const keys = Object.keys(result).sort((a, b) => result[a].t - result[b].t);
+        while (text.length > 500000 && keys.length) {
+            delete result[keys.shift()];
+            text = JSON.stringify(result);
+        }
+    }
     GA_COVER_STATE.memory[key] = result;
-    try { Widget.storage.set(key, JSON.stringify(result)); } catch (error) {}
+    try { Widget.storage.set(key, text); } catch (error) {}
 }
 
 async function gaCoverOnce(provider, code, loader) {
@@ -1920,9 +1938,8 @@ async function gaProbePoster(url) {
     const target = gaHttpUrl(url);
     if (!target) return false;
     try {
-        const res = await Widget.http.get(target, {
-            headers: { "User-Agent": GA_UA, "Range": GA_POSTER_MIN_RANGE }, timeout: 9000
-        });
+        const res = await Widget.http.request({ url: target, method: "GET",
+            headers: { "User-Agent": GA_UA, "Range": GA_POSTER_MIN_RANGE }, timeout: 9 });
         const status = gaStatus(res), type = gaContentType(res);
         const body = res && res.data;
         if (typeof body === "string" && /^\s*<(?:!doctype|html)/i.test(body)) return false;
@@ -1965,24 +1982,28 @@ async function gaFillPosters(items, deadline) {
 }
 
 const GA_JAVDB_SEARCH = "https://javdb.com/search?q=";
-const GA_JAVDB_TIMEOUT = 9000;
+const GA_JAVDB_TIMEOUT = 9;
 const GA_JAVDB_CONCURRENCY = 4;
 const GA_JAVDB_STAGE_TIMEOUT = 15000;
 const GA_JDB_CACHE_KEY = "getav_jdbcover_v2";
 const GA_JDB_CACHE_MAX = 300;
 const GA_JDB_MISS_TTL = 900000;
 
-function gaNormCode(s) { return gaSafeText(s).toUpperCase().replace(/[-_\s]/g, ""); }
+function gaNormCode(s) {
+    const t = gaSafeText(s).toUpperCase();
+    const m = t.match(/^(\d+)[-_\s]+(\d+)$/);
+    if (m) return m[1] + "-" + m[2];
+    return t.replace(/[-_\s]/g, "");
+}
 function gaJdbCacheGet() { return gaCoverRead(GA_JDB_CACHE_KEY, GA_JDB_CACHE_MAX); }
 function gaJdbCacheSet(map) { gaCoverWrite(GA_JDB_CACHE_KEY, map, GA_JDB_CACHE_MAX); }
 
 async function gaJavdbCover(code) {
     const id = gaMovieId(code);
     if (!id) return "";
-    const res = await Widget.http.get(GA_JAVDB_SEARCH + encodeURIComponent(id) + "&f=all", {
+    const res = await Widget.http.request({ url: GA_JAVDB_SEARCH + encodeURIComponent(id) + "&f=all", method: "GET",
         headers: { "User-Agent": GA_UA, "Accept": "text/html,application/xhtml+xml", "Accept-Language": "zh-CN,zh;q=0.9" },
-        timeout: GA_JAVDB_TIMEOUT
-    });
+        timeout: GA_JAVDB_TIMEOUT });
     const status = gaStatus(res);
     if (status && (status < 200 || status >= 300)) return "";
     const html = res && typeof res.data === "string" ? res.data : "";
@@ -2083,9 +2104,9 @@ async function gaApiAt(host, path, options) {
     if (options && options.fresh) { headers["Cache-Control"] = "no-cache"; headers.Pragma = "no-cache"; }
     let res;
     try {
-        res = await Widget.http.get(host + path, { headers: headers, timeout: GA_HTTP_TIMEOUT, allow_redirects: false });
+        res = await Widget.http.request({ url: host + path, method: "GET", headers: headers, timeout: GA_HTTP_TIMEOUT, allow_redirects: false });
     } catch (error) {
-        const status = gaStatus(error && error.response || error);
+        const status = gaHttpStatus(error);
         const safe = new Error("GetAV：公共接口网络失败" + (status ? "（HTTP " + status + "）" : ""));
         if (status === 429 || status === 449) safe.gaThrottled = true;
         throw safe;
@@ -2329,7 +2350,11 @@ async function gaFetchDetail(code, options) {
     if (!fresh && hit && now >= hit.at && now - hit.at < 300000 && gaMovieId(hit.data && hit.data.id) === key) return hit.data;
     let data;
     try { data = await gaApi("/api/movies/" + encodeURIComponent(key), fresh ? { fresh: true } : null); }
-    catch (error) { return null; }
+    catch (error) {
+        if (error && typeof error.message === "string" && error.message.indexOf("GetAV") === 0) throw error;
+        const status = gaHttpStatus(error);
+        throw new Error("GetAV：详情请求失败" + (status ? "（HTTP " + status + "）" : ""));
+    }
     if (!data || typeof data !== "object" || Array.isArray(data) || gaMovieId(data.id) !== key) return null;
     _detailCache[key] = { at: Date.now(), data: data };
     const keys = Object.keys(_detailCache);
@@ -2483,19 +2508,20 @@ const GA_BITRATE = {
 
 async function gaProbeLine(line) {
     const url = gaHttpUrl(line && line.url);
-    if (!url) return false;
+    if (!url) return "invalid";
     try {
-        const res = await Widget.http.get(url, {
+        const res = await Widget.http.request({ url: url, method: "GET",
             headers: { "User-Agent": GA_UA, Referer: "https://getav.me/", Accept: "*/*", Range: "bytes=0-63" },
-            timeout: 8000
-        });
+            timeout: 8 });
         const status = gaStatus(res), body = res && res.data !== undefined ? res.data : res;
         const text = typeof body === "string" ? body : "";
-        if (status === 403 || status === 404 || status === 410) return false;
-        if (/^\s*<(?:!doctype|html)/i.test(text)) return false;
-        if (/^\s*#EXTM3U/.test(text)) return true;
-        return true;
-    } catch (error) { return true; }
+        if (status === 403 || status === 404 || status === 410) return "invalid";
+        if (/^\s*<(?:!doctype|html)/i.test(text)) return "invalid";
+        return "valid";
+    } catch (error) {
+        if (gaHttpStatus(error)) return "invalid";
+        return "unknown";
+    }
 }
 
 const _lineCache = Object.create(null);
@@ -2503,24 +2529,31 @@ const _lineCache = Object.create(null);
 async function gaProbedLines(data, code) {
     const lines = gaPlayLines(data);
     if (!lines.length) return [];
+    const valid = [], unknown = [];
     const deadline = Date.now() + 15000;
-    for (const line of lines) {
-        if (Date.now() > deadline) break;
-        const hit = _lineCache[line.url], now = Date.now();
-        let ok;
-        if (hit && now >= hit.at && now - hit.at < 30000) ok = hit.ok;
-        else {
-            ok = await gaProbeLine(line);
-            _lineCache[line.url] = { at: Date.now(), ok: ok };
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (Date.now() > deadline) {
+            for (let j = i; j < lines.length; j++) unknown.push(lines[j]);
+            break;
         }
-        if (ok) return [line];
+        const hit = _lineCache[line.url], now = Date.now();
+        let res;
+        if (hit && now >= hit.at && now - hit.at < 30000) res = hit.res;
+        else {
+            res = await gaProbeLine(line);
+            _lineCache[line.url] = { at: Date.now(), res: res };
+        }
+        if (res === "valid") valid.push(line);
+        else if (res === "unknown") unknown.push(line);
     }
     const keys = Object.keys(_lineCache);
     if (keys.length > 200) {
         keys.sort((a, b) => _lineCache[a].at - _lineCache[b].at);
         keys.slice(0, keys.length - 200).forEach(k => { delete _lineCache[k]; });
     }
-    return lines;
+    if (valid.length) return valid;
+    return unknown;
 }
 
 function gaHlsUrl(raw) {
@@ -2538,13 +2571,10 @@ function gaLineDescription(code, name) {
 async function loadResource(params) {
     const code = gaCodeFromParams(params);
     if (!code) return [];
-    const data = await gaFetchDetail(code);
+    const data = await gaFetchDetail(code, { fresh: true });
     if (!data) return [];
     const lines = await gaProbedLines(data, code);
-    
-    const hi = lines.filter(l => (l.rank || 0) >= 1080);
-    const keep = hi.length ? hi : lines.slice(0, 1);
-    const result = keep.map(l => ({
+    const result = lines.map(l => ({
         name: l.name,
         description: gaLineDescription(code, l.name),
         url: l.url,
@@ -2624,7 +2654,18 @@ function gaDiscoverStateRead() {
 }
 
 function gaDiscoverPersist(state) {
-    const saved = { v: 2, t: state.t, serial: state.serial, emittedSerial: state.emittedSerial, seen: state.seen.slice(), last: state.last.slice() };
+    const latest = gaDiscoverStateRead();
+    const useCallerLast = state.emittedSerial > latest.emittedSerial
+        || state.emittedSerial === latest.emittedSerial && state.t >= latest.t;
+    const last = useCallerLast ? state.last.slice() : latest.last.slice();
+    const union = gaDiscoverIds(latest.seen.concat(state.seen), GA_DISCOVER_MAX_SEEN);
+    const seen = union.filter(id => last.indexOf(id) < 0).concat(last).slice(-GA_DISCOVER_MAX_SEEN);
+    const merged = { v: 2, t: Math.max(latest.t, state.t), serial: Math.max(latest.serial, state.serial),
+        emittedSerial: Math.max(latest.emittedSerial, state.emittedSerial), seen: seen, last: last };
+    state.t = merged.t; state.serial = merged.serial; state.emittedSerial = merged.emittedSerial;
+    state.seen = merged.seen.slice(); state.last = merged.last.slice();
+    const saved = { v: 2, t: merged.t, serial: merged.serial, emittedSerial: merged.emittedSerial,
+        seen: merged.seen.slice(), last: merged.last.slice() };
     GA_DISCOVER_RUNTIME.memory = saved;
     try {
         Widget.storage.set(GA_DISCOVER_STATE_KEY, JSON.stringify(saved));
@@ -2634,6 +2675,7 @@ function gaDiscoverPersist(state) {
             GA_DISCOVER_RUNTIME.legacyRemoved = true;
         }
     } catch (error) {}
+    return state;
 }
 
 function gaDiscoverStateSave(state, items) {
@@ -2771,17 +2813,24 @@ async function gaResolveCatalog(kind, query) {
     const direct = gaCatalogId(kind, query);
     if (direct) return direct;
     const plural = GA_FOLDER_API[kind];
-    const data = await gaApi("/api/" + plural + "?page=1&limit=100&sort=popular&search=" + encodeURIComponent(query) + "&locale=zh");
-    if (!data || !Array.isArray(data[plural])) throw new Error("GetAV：目录检索响应格式异常");
-    const rows = data[plural];
     const wanted = gaCatalogName(query);
     const ids = [];
-    rows.forEach(row => {
-        if (!row) return;
-        const matches = [row.name, row.originalName, row.id].some(name => name != null && gaCatalogName(name) === wanted);
-        const id = gaCatalogId(kind, row.id);
-        if (matches && id && ids.indexOf(id) < 0) ids.push(id);
-    });
+    const collect = rows => {
+        if (!Array.isArray(rows)) return;
+        rows.forEach(row => {
+            if (!row) return;
+            const matches = [row.name, row.originalName, row.id].some(name => name != null && gaCatalogName(name) === wanted);
+            const id = gaCatalogId(kind, row.id);
+            if (matches && id && ids.indexOf(id) < 0) ids.push(id);
+        });
+    };
+    const data = await gaApi("/api/" + plural + "?page=1&limit=100&sort=popular&search=" + encodeURIComponent(query) + "&locale=zh");
+    if (!data || !Array.isArray(data[plural])) throw new Error("GetAV：目录检索响应格式异常");
+    collect(data[plural]);
+    if (!ids.length) {
+        const more = await gaApi("/api/" + plural + "?page=2&limit=100&sort=popular&search=" + encodeURIComponent(query) + "&locale=zh");
+        if (more && Array.isArray(more[plural])) collect(more[plural]);
+    }
     if (ids.length === 1) return ids[0];
     if (ids.length > 1) throw new Error("GetAV：目录名称有歧义，请改填目录ID（" + ids.slice(0, 5).join(" / ") + "）");
     throw new Error("GetAV：未找到完整名称匹配的目录，请填写完整名称或目录ID");
@@ -2905,13 +2954,13 @@ async function gaSessionGet(config, path) {
     headers.Pragma = "no-cache";
     let response;
     try {
-        response = await Widget.http.get(config.host + path, { headers: headers, allow_redirects: false, timeout: GA_HTTP_TIMEOUT });
+        response = await Widget.http.request({ url: config.host + path, method: "GET", headers: headers, allow_redirects: false, timeout: GA_HTTP_TIMEOUT });
     } catch (error) {
-        const status = Number(error && (error.status || error.statusCode || error.response && error.response.status) || 0);
+        const status = gaHttpStatus(error);
         if (status >= 300) throw gaSessionStatusError(status);
         throw gaPersonalError("账号网络请求失败；未回退到匿名镜像，也未记录凭证或原始错误");
     }
-    const status = Number(response && (response.status || response.statusCode) || 0);
+    const status = gaStatus(response);
     if (status >= 300) throw gaSessionStatusError(status);
     let body = response && response.data !== undefined ? response.data : response;
     if (typeof body === "string") {
@@ -2926,7 +2975,8 @@ async function gaSessionGet(config, path) {
 async function gaSessionMe(config) {
     const body = await gaSessionGet(config, "/api/auth/me");
     const raw = body && body.user && body.user.id;
-    const id = typeof raw === "string" || typeof raw === "number" && isFinite(raw) && raw > 0 ? String(raw).trim() : "";
+    const id = typeof raw === "string" ? String(raw).trim()
+        : typeof raw === "number" && isFinite(raw) && raw > 0 && Math.floor(raw) === raw && raw <= 9007199254740991 ? String(raw) : "";
     if (body.success !== true || !/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/.test(id)) throw gaPersonalError("登录身份校验失败，不会按手填 userId 读取数据");
     return id;
 }
@@ -2981,11 +3031,19 @@ async function loadPersonal(params) {
         const page = gaPageNum(params);
         const injected = gaInjected(params);
         if (injected) return gaListByFolder(injected.kind, injected.id, page, "latest", { private: true });
+        if (feed === "personalized" && page > 1) return [];
         const config = gaSessionConfig(params);
         
         const owner = await gaSessionMe(config);
         
-        if (feed === "personalized") return await gaPersonalized(config, owner);
+        if (feed === "personalized") {
+            try { return await gaPersonalized(config, owner); }
+            catch (error) {
+                console.error("[getav.personal] 个性化推荐不可用，已回退到匿名热门");
+                const data = await gaApi("/api/recommendations/trending?limit=" + GA_PAGE_SIZE + "&locale=zh");
+                return gaList(data);
+            }
+        }
         const wrapped = feed === "favorites";
         const path = wrapped
             ? "/api/users/favorites?userId=" + encodeURIComponent(owner) + "&page=" + page + "&limit=" + GA_PAGE_SIZE

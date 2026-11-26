@@ -1,7 +1,7 @@
 WidgetMetadata = {
     "id": "getav",
     "title": "GetAV",
-    "version": "1.4.7",
+    "version": "1.5.1",
     "requiredVersion": "0.0.1",
     "description": "Getav视频",
     "author": "Coko",
@@ -1953,11 +1953,47 @@ const GA_DMM_MISS_TTL = 900000;
 function gaDmmCacheGet() { return gaCoverRead(GA_DMM_CACHE_KEY, GA_DMM_CACHE_MAX); }
 function gaDmmCacheSet(map) { gaCoverWrite(GA_DMM_CACHE_KEY, map, GA_DMM_CACHE_MAX); }
 
+const GA_STILLS_CACHE_KEY = "getav_dmmstills_v2";
+const GA_STILLS_CACHE_MAX = 300;
+function gaStillsCacheGet() {
+    let map = Object.create(null);
+    try {
+        const raw = Widget.storage.get(GA_STILLS_CACHE_KEY);
+        if (typeof raw === "string" && raw.length <= 500000) {
+            const parsed = JSON.parse(raw);
+            if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) map = parsed;
+        }
+    } catch (error) {}
+    const out = Object.create(null), now = Date.now();
+    Object.keys(map).forEach(code => {
+        const id = gaMovieId(code), entry = map[code];
+        if (!id || !entry || typeof entry !== "object" || Array.isArray(entry) || !Array.isArray(entry.urls)
+            || typeof entry.t !== "number" || !isFinite(entry.t) || entry.t <= 0 || now - entry.t >= GA_COVER_HIT_TTL) return;
+        const urls = entry.urls.map(u => gaHttpUrl(u)).filter(Boolean);
+        if (urls.length) out[id] = urls;
+    });
+    return out;
+}
+function gaStillsCacheSet(code, urls) {
+    const map = gaStillsCacheGet();
+    map[code] = { urls: urls.slice(0, GA_DMM_STILL_COUNT), t: Date.now() };
+    const keys = Object.keys(map).sort((a, b) => map[a].t - map[b].t);
+    while (keys.length > GA_STILLS_CACHE_MAX) delete map[keys.shift()];
+    try { Widget.storage.set(GA_STILLS_CACHE_KEY, JSON.stringify(map)); } catch (error) {}
+}
+function gaCachedPoster(code) {
+    if (!gaMovieId(code)) return "";
+    code = gaMovieId(code);
+    const dmm = gaCoverRead(GA_DMM_CACHE_KEY, GA_DMM_CACHE_MAX)[code];
+    const jdb = gaCoverRead(GA_JDB_CACHE_KEY, GA_JDB_CACHE_MAX)[code];
+    return (dmm && dmm.u) || (jdb && jdb.u) || "";
+}
+
 async function gaFillPosters(items, deadline) {
     if (!Array.isArray(items)) return [];
+    const targets = items.filter(item => item && !item.posterPath && gaMovieId(item.id));
     await gaInvalidateLegacyCoverCaches();
     const end = typeof deadline === "number" ? deadline : Date.now() + 18000;
-    const targets = items.filter(item => item && !item.posterPath && gaMovieId(item.id));
     const jobs = targets.map(item => async () => {
         const code = gaMovieId(item.id);
         if (/^FC2/i.test(code) || /^\d{6,}-\d{3,}$/.test(code)) return;
@@ -2379,6 +2415,12 @@ function gaDescription(data, code, zhTitle) {
     const dur = gaDurationText(data);
     if (dur) lines.push("时长: " + dur);
     if (data.date) lines.push("发行: " + String(data.date).slice(0, 10));
+    const producer = data.producer && gaSafeText(data.producer.name);
+    if (producer) lines.push("片商: " + producer);
+    const publisher = data.publisher && gaSafeText(data.publisher.name);
+    if (publisher) lines.push("发行商: " + publisher);
+    const series = data.series && gaSafeText(data.series.name);
+    if (series) lines.push("系列: " + series);
     return lines.join("\n");
 }
 
@@ -2412,6 +2454,74 @@ function gaDetailItem(data, code, zhTitle, options) {
     return item;
 }
 
+async function gaSimilarMovies(data, code, options) {
+    try {
+        if (!data || typeof data !== "object" || Array.isArray(data)) return [];
+        const target = gaMovieId(code);
+        if (!target) return [];
+        const genres = (Array.isArray(data.genres) ? data.genres : [])
+            .map(g => g && gaCatalogId("genre", g.id))
+            .filter(Boolean)
+            .slice(0, 5);
+        if (!genres.length) return [];
+        const fetched = await Promise.all(genres.map(id =>
+            gaApi("/api/genres/" + encodeURIComponent(id) + "?page=1&limit=20&sortBy=popular&locale=zh").catch(() => null)
+        ));
+        const cands = Object.create(null);
+        fetched.forEach((res, i) => {
+            if (!res || !gaFolderIdentity(res, genres[i]) || !Array.isArray(res.movies)) return;
+            res.movies.forEach(m => {
+                if (!m || typeof m !== "object" || Array.isArray(m)) return;
+                const id = gaMovieId(m.id);
+                if (!id || id === target) return;
+                const entry = cands[id] || (cands[id] = { m: m, n: 0, views: 0 });
+                entry.n++;
+                const views = Number(m.views || 0);
+                if (isFinite(views) && views > entry.views) entry.views = views;
+            });
+        });
+        const ranked = Object.keys(cands).map(id => cands[id]);
+        ranked.sort((a, b) => (b.n - a.n) || (b.views - a.views));
+        const top = ranked.slice(0, 12).map(e => gaItem(e.m, options)).filter(Boolean);
+        if (!top.length) return [];
+        if (options && options.private) {
+            top.forEach(item => { if (item && !item.posterPath) item.posterPath = item.backdropPath || ""; });
+            return top;
+        }
+        gaFillPosters(top, Date.now() + 6000).catch(() => {});
+        top.forEach(item => {
+            if (!item || item.posterPath) return;
+            const cached = gaCachedPoster(gaMovieId(item.id));
+            item.posterPath = cached || item.backdropPath || "";
+        });
+        return top;
+    } catch (error) {
+        return [];
+    }
+}
+
+function gaDetailCovers(item, code) {
+    if (!item || !gaMovieId(code)) return;
+    code = gaMovieId(code);
+    const cached = gaCachedPoster(code);
+    if (cached) item.posterPath = cached;
+    else gaFillPosters([item]).catch(() => {});
+    if (!item.backdropPaths || !item.backdropPaths.length) {
+        const stills = gaStillsCacheGet()[code];
+        if (stills && stills.length) {
+            item.backdropPaths = stills;
+        } else {
+            const job = "stills:" + code;
+            if (!GA_COVER_STATE.jobs[job]) {
+                GA_COVER_STATE.jobs[job] = gaDmmStills(code).then(found => {
+                    delete GA_COVER_STATE.jobs[job];
+                    if (found.length) gaStillsCacheSet(code, found);
+                }).catch(() => { delete GA_COVER_STATE.jobs[job]; });
+            }
+        }
+    }
+}
+
 async function loadDetail(link) {
     const owned = gaOwnedLink(link);
     if (!owned) throw new Error("无法识别的详情链接: " + link);
@@ -2420,13 +2530,10 @@ async function loadDetail(link) {
     const options = { private: owned.private };
     const item = gaDetailItem(data, owned.code, owned.title, options);
     if (!item) return [];
-    await gaInvalidateLegacyCoverCaches();
-    if (!owned.private) await gaFillPosters([item]);
+    const related = await gaSimilarMovies(data, owned.code, options);
+    if (related.length) item.relatedItems = related;
+    if (!owned.private) gaDetailCovers(item, owned.code);
     if (!item.posterPath) item.posterPath = item.backdropPath;
-    if (!owned.private && (!item.backdropPaths || !item.backdropPaths.length)) {
-        const stills = await gaDmmStills(owned.code);
-        if (stills.length) item.backdropPaths = stills;
-    }
     return item;
 }
 
@@ -2439,10 +2546,13 @@ function gaLineName(type) {
         if (m) res = m[1] + "P";
     }
     let tag = "";
-    const pm = t.match(/^(uc|cn|sub|raw)_/);
-    if (pm) tag = pm[1] === "cn" ? "中字" : pm[1].toUpperCase();
+    const pm = t.match(/^(uc-ltx|uc-u|uc|cn|sub|raw)_/);
+    if (pm) {
+        const p = pm[1];
+        tag = p === "uc-ltx" ? "LTX" : p === "uc-u" ? "U" : p === "uc" ? "UC" : p === "cn" ? "CN" : p === "sub" ? "SUB" : "";
+    }
     return {
-        name: res || String(type || "线路"),
+        name: res ? res + (tag ? "-" + tag : "") : String(type || "线路"),
         tag: tag
     };
 }
@@ -2496,15 +2606,6 @@ function gaCodeFromParams(params) {
     }
     return "";
 }
-
-const GA_BITRATE = {
-    "4K": 12e3,
-    "1440P": 6e3,
-    "1080P": 5100,
-    "720P": 1900,
-    "480P": 900,
-    "240P": 500
-};
 
 async function gaProbeLine(line) {
     const url = gaHttpUrl(line && line.url);
@@ -2562,10 +2663,7 @@ function gaHlsUrl(raw) {
 }
 
 function gaLineDescription(code, name) {
-    const base = String(name).split(" · ")[0].toUpperCase();
-    const kbps = GA_BITRATE[base] || 0;
-    const mbps = kbps ? "约 " + (kbps / 1e3).toFixed(1) + "Mbps" : "";
-    return [ "番号 " + String(code).toUpperCase(), mbps ].filter(Boolean).join(" · ");
+    return "番号 " + String(code).toUpperCase();
 }
 
 async function loadResource(params) {
